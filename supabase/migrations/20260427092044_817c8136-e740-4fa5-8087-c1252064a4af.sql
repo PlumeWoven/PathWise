@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.book_session(uuid, timestamptz, timestamptz, integer, text, text, numeric, text, uuid, integer) FROM PUBLIC, anon;

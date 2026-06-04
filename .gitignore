@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+bun.lockb
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+.vite/
+
+# Supabase (keep migrations, but ignore local config with secrets)
+supabase/.temp/
+supabase/.branches/
+*.local.*
