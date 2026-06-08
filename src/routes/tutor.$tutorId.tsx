@@ -220,7 +220,7 @@ function TutorProfilePage() {
 
   const startMessage = async () => {
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) { toast.error("Sign in to message this tutor"); navigate({ to: "/login" }); return; }
+    if (!u.user) { toast.error("Sign in to message this tutor"); navigate({ to: "/login" as any }); return; }
     const sb: any = supabase;
     const { data: existing } = await sb
       .from("message_threads")

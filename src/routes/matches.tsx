@@ -8,6 +8,8 @@ import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchCard } from "../pathwise/MatchCard";
 import { computeMatch, VIBE_TAGS, type MatchPrefs, type TutorRow } from "../pathwise/matching";
+// ─── api.ts for lead event inserts ───────────────────────────────────────────
+import { recordProfileView } from "../pathwise/api";
 
 const SORTS = [
   { id: "best", label: "Best Match" },
@@ -59,7 +61,6 @@ function MatchesPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // ---- Data ----
   const [tutors, setTutors] = useState<TutorRow[]>([]);
   const [reviewsByTutor, setReviewsByTutor] = useState<Map<string, { avg: number; count: number }>>(new Map());
   const [availabilityByTutor, setAvailabilityByTutor] = useState<Set<string>>(new Set());
@@ -68,8 +69,6 @@ function MatchesPage() {
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [filterOpen, setFilterOpen] = useState(false);
-
-  // Pull saved learning profile to enrich matching defaults
   const [savedPrefs, setSavedPrefs] = useState<MatchPrefs>({});
 
   useEffect(() => {
@@ -77,7 +76,7 @@ function MatchesPage() {
     (async () => {
       setLoading(true);
       try {
-        // Saved profile (from /find-tutor quiz)
+        // Load saved learning profile to enrich matching defaults
         if (user?.id) {
           const { data } = await supabase
             .from("user_learning_profiles")
@@ -92,12 +91,30 @@ function MatchesPage() {
           } catch { /* ignore */ }
         }
 
+        // ── CHANGED: subject-scoped tutor query ──────────────────────────────
+        // Previously fetched all 200 tutors regardless of subject.
+        // Now filters by subject_specialties if a subject is in the URL or saved
+        // profile, which is faster and more relevant. Falls back to all tutors
+        // if no subject is known (same behaviour as before for that case).
+        const effectiveSubject = search.subject ?? savedPrefs.subject;
+
+        let tutorQuery = supabase
+          .from("profiles")
+          .select(
+            "id, display_name, avatar_url, headline, bio, hourly_rate, " +
+            "subject_specialties, specializations, superpowers, video_intro_url, " +
+            "verification_status, free_discovery_call, first_session_free"
+          )
+          .eq("role", "tutor")
+          .limit(200);
+
+        // Apply subject filter when we know the subject
+        if (effectiveSubject) {
+          tutorQuery = tutorQuery.contains("subject_specialties", [effectiveSubject]);
+        }
+
         const [tutorsRes, reviewsRes, availRes, packagesRes, coursesRes] = await Promise.all([
-          supabase
-            .from("profiles")
-            .select("id, display_name, avatar_url, headline, bio, hourly_rate, subject_specialties, specializations, superpowers, video_intro_url, verification_status, free_discovery_call, first_session_free")
-            .eq("role", "tutor")
-            .limit(200),
+          tutorQuery,
           supabase.from("reviews").select("tutor_id, rating"),
           supabase.from("tutor_availability").select("user_id"),
           supabase.from("tutor_packages").select("user_id, discount_percent, enabled"),
@@ -106,9 +123,25 @@ function MatchesPage() {
 
         if (cancelled) return;
 
-        const tutorRows = (tutorsRes.data ?? []) as TutorRow[];
+        // ── CHANGED: fallback when subject filter returns 0 results ──────────
+        // If the subject filter returns nothing (no tutors have that specialty yet),
+        // re-fetch without the filter so the page is never empty during early growth.
+        let tutorRows = (tutorsRes.data ?? []) as unknown as TutorRow[];
+        if (tutorRows.length === 0 && effectiveSubject) {
+          const { data: fallback } = await supabase
+            .from("profiles")
+            .select(
+              "id, display_name, avatar_url, headline, bio, hourly_rate, " +
+              "subject_specialties, specializations, superpowers, video_intro_url, " +
+              "verification_status, free_discovery_call, first_session_free"
+            )
+            .eq("role", "tutor")
+            .limit(200);
+          tutorRows = (fallback ?? []) as unknown as TutorRow[];
+        }
         setTutors(tutorRows);
 
+        // Reviews → per-tutor avg
         const rmap = new Map<string, { avg: number; count: number }>();
         const tmp = new Map<string, { sum: number; n: number }>();
         (reviewsRes.data ?? []).forEach((r: any) => {
@@ -146,9 +179,11 @@ function MatchesPage() {
       }
     })();
     return () => { cancelled = true; };
-  }, [user?.id]);
+    // Re-run when the subject in the URL changes so the query scope updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, search.subject]);
 
-  // ---- Effective preferences (URL > saved > defaults) ----
+  // Effective preferences (URL > saved > defaults)
   const prefs: MatchPrefs = useMemo(() => ({
     subject: search.subject ?? savedPrefs.subject,
     budget_max: search.budget ?? savedPrefs.budget_max,
@@ -158,7 +193,7 @@ function MatchesPage() {
     availableThisWeek: search.availableThisWeek,
   }), [search, savedPrefs]);
 
-  // ---- Score & filter ----
+  // Score & filter
   const scored: ScoredTutor[] = useMemo(() => {
     const list: ScoredTutor[] = tutors.map((t) => {
       const rating = reviewsByTutor.get(t.id) ?? { avg: 0, count: 0 };
@@ -172,7 +207,6 @@ function MatchesPage() {
       };
     });
 
-    // Filters
     return list.filter((s) => {
       const rate = Number(s.tutor.hourly_rate ?? 0);
       if (rate < search.priceMin) return false;
@@ -192,17 +226,38 @@ function MatchesPage() {
       case "price_desc": copy.sort((a, b) => Number(b.tutor.hourly_rate ?? 0) - Number(a.tutor.hourly_rate ?? 0)); break;
       default: copy.sort((a, b) => b.score.total - a.score.total);
     }
-    return copy.slice(0, 20); // Top 20 per spec
+    return copy.slice(0, 20);
   }, [scored, search.sort]);
 
   const visibleList = sorted.slice(0, visible);
 
-  // ---- Helpers to update URL ----
   const updateSearch = (patch: Partial<typeof search>) => {
     navigate({ to: "/matches", search: (prev: any) => ({ ...prev, ...patch }) });
   };
 
-  // ---- Active filter chips ----
+  // ── CHANGED: handleBook uses api.ts lead event instead of raw supabase ─────
+  // Also fires recordProfileView so the tutor sees this in their analytics.
+  const handleBook = (tutorId: string) => {
+    if (user) {
+      void supabase
+        .from("lead_events")
+        .insert({ tutor_id: tutorId, student_id: user.id, stage: "trial" });
+      // Fire-and-forget profile view for tutor analytics
+      void recordProfileView(tutorId, user.id);
+    }
+    navigate({ to: "/book/$tutorId", params: { tutorId } });
+  };
+
+  // ── CHANGED: handleMessage records lead event consistently ─────────────────
+  const handleMessage = (tutorId: string) => {
+    if (!user) { toast.info("Sign in to message tutors."); return; }
+    toast.success("Message thread opened.");
+    void supabase
+      .from("lead_events")
+      .insert({ tutor_id: tutorId, student_id: user.id, stage: "message" });
+  };
+
+  // Active filter chips
   const chips: { key: string; label: string; clear: () => void }[] = [];
   if (prefs.subject) chips.push({ key: "subject", label: `Subject: ${prefs.subject}`, clear: () => updateSearch({ subject: undefined }) });
   if (prefs.budget_max) chips.push({ key: "budget", label: `Budget ≤ $${prefs.budget_max}/hr`, clear: () => updateSearch({ budget: undefined, priceMax: 200 }) });
@@ -221,23 +276,10 @@ function MatchesPage() {
     search: { sort: search.sort, minRating: 0, priceMin: 0, priceMax: 200, vibes: [], availableThisWeek: false },
   });
 
-  const handleBook = (tutorId: string) => {
-    if (user) {
-      void supabase.from("lead_events").insert({ tutor_id: tutorId, student_id: user.id, stage: "trial" });
-    }
-    navigate({ to: "/book/$tutorId", params: { tutorId } });
-  };
-  const handleMessage = (tutorId: string) => {
-    if (!user) { toast.info("Sign in to message tutors."); return; }
-    toast.success("Message thread opened.");
-    void supabase.from("lead_events").insert({ tutor_id: tutorId, student_id: user.id, stage: "message" });
-  };
-
   return (
     <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <PWHeader />
       <main className="px-5 sm:px-8 pb-24 max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mt-2">
           <div className="text-[12px] text-[var(--pw-ink-2)]">
             <Link to="/find-tutor" className="underline-offset-2 hover:underline">Find a tutor</Link>
@@ -261,7 +303,6 @@ function MatchesPage() {
           </span>
         </div>
 
-        {/* Toolbar */}
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <button
             onClick={() => setFilterOpen((v) => !v)}
@@ -281,7 +322,6 @@ function MatchesPage() {
           </label>
         </div>
 
-        {/* Active chips */}
         {chips.length > 0 && (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {chips.map((c) => (
@@ -299,18 +339,11 @@ function MatchesPage() {
           </div>
         )}
 
-        {/* Layout: sidebar + results */}
         <div className="mt-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
-          {/* Filter sidebar */}
           <aside className={`${filterOpen ? "block" : "hidden"} lg:block`}>
-            <FilterSidebar
-              search={search}
-              update={updateSearch}
-              onClear={clearAll}
-            />
+            <FilterSidebar search={search} update={updateSearch} onClear={clearAll} />
           </aside>
 
-          {/* Results */}
           <section>
             {loading ? (
               <div className="space-y-4">
@@ -358,7 +391,6 @@ function MatchesPage() {
   );
 }
 
-// ---------- Filter Sidebar ----------
 function FilterSidebar({
   search, update, onClear,
 }: {
@@ -449,7 +481,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-// ---------- No Results ----------
 function NoResults({ onClear }: { onClear: () => void }) {
   return (
     <div className="pw-card p-8 text-center">

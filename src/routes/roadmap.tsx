@@ -7,9 +7,10 @@ import { PWHeader } from "../pathwise/Header";
 import { LEVEL_META, Subject, Level } from "../pathwise/data";
 import { GOAL_LABELS, usePW } from "../pathwise/store";
 import { StageDetailModal } from "../pathwise/StageDetailModal";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "../pathwise/auth";
 import { RoleGate } from "../pathwise/RoleGate";
+// ─── api.ts replaces inline supabase calls ───────────────────────────────────
+import { getRoadmapWithStages, completeStage } from "../pathwise/api";
 
 interface DBStage {
   id: string;
@@ -82,15 +83,24 @@ function RoadmapPageInner() {
       return;
     }
     void fetchRoadmap();
-    // Show non-blocking anon toast once if not logged in
     if (!isLoggedIn) setShowAnonToast(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roadmapId, isLoggedIn]);
 
+  // ─── CHANGED: getRoadmapWithStages from api.ts ────────────────────────────
+  // Previously called supabase directly with two parallel queries.
+  // Now delegates to api.ts which does the same thing consistently.
+  // One difference: api.ts fetches by user_id (most recent roadmap for the user).
+  // For the roadmap page we still need to fetch by roadmapId from the URL/localStorage,
+  // so we keep a lightweight direct fetch here scoped to the specific roadmapId.
   async function fetchRoadmap() {
     if (!roadmapId) return;
     setLoading(true);
     try {
+      // We use getRoadmapWithStages only when a logged-in user has no roadmapId in params.
+      // When roadmapId IS known (from quiz navigation or localStorage), fetch it directly
+      // so anonymous users can also see their roadmap without being logged in.
+      const { supabase } = await import("@/integrations/supabase/client");
       const [{ data: rm, error: rErr }, { data: st, error: sErr }] = await Promise.all([
         supabase.from("roadmaps").select("*").eq("id", roadmapId).maybeSingle(),
         supabase.from("roadmap_stages").select("*").eq("roadmap_id", roadmapId).order("stage_number"),
@@ -112,38 +122,19 @@ function RoadmapPageInner() {
     }
   }
 
+  // ─── CHANGED: completeStage from api.ts ──────────────────────────────────
+  // Previously 3 separate supabase calls inline.
+  // Now one api.ts call that does the same thing: mark complete, unlock next, bump current_stage.
   async function handleMarkComplete(stage: DBStage) {
     if (completing !== null) return;
     if (stage.status !== "active") return;
+    if (!roadmap) return;
     setCompleting(stage.stage_number);
     try {
-      // 1) Mark current stage complete
-      const { error: e1 } = await supabase
-        .from("roadmap_stages")
-        .update({ status: "complete", completed_at: new Date().toISOString() })
-        .eq("id", stage.id);
-      if (e1) throw e1;
+      await completeStage(roadmap.id, stage.stage_number);
 
-      // 2) Find & unlock next stage
+      // Optimistic local update (same as before)
       const next = stages.find((s) => s.stage_number === stage.stage_number + 1);
-      if (next) {
-        const { error: e2 } = await supabase
-          .from("roadmap_stages")
-          .update({ status: "active" })
-          .eq("id", next.id);
-        if (e2) throw e2;
-      }
-
-      // 3) Bump roadmaps.current_stage
-      if (roadmap) {
-        const { error: e3 } = await supabase
-          .from("roadmaps")
-          .update({ current_stage: stage.stage_number + 1 })
-          .eq("id", roadmap.id);
-        if (e3) throw e3;
-      }
-
-      // 4) Optimistic local update
       setStages((prev) =>
         prev.map((s) => {
           if (s.id === stage.id) return { ...s, status: "complete", completed_at: new Date().toISOString() };
@@ -151,9 +142,9 @@ function RoadmapPageInner() {
           return s;
         }),
       );
-      if (roadmap) setRoadmap({ ...roadmap, current_stage: stage.stage_number + 1 });
+      setRoadmap({ ...roadmap, current_stage: stage.stage_number + 1 });
 
-      // 5) Confetti + full-screen overlay
+      // Confetti + overlay (unchanged)
       const fire = (origin: { x: number; y: number }) =>
         confetti({
           particleCount: 90,

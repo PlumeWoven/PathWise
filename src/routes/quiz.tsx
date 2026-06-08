@@ -1,14 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { PWHeader } from "../pathwise/Header";
 import { GOALS, LEVEL_META, SUBJECTS, Subject, GoalId, levelFromScore, pickQuizQuestions } from "../pathwise/data";
 import { setState, usePW, resetState } from "../pathwise/store";
-import { supabase } from "@/integrations/supabase/client";
 import { generateStages } from "../pathwise/roadmap-gen";
 import { toast } from "sonner";
 import { RoleGate } from "../pathwise/RoleGate";
+// ─── api.ts replaces inline supabase calls ───────────────────────────────────
+import { getCurrentUser, saveDiagnosticResult, createRoadmap } from "../pathwise/api";
 
 export const Route = createFileRoute("/quiz")({
   head: () => ({
@@ -42,11 +43,10 @@ function QuizPageInner() {
   const [feedback, setFeedback] = useState<"none" | "correct" | "wrong">("none");
   const [floatXP, setFloatXP] = useState(false);
   const [loadingText, setLoadingText] = useState("Analyzing your answers...");
-  const [diagnosticId, setDiagnosticId] = useState<string | null>(null);
+  // REMOVED: separate diagnosticId state — now handled inside the unified save function
   const [buildingRoadmap, setBuildingRoadmap] = useState(false);
   const savedRef = useRef(false);
 
-  // Reset on mount
   useEffect(() => {
     resetState();
     setPhase("subject");
@@ -55,7 +55,6 @@ function QuizPageInner() {
 
   const questions = useMemo(() => (pw.subject ? pickQuizQuestions(pw.subject, 5) : []), [pw.subject]);
 
-  // progress %
   let progress = 0;
   if (phase === "subject") progress = 5;
   else if (phase === "goal") progress = 15;
@@ -86,7 +85,7 @@ function QuizPageInner() {
     if (correct) {
       xp += 100;
       streak += 1;
-      if (streak >= 3) xp += 20; // small streak bonus
+      if (streak >= 3) xp += 20;
       setFloatXP(true);
       setTimeout(() => setFloatXP(false), 1200);
     } else {
@@ -128,93 +127,67 @@ function QuizPageInner() {
           colors: ["#E85D26", "#F4C430", "#2D6A4F"],
         });
       }, 200);
-      // Persist diagnostic to Supabase
-      void saveResults(answers, lvl);
     }, 1600);
   };
 
-  async function saveResults(
-    answers: typeof pw.answers,
-    lvl: ReturnType<typeof levelFromScore>,
-  ) {
-    if (savedRef.current) return;
-    savedRef.current = true;
-    try {
-      const score = answers.filter((a) => a.correct).length;
-      const wrongTopics = Array.from(
-        new Set(answers.filter((a) => !a.correct).map((a) => a.topic)),
-      );
-      const { data: userData } = await supabase.auth.getUser();
-      const { data, error } = await supabase
-        .from("diagnostic_results")
-        .insert({
-          user_id: userData.user?.id ?? null,
-          subject: pw.subject!,
-          goal: pw.goal ?? "grades",
-          score,
-          level: lvl,
-          xp_earned: pw.totalXP,
-          wrong_topics: wrongTopics,
-        })
-        .select("id")
-        .single();
-      if (error) throw error;
-      if (data?.id) {
-        setDiagnosticId(data.id);
-        try {
-          localStorage.setItem("pathwise_diagnostic_id", data.id);
-        } catch {}
-      }
-    } catch (err) {
-      console.error("[quiz] saveResults error", err);
-      toast.error("Couldn't save your results. You can still continue.");
-    }
-  }
-
-  async function buildRoadmap() {
+  // ─── FIXED: one atomic function — diagnostic + roadmap saved together ────────
+  // Previously these were split across saveResults() and buildRoadmap(),
+  // meaning a tab-close between them left an orphaned diagnostic with no roadmap.
+  // Now "Build My Roadmap" button triggers both writes in sequence.
+  async function handleBuildRoadmap() {
     if (buildingRoadmap) return;
     if (!pw.subject || !pw.level) return;
+    if (savedRef.current) return;
+    savedRef.current = true;
     setBuildingRoadmap(true);
+
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id ?? null;
+      // 1. Get current user (null = anonymous)
+      const user = await getCurrentUser();
+      const userId = user?.id ?? null;
 
-      // Insert roadmap
-      const { data: roadmap, error: rErr } = await supabase
-        .from("roadmaps")
-        .insert({
-          user_id: userId,
-          diagnostic_id: diagnosticId,
-          subject: pw.subject,
-          goal: pw.goal ?? "grades",
-          current_stage: 1,
-          total_stages: 5,
-        })
-        .select("id")
-        .single();
-      if (rErr) throw rErr;
-      const roadmapId = roadmap.id as string;
+      // 2. Compute results from store
+      const score = pw.answers.filter((a) => a.correct).length;
+      const wrongTopics = Array.from(
+        new Set(pw.answers.filter((a) => !a.correct).map((a) => a.topic))
+      );
 
-      // Insert 5 stages
+      // 3. Save diagnostic → get diagnostic_id
+      const diagnosticId = await saveDiagnosticResult({
+        user_id: userId,
+        subject: pw.subject,
+        goal: (pw.goal ?? "grades") as GoalId,
+        score,
+        level: pw.level,
+        xp_earned: pw.totalXP,
+        wrong_topics: wrongTopics,
+      });
+
+      // 4. Generate stages locally (same logic as before)
       const stages = generateStages(pw.subject, pw.level, pw.goal);
-      const rows = stages.map((s) => ({
-        roadmap_id: roadmapId,
-        stage_number: s.stage_number,
-        title: s.title,
-        skills: s.skills,
-        status: s.status,
-      }));
-      const { error: sErr } = await supabase.from("roadmap_stages").insert(rows);
-      if (sErr) throw sErr;
 
+      // 5. Save roadmap + all 5 stages → get roadmap_id
+      const roadmapId = await createRoadmap({
+        user_id: userId,
+        diagnostic_id: diagnosticId,
+        subject: pw.subject,
+        goal: (pw.goal ?? "grades") as GoalId,
+        stages,
+      });
+
+      // 6. Persist roadmap_id to localStorage for the roadmap page
       try {
         localStorage.setItem("pathwise_roadmap_id", roadmapId);
-      } catch {}
+        localStorage.setItem("pathwise_diagnostic_id", diagnosticId);
+      } catch { }
 
+      // 7. Navigate — pass roadmapId in search params as before
       navigate({ to: "/roadmap", search: { roadmapId } as any });
     } catch (err: any) {
-      console.error("[quiz] buildRoadmap error", err);
+      console.error("[quiz] handleBuildRoadmap error", err);
       toast.error(err?.message || "Couldn't build your roadmap. Please try again.");
+      // Allow retry
+      savedRef.current = false;
       setBuildingRoadmap(false);
     }
   }
@@ -260,9 +233,8 @@ function QuizPageInner() {
                     <button
                       key={s.id}
                       onClick={() => pickSubject(s.id)}
-                      className={`relative h-16 pw-card flex items-center justify-center gap-2 transition-all duration-250 ${
-                        selected ? "border-[var(--pw-accent)]" : "hover:border-[var(--pw-accent)]"
-                      }`}
+                      className={`relative h-16 pw-card flex items-center justify-center gap-2 transition-all duration-250 ${selected ? "border-[var(--pw-accent)]" : "hover:border-[var(--pw-accent)]"
+                        }`}
                       style={selected ? { background: "var(--pw-accent-soft)" } : undefined}
                     >
                       <span className="text-xl">{s.emoji}</span>
@@ -286,11 +258,10 @@ function QuizPageInner() {
                     <button
                       key={g.id}
                       onClick={() => pickGoal(g.id)}
-                      className={`pw-pill px-5 py-3 pw-border text-[14px] transition-all duration-250 ${
-                        selected
+                      className={`pw-pill px-5 py-3 pw-border text-[14px] transition-all duration-250 ${selected
                           ? "text-white border-[var(--pw-accent)]"
                           : "bg-white hover:border-[var(--pw-accent)]"
-                      }`}
+                        }`}
                       style={selected ? { background: "var(--pw-accent)" } : undefined}
                     >
                       <span className="mr-2">{g.emoji}</span>
@@ -343,9 +314,8 @@ function QuizPageInner() {
               className="max-w-[560px] mx-auto mt-12"
             >
               <div
-                className={`pw-card p-6 sm:p-7 relative ${
-                  feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
-                }`}
+                className={`pw-card p-6 sm:p-7 relative ${feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
+                  }`}
               >
                 <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
                   <span>Question {qIndex + 1} of {questions.length}</span>
@@ -493,8 +463,9 @@ function QuizPageInner() {
                   <div className="text-[12px] text-[var(--pw-ink-2)] mt-1">🔥 streak bonus included</div>
                 )}
                 <p className="text-[15px] text-[var(--pw-ink-2)] mt-4">{interp}</p>
+                {/* Button now calls handleBuildRoadmap — does both saves in one go */}
                 <button
-                  onClick={buildRoadmap}
+                  onClick={handleBuildRoadmap}
                   disabled={buildingRoadmap}
                   className="pw-btn-primary mt-7 w-full px-7 py-3.5 text-[15px] font-medium disabled:opacity-60"
                 >
@@ -517,6 +488,7 @@ function Step({
   title: string;
   stepLabel: string;
   children: React.ReactNode;
+  key?: React.Key;
 }) {
   return (
     <motion.div
