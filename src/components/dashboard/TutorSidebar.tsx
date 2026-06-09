@@ -12,13 +12,12 @@ type Item = { label: string; icon: string; to?: string; key: string };
 
 const TUTOR_ITEMS: Item[] = [
   { key: "dashboard", label: "Dashboard", icon: "📊", to: "/dashboard" },
-  { key: "courses", label: "My Courses", icon: "📚", to: "/tutor/courses" },
-  { key: "profile", label: "My Profile", icon: "👤", to: "/settings/verification" },
-  { key: "calendar", label: "Calendar", icon: "📅", to: "/tutor/settings/availability" },
-  { key: "messages", label: "Messages", icon: "💬" },
-  { key: "earnings", label: "Earnings", icon: "💰" },
-  { key: "analytics", label: "Analytics", icon: "📈" },
-  { key: "settings", label: "Settings", icon: "⚙️" },
+  { key: "courses", label: "My Courses", icon: "📚", to: "/dashboard/courses" },
+  { key: "calendar", label: "Calendar", icon: "📅", to: "/dashboard/calendar" },
+  { key: "messages", label: "Messages", icon: "💬", to: "/dashboard/messages" },
+  { key: "earnings", label: "Earnings", icon: "💰", to: "/dashboard/earnings" },
+  { key: "analytics", label: "Analytics", icon: "📈", to: "/dashboard/analytics" },
+  { key: "settings", label: "Settings", icon: "⚙️", to: "/dashboard/settings" },
 ];
 
 const STUDENT_ITEMS: Item[] = [
@@ -34,10 +33,8 @@ interface DashboardShellProps {
   role?: SidebarRole;
   user: { name: string; avatar?: string; subtitle?: string };
   isDemo?: boolean;
-  /** Render demo banner inside main content (above children) */
   banner?: ReactNode;
   onExit?: () => void;
-  /** Force-active item (e.g. for demo where routes are virtual) */
   activeKey?: string;
   onItemClick?: (key: string) => void;
   children: ReactNode;
@@ -75,9 +72,8 @@ export function DashboardShell({
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-[260px] shrink-0 flex flex-col border-r border-[var(--pw-border)] bg-[var(--pw-surface)]/80 backdrop-blur-md transition-transform ${
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-[260px] shrink-0 flex flex-col border-r border-[var(--pw-border)] bg-[var(--pw-surface)]/80 backdrop-blur-md transition-transform ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
       >
         {/* Brand */}
         <div className="px-5 py-5 border-b border-[var(--pw-border)]">
@@ -110,13 +106,12 @@ export function DashboardShell({
             const isActive = activeKey
               ? activeKey === item.key
               : item.to
-              ? pathname === item.to || pathname.startsWith(item.to + "/")
-              : false;
-            const className = `relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-colors ${
-              isActive
-                ? "bg-[var(--pw-accent-soft)] text-[var(--pw-accent)] font-medium"
-                : "text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)]"
-            }`;
+                ? pathname === item.to || pathname.startsWith(item.to + "/")
+                : false;
+            const className = `relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-colors ${isActive
+              ? "bg-[var(--pw-accent-soft)] text-[var(--pw-accent)] font-medium"
+              : "text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)]"
+              }`;
             const inner = (
               <>
                 {isActive && (

@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
@@ -37,6 +38,7 @@ export function PWHeader() {
         {isLoggedIn && user ? (
           <>
             <span className="hidden sm:inline text-[13px] text-[var(--pw-ink-2)]">{user.name}</span>
+            <NotificationBell userId={user.id} />
             {(user.role === "tutor" || user.role === "both") && profile ? (
               <VerificationBadge tier={statusToTier(profile.verification_status)} size="sm" />
             ) : (
@@ -52,27 +54,6 @@ export function PWHeader() {
                   activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
                 >
                   Dashboard
-                </Link>
-                <Link
-                  to="/settings/verification"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex"
-                  activeProps={{ style: { background: "var(--pw-surface-2)" } }}
-                >
-                  Verify
-                </Link>
-                <Link
-                  to="/tutor/courses"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex"
-                  activeProps={{ style: { background: "var(--pw-surface-2)" } }}
-                >
-                  Courses
-                </Link>
-                <Link
-                  to="/tutor/settings/availability"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex"
-                  activeProps={{ style: { background: "var(--pw-surface-2)" } }}
-                >
-                  Availability
                 </Link>
               </>
             )}

@@ -19,18 +19,27 @@ import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionsIndexRouteImport } from './routes/sessions.index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as TutorTutorIdRouteImport } from './routes/tutor.$tutorId'
 import { Route as SettingsVerificationRouteImport } from './routes/settings.verification'
 import { Route as SessionsIdRouteImport } from './routes/sessions.$id'
 import { Route as PathwiseDemoRouteImport } from './routes/pathwise.demo'
 import { Route as OnboardingTutorRouteImport } from './routes/onboarding.tutor'
 import { Route as OnboardingStudentRouteImport } from './routes/onboarding.student'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as DashboardMessagesRouteImport } from './routes/dashboard.messages'
+import { Route as DashboardEarningsRouteImport } from './routes/dashboard.earnings'
+import { Route as DashboardCoursesRouteImport } from './routes/dashboard.courses'
+import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
 import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
 import { Route as BookTutorIdRouteImport } from './routes/book.$tutorId'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as TutorCoursesIndexRouteImport } from './routes/tutor.courses.index'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard.settings.index'
 import { Route as TutorSettingsAvailabilityRouteImport } from './routes/tutor.settings.availability'
 import { Route as TutorCoursesNewRouteImport } from './routes/tutor.courses.new'
+import { Route as DashboardSettingsVerificationRouteImport } from './routes/dashboard.settings.verification'
 import { Route as TutorCoursesCourseIdEditRouteImport } from './routes/tutor.courses.$courseId.edit'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -83,6 +92,11 @@ const SessionsIndexRoute = SessionsIndexRouteImport.update({
   path: '/sessions/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const TutorTutorIdRoute = TutorTutorIdRouteImport.update({
   id: '/tutor/$tutorId',
   path: '/tutor/$tutorId',
@@ -113,6 +127,36 @@ const OnboardingStudentRoute = OnboardingStudentRouteImport.update({
   path: '/onboarding/student',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardEarningsRoute = DashboardEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const CoursesSlugRoute = CoursesSlugRouteImport.update({
   id: '/courses/$slug',
   path: '/courses/$slug',
@@ -133,6 +177,11 @@ const TutorCoursesIndexRoute = TutorCoursesIndexRouteImport.update({
   path: '/tutor/courses/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardSettingsRoute,
+} as any)
 const TutorSettingsAvailabilityRoute =
   TutorSettingsAvailabilityRouteImport.update({
     id: '/tutor/settings/availability',
@@ -144,6 +193,12 @@ const TutorCoursesNewRoute = TutorCoursesNewRouteImport.update({
   path: '/tutor/courses/new',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardSettingsVerificationRoute =
+  DashboardSettingsVerificationRouteImport.update({
+    id: '/verification',
+    path: '/verification',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
 const TutorCoursesCourseIdEditRoute =
   TutorCoursesCourseIdEditRouteImport.update({
     id: '/tutor/courses/$courseId/edit',
@@ -153,7 +208,7 @@ const TutorCoursesCourseIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
   '/matches': typeof MatchesRoute
@@ -164,21 +219,29 @@ export interface FileRoutesByFullPath {
   '/admin/review': typeof AdminReviewRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/earnings': typeof DashboardEarningsRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
   '/onboarding/student': typeof OnboardingStudentRoute
   '/onboarding/tutor': typeof OnboardingTutorRoute
   '/pathwise/demo': typeof PathwiseDemoRoute
   '/sessions/$id': typeof SessionsIdRoute
   '/settings/verification': typeof SettingsVerificationRoute
   '/tutor/$tutorId': typeof TutorTutorIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/sessions/': typeof SessionsIndexRoute
+  '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/tutor/courses/new': typeof TutorCoursesNewRoute
   '/tutor/settings/availability': typeof TutorSettingsAvailabilityRoute
+  '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/tutor/courses/': typeof TutorCoursesIndexRoute
   '/tutor/courses/$courseId/edit': typeof TutorCoursesCourseIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
   '/matches': typeof MatchesRoute
@@ -189,22 +252,30 @@ export interface FileRoutesByTo {
   '/admin/review': typeof AdminReviewRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/earnings': typeof DashboardEarningsRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
   '/onboarding/student': typeof OnboardingStudentRoute
   '/onboarding/tutor': typeof OnboardingTutorRoute
   '/pathwise/demo': typeof PathwiseDemoRoute
   '/sessions/$id': typeof SessionsIdRoute
   '/settings/verification': typeof SettingsVerificationRoute
   '/tutor/$tutorId': typeof TutorTutorIdRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/sessions': typeof SessionsIndexRoute
+  '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/tutor/courses/new': typeof TutorCoursesNewRoute
   '/tutor/settings/availability': typeof TutorSettingsAvailabilityRoute
+  '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/tutor/courses': typeof TutorCoursesIndexRoute
   '/tutor/courses/$courseId/edit': typeof TutorCoursesCourseIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
   '/matches': typeof MatchesRoute
@@ -215,15 +286,24 @@ export interface FileRoutesById {
   '/admin/review': typeof AdminReviewRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
+  '/dashboard/analytics': typeof DashboardAnalyticsRoute
+  '/dashboard/calendar': typeof DashboardCalendarRoute
+  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/earnings': typeof DashboardEarningsRoute
+  '/dashboard/messages': typeof DashboardMessagesRoute
+  '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
   '/onboarding/student': typeof OnboardingStudentRoute
   '/onboarding/tutor': typeof OnboardingTutorRoute
   '/pathwise/demo': typeof PathwiseDemoRoute
   '/sessions/$id': typeof SessionsIdRoute
   '/settings/verification': typeof SettingsVerificationRoute
   '/tutor/$tutorId': typeof TutorTutorIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/sessions/': typeof SessionsIndexRoute
+  '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/tutor/courses/new': typeof TutorCoursesNewRoute
   '/tutor/settings/availability': typeof TutorSettingsAvailabilityRoute
+  '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/tutor/courses/': typeof TutorCoursesIndexRoute
   '/tutor/courses/$courseId/edit': typeof TutorCoursesCourseIdEditRoute
 }
@@ -242,21 +322,29 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/book/$tutorId'
     | '/courses/$slug'
+    | '/dashboard/analytics'
+    | '/dashboard/calendar'
+    | '/dashboard/courses'
+    | '/dashboard/earnings'
+    | '/dashboard/messages'
+    | '/dashboard/settings'
     | '/onboarding/student'
     | '/onboarding/tutor'
     | '/pathwise/demo'
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/dashboard/'
     | '/sessions/'
+    | '/dashboard/settings/verification'
     | '/tutor/courses/new'
     | '/tutor/settings/availability'
+    | '/dashboard/settings/'
     | '/tutor/courses/'
     | '/tutor/courses/$courseId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
     | '/demo'
     | '/find-tutor'
     | '/matches'
@@ -267,15 +355,23 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/book/$tutorId'
     | '/courses/$slug'
+    | '/dashboard/analytics'
+    | '/dashboard/calendar'
+    | '/dashboard/courses'
+    | '/dashboard/earnings'
+    | '/dashboard/messages'
     | '/onboarding/student'
     | '/onboarding/tutor'
     | '/pathwise/demo'
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/dashboard'
     | '/sessions'
+    | '/dashboard/settings/verification'
     | '/tutor/courses/new'
     | '/tutor/settings/availability'
+    | '/dashboard/settings'
     | '/tutor/courses'
     | '/tutor/courses/$courseId/edit'
   id:
@@ -292,22 +388,31 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/book/$tutorId'
     | '/courses/$slug'
+    | '/dashboard/analytics'
+    | '/dashboard/calendar'
+    | '/dashboard/courses'
+    | '/dashboard/earnings'
+    | '/dashboard/messages'
+    | '/dashboard/settings'
     | '/onboarding/student'
     | '/onboarding/tutor'
     | '/pathwise/demo'
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/dashboard/'
     | '/sessions/'
+    | '/dashboard/settings/verification'
     | '/tutor/courses/new'
     | '/tutor/settings/availability'
+    | '/dashboard/settings/'
     | '/tutor/courses/'
     | '/tutor/courses/$courseId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   DemoRoute: typeof DemoRoute
   FindTutorRoute: typeof FindTutorRoute
   MatchesRoute: typeof MatchesRoute
@@ -403,6 +508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/tutor/$tutorId': {
       id: '/tutor/$tutorId'
       path: '/tutor/$tutorId'
@@ -445,6 +557,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingStudentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/messages': {
+      id: '/dashboard/messages'
+      path: '/messages'
+      fullPath: '/dashboard/messages'
+      preLoaderRoute: typeof DashboardMessagesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/earnings': {
+      id: '/dashboard/earnings'
+      path: '/earnings'
+      fullPath: '/dashboard/earnings'
+      preLoaderRoute: typeof DashboardEarningsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/courses': {
+      id: '/dashboard/courses'
+      path: '/courses'
+      fullPath: '/dashboard/courses'
+      preLoaderRoute: typeof DashboardCoursesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/calendar': {
+      id: '/dashboard/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/courses/$slug': {
       id: '/courses/$slug'
       path: '/courses/$slug'
@@ -473,6 +627,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorCoursesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/settings/': {
+      id: '/dashboard/settings/'
+      path: '/'
+      fullPath: '/dashboard/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
     '/tutor/settings/availability': {
       id: '/tutor/settings/availability'
       path: '/tutor/settings/availability'
@@ -487,6 +648,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TutorCoursesNewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/settings/verification': {
+      id: '/dashboard/settings/verification'
+      path: '/verification'
+      fullPath: '/dashboard/settings/verification'
+      preLoaderRoute: typeof DashboardSettingsVerificationRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
     '/tutor/courses/$courseId/edit': {
       id: '/tutor/courses/$courseId/edit'
       path: '/tutor/courses/$courseId/edit'
@@ -497,9 +665,46 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardSettingsRouteChildren {
+  DashboardSettingsVerificationRoute: typeof DashboardSettingsVerificationRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+}
+
+const DashboardSettingsRouteChildren: DashboardSettingsRouteChildren = {
+  DashboardSettingsVerificationRoute: DashboardSettingsVerificationRoute,
+  DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+}
+
+const DashboardSettingsRouteWithChildren =
+  DashboardSettingsRoute._addFileChildren(DashboardSettingsRouteChildren)
+
+interface DashboardRouteChildren {
+  DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
+  DashboardCalendarRoute: typeof DashboardCalendarRoute
+  DashboardCoursesRoute: typeof DashboardCoursesRoute
+  DashboardEarningsRoute: typeof DashboardEarningsRoute
+  DashboardMessagesRoute: typeof DashboardMessagesRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRouteWithChildren
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAnalyticsRoute: DashboardAnalyticsRoute,
+  DashboardCalendarRoute: DashboardCalendarRoute,
+  DashboardCoursesRoute: DashboardCoursesRoute,
+  DashboardEarningsRoute: DashboardEarningsRoute,
+  DashboardMessagesRoute: DashboardMessagesRoute,
+  DashboardSettingsRoute: DashboardSettingsRouteWithChildren,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   DemoRoute: DemoRoute,
   FindTutorRoute: FindTutorRoute,
   MatchesRoute: MatchesRoute,
