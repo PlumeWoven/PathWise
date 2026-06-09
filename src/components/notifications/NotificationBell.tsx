@@ -47,7 +47,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
 
         // Real-time subscription
         const channel = supabase
-            .channel(`notifications:${userId}`)
+            .channel(`notifications:${userId}:${Math.random()}`)
             .on(
                 "postgres_changes",
                 {

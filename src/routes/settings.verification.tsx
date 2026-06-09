@@ -22,7 +22,7 @@ type RequestRow = {
 
 type Step = "upload" | "processing" | "verified";
 
-function VerificationCenter() {
+export function VerificationCenter() {
   const { loading, isLoggedIn, profile, supabaseUser, openLogin, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [requests, setRequests] = useState<RequestRow[]>([]);
@@ -126,8 +126,8 @@ function VerificationCenter() {
               identityVerified
                 ? null
                 : pendingIdentity
-                ? "View status"
-                : "Start verification"
+                  ? "View status"
+                  : "Start verification"
             }
             onAction={() => setShowUpload(true)}
           >
@@ -180,20 +180,20 @@ function VerificationCenter() {
                         r.status === "approved"
                           ? "var(--pw-accent-2)"
                           : r.status === "rejected"
-                          ? "var(--pw-danger)"
-                          : "#a16207",
+                            ? "var(--pw-danger)"
+                            : "#a16207",
                       background:
                         r.status === "approved"
                           ? "var(--pw-accent-soft)"
                           : r.status === "rejected"
-                          ? "#fee2e2"
-                          : "#fef3c7",
+                            ? "#fee2e2"
+                            : "#fef3c7",
                       borderColor:
                         r.status === "approved"
                           ? "var(--pw-accent-2)"
                           : r.status === "rejected"
-                          ? "var(--pw-danger)"
-                          : "#f59e0b",
+                            ? "var(--pw-danger)"
+                            : "#f59e0b",
                       borderWidth: 1,
                       borderStyle: "solid",
                     }}
@@ -254,10 +254,10 @@ function TierCard({
     tone === "done"
       ? "var(--pw-accent-2)"
       : tone === "pending"
-      ? "#a16207"
-      : tone === "locked"
-      ? "var(--pw-ink-2)"
-      : "var(--pw-accent)";
+        ? "#a16207"
+        : tone === "locked"
+          ? "var(--pw-ink-2)"
+          : "var(--pw-accent)";
 
   return (
     <div className="pw-card p-5 sm:p-6" style={{ borderLeft: `3px solid ${accent}` }}>

@@ -44,7 +44,7 @@ function DashboardLayout() {
           user={{
             name: profile?.display_name ?? user?.name ?? "Tutor",
             avatar: profile?.avatar_url ?? undefined,
-            subtitle: profile?.bio ?? undefined,
+            subtitle: profile?.full_name ?? undefined,
           }}
         >
           <Outlet />

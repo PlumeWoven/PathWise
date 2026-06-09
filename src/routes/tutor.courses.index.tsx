@@ -5,7 +5,7 @@ import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-function TutorCoursesPage() {
+export function TutorCoursesPage() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +91,4 @@ export const Route = createFileRoute("/tutor/courses/")({
   component: TutorCoursesPage,
 });
 
-// Named export for reuse in dashboard
-const TutorCoursesComponent = Route.options.component;
-export { TutorCoursesComponent as TutorCoursesPage };
+// Named export for dashboard reuse
