@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /onboarding/
+Disallow: /settings/
+Disallow: /reset-password
+Disallow: /tutor/courses
+Disallow: /tutor/settings

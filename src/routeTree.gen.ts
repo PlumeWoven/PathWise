@@ -17,9 +17,11 @@ import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as FindTutorRouteImport } from './routes/find-tutor'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionsIndexRouteImport } from './routes/sessions.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as TutorTutorIdRouteImport } from './routes/tutor.$tutorId'
 import { Route as SettingsVerificationRouteImport } from './routes/settings.verification'
 import { Route as SessionsIdRouteImport } from './routes/sessions.$id'
@@ -34,7 +36,9 @@ import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calend
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
 import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
 import { Route as BookTutorIdRouteImport } from './routes/book.$tutorId'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
+import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
 import { Route as TutorCoursesIndexRouteImport } from './routes/tutor.courses.index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard.settings.index'
 import { Route as TutorSettingsAvailabilityRouteImport } from './routes/tutor.settings.availability'
@@ -82,6 +86,11 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -96,6 +105,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const TutorTutorIdRoute = TutorTutorIdRouteImport.update({
   id: '/tutor/$tutorId',
@@ -167,10 +181,20 @@ const BookTutorIdRoute = BookTutorIdRouteImport.update({
   path: '/book/$tutorId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminReviewRoute = AdminReviewRouteImport.update({
-  id: '/admin/review',
-  path: '/admin/review',
-  getParentRoute: () => rootRouteImport,
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCoursesRoute = AdminCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => AdminRoute,
 } as any)
 const TutorCoursesIndexRoute = TutorCoursesIndexRouteImport.update({
   id: '/tutor/courses/',
@@ -208,6 +232,7 @@ const TutorCoursesCourseIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
@@ -216,7 +241,9 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -231,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/sessions/$id': typeof SessionsIdRoute
   '/settings/verification': typeof SettingsVerificationRoute
   '/tutor/$tutorId': typeof TutorTutorIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/sessions/': typeof SessionsIndexRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
@@ -249,7 +277,9 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -263,6 +293,7 @@ export interface FileRoutesByTo {
   '/sessions/$id': typeof SessionsIdRoute
   '/settings/verification': typeof SettingsVerificationRoute
   '/tutor/$tutorId': typeof TutorTutorIdRoute
+  '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/sessions': typeof SessionsIndexRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
@@ -275,6 +306,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRouteWithChildren
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
@@ -283,7 +315,9 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
+  '/admin/users': typeof AdminUsersRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -298,6 +332,7 @@ export interface FileRoutesById {
   '/sessions/$id': typeof SessionsIdRoute
   '/settings/verification': typeof SettingsVerificationRoute
   '/tutor/$tutorId': typeof TutorTutorIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/sessions/': typeof SessionsIndexRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
@@ -311,6 +346,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/dashboard'
     | '/demo'
     | '/find-tutor'
@@ -319,7 +355,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roadmap'
     | '/sitemap.xml'
+    | '/admin/courses'
     | '/admin/review'
+    | '/admin/users'
     | '/book/$tutorId'
     | '/courses/$slug'
     | '/dashboard/analytics'
@@ -334,6 +372,7 @@ export interface FileRouteTypes {
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/admin/'
     | '/dashboard/'
     | '/sessions/'
     | '/dashboard/settings/verification'
@@ -352,7 +391,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roadmap'
     | '/sitemap.xml'
+    | '/admin/courses'
     | '/admin/review'
+    | '/admin/users'
     | '/book/$tutorId'
     | '/courses/$slug'
     | '/dashboard/analytics'
@@ -366,6 +407,7 @@ export interface FileRouteTypes {
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/admin'
     | '/dashboard'
     | '/sessions'
     | '/dashboard/settings/verification'
@@ -377,6 +419,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/dashboard'
     | '/demo'
     | '/find-tutor'
@@ -385,7 +428,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roadmap'
     | '/sitemap.xml'
+    | '/admin/courses'
     | '/admin/review'
+    | '/admin/users'
     | '/book/$tutorId'
     | '/courses/$slug'
     | '/dashboard/analytics'
@@ -400,6 +445,7 @@ export interface FileRouteTypes {
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/admin/'
     | '/dashboard/'
     | '/sessions/'
     | '/dashboard/settings/verification'
@@ -412,6 +458,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRouteWithChildren
   DemoRoute: typeof DemoRoute
   FindTutorRoute: typeof FindTutorRoute
@@ -420,7 +467,6 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   RoadmapRoute: typeof RoadmapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  AdminReviewRoute: typeof AdminReviewRoute
   BookTutorIdRoute: typeof BookTutorIdRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
   OnboardingStudentRoute: typeof OnboardingStudentRoute
@@ -494,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -514,6 +567,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/'
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/tutor/$tutorId': {
       id: '/tutor/$tutorId'
@@ -613,12 +673,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookTutorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/review': {
       id: '/admin/review'
-      path: '/admin/review'
+      path: '/review'
       fullPath: '/admin/review'
       preLoaderRoute: typeof AdminReviewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/courses': {
+      id: '/admin/courses'
+      path: '/courses'
+      fullPath: '/admin/courses'
+      preLoaderRoute: typeof AdminCoursesRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/tutor/courses/': {
       id: '/tutor/courses/'
@@ -665,6 +739,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminCoursesRoute: typeof AdminCoursesRoute
+  AdminReviewRoute: typeof AdminReviewRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCoursesRoute: AdminCoursesRoute,
+  AdminReviewRoute: AdminReviewRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 interface DashboardSettingsRouteChildren {
   DashboardSettingsVerificationRoute: typeof DashboardSettingsVerificationRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
@@ -704,6 +794,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRouteWithChildren,
   DemoRoute: DemoRoute,
   FindTutorRoute: FindTutorRoute,
@@ -712,7 +803,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   RoadmapRoute: RoadmapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  AdminReviewRoute: AdminReviewRoute,
   BookTutorIdRoute: BookTutorIdRoute,
   CoursesSlugRoute: CoursesSlugRoute,
   OnboardingStudentRoute: OnboardingStudentRoute,

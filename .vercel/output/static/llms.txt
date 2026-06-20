@@ -1,0 +1,17 @@
+# PathWise
+
+> PathWise matches students with tutors and personalized learning roadmaps via a 3-minute level quiz.
+
+PathWise helps learners find the right tutor, build a step-by-step roadmap, and track progress through gamified milestones. Tutors create verified profiles, publish courses, and accept bookings.
+
+## Pages
+
+- [Home](/): What PathWise is and how to start.
+- [Level Check Quiz](/quiz): 3-minute diagnostic that reveals your level.
+- [Find a Tutor](/find-tutor): Match with verified tutors.
+- [Live Demo](/demo): Try the platform with sample data, no signup.
+
+## Optional
+
+- [Matches](/matches): Your matched tutors after the quiz.
+- [Roadmap](/roadmap): Personalized learning roadmap.

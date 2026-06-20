@@ -21,10 +21,10 @@ const SORTS = [
 type SortId = typeof SORTS[number]["id"];
 
 const searchSchema = z.object({
-  subject: fallback(z.string().optional(), undefined).default(undefined as string | undefined),
-  budget: fallback(z.coerce.number().optional(), undefined).default(undefined as number | undefined),
-  level: fallback(z.string().optional(), undefined).default(undefined as string | undefined),
-  style: fallback(z.string().optional(), undefined).default(undefined as string | undefined),
+  subject: fallback(z.string().optional(), undefined),
+  budget: fallback(z.coerce.number().optional(), undefined),
+  level: fallback(z.string().optional(), undefined),
+  style: fallback(z.string().optional(), undefined),
   sort: fallback(z.enum(["best", "rating", "reviews", "price_asc", "price_desc"]), "best").default("best"),
   minRating: fallback(z.coerce.number().min(0).max(5), 0).default(0),
   priceMin: fallback(z.coerce.number().min(0), 0).default(0),

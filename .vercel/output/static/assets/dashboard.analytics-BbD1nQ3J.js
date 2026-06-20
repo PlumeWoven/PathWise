@@ -1,0 +1,1 @@
+import{j as n}from"./index-B5wt-wmp.js";function s(){return n.jsxs("div",{children:[n.jsx("h1",{className:"font-display text-2xl mb-4",children:"Analytics"}),n.jsx("p",{className:"text-[var(--pw-ink-2)]",children:"Student engagement and growth metrics coming soon."})]})}export{s as component};

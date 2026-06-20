@@ -197,17 +197,23 @@ function CourseEditor() {
   const validation = validateCourse(course, sections, lessons);
 
   const goPublishReview = async () => {
+    // First save any pending changes
     await saveNow();
+
     if (!validation.ok) {
       toast.error("Complete the checklist before submitting");
       return;
     }
+
     try {
+      console.log(`[CourseEditor] Submitting course ${course.id} for review. Current status: ${course.status}`);
       await updateCourse(course.id, { status: "under_review" });
       patchCourse({ status: "under_review" });
       toast.success("Submitted for review");
+      console.log(`[CourseEditor] Successfully updated course ${course.id} status to under_review`);
     } catch (e: any) {
-      toast.error(e.message ?? "Submission failed");
+      console.error("[CourseEditor] Failed to submit for review:", e);
+      toast.error(e.message ?? "Submission failed. Please try again.");
     }
   };
 
@@ -255,13 +261,12 @@ function CourseEditor() {
                 <button
                   key={s.id}
                   onClick={() => setStep(s.id)}
-                  className={`flex-1 min-w-[110px] text-left text-[12px] px-2 py-1 rounded-md transition-colors ${
-                    active
+                  className={`flex-1 min-w-[110px] text-left text-[12px] px-2 py-1 rounded-md transition-colors ${active
                       ? "text-[var(--pw-accent)] font-medium"
                       : done
-                      ? "text-[var(--pw-ink)]"
-                      : "text-[var(--pw-ink-2)]"
-                  }`}
+                        ? "text-[var(--pw-ink)]"
+                        : "text-[var(--pw-ink-2)]"
+                    }`}
                 >
                   <div className="text-[10px] uppercase tracking-wide opacity-70">Step {s.id}</div>
                   {s.label}
@@ -457,11 +462,10 @@ function Step1Basic({
               <button
                 key={d}
                 onClick={() => patch({ difficulty: d })}
-                className={`px-3 py-2 rounded-md border text-[13px] transition-colors ${
-                  active
+                className={`px-3 py-2 rounded-md border text-[13px] transition-colors ${active
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
-                }`}
+                  }`}
               >
                 {d}
               </button>
@@ -924,11 +928,10 @@ function Step3Description({ course, patch }: { course: CourseRow; patch: (p: Par
               <button
                 key={a}
                 onClick={() => toggleAudience(a)}
-                className={`px-3 py-1.5 rounded-full border text-[12px] ${
-                  on
+                className={`px-3 py-1.5 rounded-full border text-[12px] ${on
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
-                }`}
+                  }`}
               >
                 {a}
               </button>
