@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Role = "student" | "tutor" | "both";
+export type Role = "student" | "tutor" | "both" | "admin";
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
 export interface Profile {
@@ -21,6 +21,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: Role;
+  app_metadata?: Record<string, any>; // ADDED: includes custom claims like 'admin'
 }
 
 interface AuthContextValue {
@@ -140,11 +141,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user: AuthUser | null =
     supabaseUser && profile
       ? {
-          id: supabaseUser.id,
-          email: supabaseUser.email ?? "",
-          name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
-          role: profile.role,
-        }
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? "",
+        name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
+        role: profile.role,
+        app_metadata: supabaseUser.app_metadata, // ADDED: exposes custom claims
+      }
       : null;
 
   return (

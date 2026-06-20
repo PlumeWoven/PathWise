@@ -9,6 +9,13 @@ export function PWHeader() {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
 
+  // ----- DEBUG LOGS (will show in browser console) -----
+  console.log("🔑 [Header] isLoggedIn:", isLoggedIn);
+  console.log("🔑 [Header] user object:", user);
+  console.log("🔑 [Header] app_metadata:", (user as any)?.app_metadata);
+  console.log("🔑 [Header] app_metadata.role:", (user as any)?.app_metadata?.role);
+  // -----------------------------------------------------
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.pageYOffset > 10);
     onScroll();
@@ -78,6 +85,15 @@ export function PWHeader() {
                   My sessions
                 </Link>
               </>
+            )}
+            {/* Admin link – visible only if JWT claim is 'admin' */}
+            {(user as any).app_metadata?.role === 'admin' && (
+              <Link
+                to="/admin"
+                className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
+              >
+                Admin
+              </Link>
             )}
             <button
               onClick={handleSignOut}
