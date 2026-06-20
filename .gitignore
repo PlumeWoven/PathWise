@@ -16,4 +16,4 @@ build/
 # Supabase (keep migrations, but ignore local config with secrets)
 supabase/.temp/
 supabase/.branches/
-*.local.*
+*.local.*.vercel/

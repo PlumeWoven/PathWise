@@ -1,1 +1,0 @@
-import{j as n,L as e}from"./index-B5wt-wmp.js";const t=()=>n.jsx("div",{className:"min-h-screen flex items-center justify-center",children:n.jsxs("div",{children:["Tutor not found. ",n.jsx(e,{to:"/matches",className:"underline",children:"Back"})]})});export{t as notFoundComponent};

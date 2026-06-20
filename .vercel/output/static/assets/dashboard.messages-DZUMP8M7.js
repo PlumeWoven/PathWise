@@ -1,1 +1,0 @@
-import{j as s}from"./index-B5wt-wmp.js";function t(){return s.jsxs("div",{children:[s.jsx("h1",{className:"font-display text-2xl mb-4",children:"Messages"}),s.jsx("p",{className:"text-[var(--pw-ink-2)]",children:"Coming soon – real‑time chat with your students."})]})}export{t as component};

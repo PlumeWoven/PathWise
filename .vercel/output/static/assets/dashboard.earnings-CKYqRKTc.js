@@ -1,1 +1,0 @@
-import{j as a}from"./index-B5wt-wmp.js";function s(){return a.jsxs("div",{children:[a.jsx("h1",{className:"font-display text-2xl mb-4",children:"Earnings"}),a.jsx("p",{className:"text-[var(--pw-ink-2)]",children:"Detailed earnings and payout history will appear here."})]})}export{s as component};
