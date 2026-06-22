@@ -37,6 +37,7 @@ import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calend
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
 import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
 import { Route as BookTutorIdRouteImport } from './routes/book.$tutorId'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
 import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
@@ -187,6 +188,11 @@ const BookTutorIdRoute = BookTutorIdRouteImport.update({
   path: '/book/$tutorId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -288,6 +295,7 @@ export interface FileRoutesByTo {
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -327,6 +335,7 @@ export interface FileRoutesById {
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/book/$tutorId': typeof BookTutorIdRoute
   '/courses/$slug': typeof CoursesSlugRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
@@ -368,6 +377,7 @@ export interface FileRouteTypes {
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
+    | '/auth/callback'
     | '/book/$tutorId'
     | '/courses/$slug'
     | '/dashboard/analytics'
@@ -405,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
+    | '/auth/callback'
     | '/book/$tutorId'
     | '/courses/$slug'
     | '/dashboard/analytics'
@@ -443,6 +454,7 @@ export interface FileRouteTypes {
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
+    | '/auth/callback'
     | '/book/$tutorId'
     | '/courses/$slug'
     | '/dashboard/analytics'
@@ -480,6 +492,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   RoadmapRoute: typeof RoadmapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   BookTutorIdRoute: typeof BookTutorIdRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
   OnboardingStudentRoute: typeof OnboardingStudentRoute
@@ -693,6 +706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookTutorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
@@ -824,6 +844,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   RoadmapRoute: RoadmapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   BookTutorIdRoute: BookTutorIdRoute,
   CoursesSlugRoute: CoursesSlugRoute,
   OnboardingStudentRoute: OnboardingStudentRoute,
