@@ -16,13 +16,12 @@ export interface Profile {
   onboarding_completed: boolean;
 }
 
-/** Lightweight shape kept for compatibility with existing UI. */
 export interface AuthUser {
   id: string;
   email: string;
   name: string;
   role: Role;
-  app_metadata?: Record<string, any>; // includes custom claims like 'admin'
+  app_metadata?: Record<string, any>;
 }
 
 interface AuthContextValue {
@@ -39,7 +38,6 @@ interface AuthContextValue {
   openLogin: () => void;
   closeLogin: () => void;
   refreshProfile: () => Promise<void>;
-  // New confirmation fields
   emailConfirmed: boolean;
   confirmationSent: boolean;
   resendConfirmation: () => Promise<void>;
@@ -74,16 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
-  // New state for email confirmation
   const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
 
-  // Helper to update confirmation state from a user
   const updateConfirmationState = (user: User | null) => {
     if (user) {
       const confirmed = !!user.confirmed_at;
       setEmailConfirmed(confirmed);
-      // If the user is signed in but email not confirmed, mark that we've sent a confirmation (if not already)
       if (!confirmed && user.email) {
         setConfirmationSent(true);
       } else {
@@ -96,25 +91,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // 1) Subscribe to auth changes
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
         updateConfirmationState(newSession.user);
-        // Defer profile fetch to avoid deadlock
         setTimeout(() => {
           fetchProfile(newSession.user.id).then((p) => {
             setProfile(p);
-            // After OAuth redirect, route accordingly
             if (event === "SIGNED_IN" && typeof window !== "undefined") {
               const path = window.location.pathname;
               const onPublicEntry = path === "/" || path === "/login";
               if (onPublicEntry) {
                 claimAnonymousRecords(newSession.user.id).finally(() => {
                   if (!p) return;
-                  // If email not confirmed, stay on page (let modal handle it)
                   if (!newSession.user.confirmed_at) {
-                    // Do not redirect, the confirmation modal will show
                     return;
                   }
                   if (!p.onboarding_completed) {
@@ -133,7 +123,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    // 2) Read existing session
     supabase.auth.getSession().then(({ data: { session: existing } }) => {
       setSession(existing);
       if (existing?.user) {
@@ -157,7 +146,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session?.user) {
       const p = await fetchProfile(session.user.id);
       setProfile(p);
-      // Also refresh confirmation state from current user
       if (session.user) {
         updateConfirmationState(session.user);
       }
@@ -169,6 +157,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     updateConfirmationState(null);
+
+    // 🧹 Clear all impersonation state on sign‑out
+    localStorage.removeItem('impersonating');
+    localStorage.removeItem('impersonating_user_name');
+    localStorage.removeItem('admin_user_id');
+    localStorage.removeItem('admin_email');
+    localStorage.removeItem('admin_access_token');
   };
 
   const resendConfirmation = async () => {
@@ -220,7 +215,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         openLogin: () => setLoginOpen(true),
         closeLogin: () => setLoginOpen(false),
         refreshProfile,
-        // New values
         emailConfirmed,
         confirmationSent,
         resendConfirmation,
