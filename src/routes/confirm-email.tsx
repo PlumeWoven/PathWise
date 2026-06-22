@@ -18,31 +18,50 @@ function ConfirmEmailPage() {
     useEffect(() => {
         const handleConfirmation = async () => {
             try {
-                // Supabase handles the confirmation via the URL hash
-                // We just need to check if the user is now confirmed
                 const { data: { user }, error } = await supabase.auth.getUser();
-
                 if (error) throw error;
+                if (!user) throw new Error('No user found');
 
-                if (user?.confirmed_at) {
+                if (user.confirmed_at) {
                     setStatus('success');
                     toast.success('Email confirmed!');
 
-                    // Redirect after 2 seconds
-                    setTimeout(async () => {
-                        // Check if user has completed onboarding
-                        const { data: profile } = await supabase
-                            .from('profiles')
-                            .select('onboarding_completed, role')
-                            .eq('id', user.id)
-                            .single();
+                    // Get user_metadata (includes role from signup)
+                    const metadata = user.user_metadata || {};
+                    const metaRole = metadata.role;
 
+                    // Fetch profile
+                    const { data: profile, error: profileError } = await supabase
+                        .from('profiles')
+                        .select('role, onboarding_completed')
+                        .eq('id', user.id)
+                        .maybeSingle();
+
+                    if (profileError) throw profileError;
+
+                    const role = profile?.role || metaRole || 'student';
+                    const displayName = metadata.display_name || metadata.full_name || user.email?.split('@')[0] || 'Learner';
+                    const fullName = metadata.full_name || metadata.display_name || user.email?.split('@')[0] || 'Learner';
+
+                    // If profile doesn't exist or role mismatch, upsert
+                    if (!profile || profile.role !== metaRole) {
+                        await supabase.from('profiles').upsert({
+                            id: user.id,
+                            role: metaRole || 'student',
+                            display_name: displayName,
+                            full_name: fullName,
+                        }, { onConflict: 'id' });
+                    }
+
+                    // Wait a moment, then redirect
+                    setTimeout(() => {
                         if (profile?.onboarding_completed) {
-                            navigate({ to: profile.role === 'tutor' ? '/dashboard' : '/roadmap' });
+                            navigate({ to: role === 'tutor' ? '/dashboard' : '/roadmap' });
                         } else {
-                            navigate({ to: profile?.role === 'tutor' ? '/onboarding/tutor' : '/onboarding/student' });
+                            navigate({ to: role === 'tutor' ? '/onboarding/tutor' : '/onboarding/student' });
                         }
                     }, 2000);
+
                 } else {
                     setStatus('error');
                     setErrorMessage('Email confirmation failed. Please try again.');
@@ -60,13 +79,11 @@ function ConfirmEmailPage() {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user?.email) throw new Error('No email found');
-
             const { error } = await supabase.auth.resend({
                 type: 'signup',
                 email: user.email,
             });
             if (error) throw error;
-
             toast.success('Confirmation email resent!');
         } catch (err: any) {
             toast.error(err.message || 'Failed to resend');
@@ -85,7 +102,6 @@ function ConfirmEmailPage() {
                             <p className="text-[var(--pw-ink-2)] mt-2">Please wait a moment</p>
                         </>
                     )}
-
                     {status === 'success' && (
                         <>
                             <CheckCircle className="size-16 mx-auto text-[var(--pw-accent-2)]" />
@@ -93,7 +109,6 @@ function ConfirmEmailPage() {
                             <p className="text-[var(--pw-ink-2)] mt-2">Your email has been verified. Redirecting you now...</p>
                         </>
                     )}
-
                     {status === 'error' && (
                         <>
                             <XCircle className="size-16 mx-auto text-[var(--pw-danger)]" />

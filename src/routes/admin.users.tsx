@@ -41,14 +41,24 @@ function AdminUsers() {
                 body: JSON.stringify({ userId }),
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Impersonation failed');
+            // Read response as text first – helps debug non‑JSON responses
+            const text = await response.text();
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (parseError) {
+                console.error('Failed to parse response as JSON. Raw text:', text);
+                throw new Error(`Server returned invalid JSON: ${text.substring(0, 100)}`);
             }
 
-            const { magicLink } = await response.json();
+            if (!response.ok) {
+                const errorMsg = data.error || data.message || `Request failed (${response.status})`;
+                throw new Error(errorMsg);
+            }
+
+            const { magicLink } = data;
             if (!magicLink) {
-                throw new Error('No magic link returned');
+                throw new Error('No magic link returned from server');
             }
 
             // Store impersonation state for the banner
@@ -58,6 +68,7 @@ function AdminUsers() {
             // Redirect to the magic link
             window.location.href = magicLink;
         } catch (err: any) {
+            console.error('Impersonation error:', err);
             toast.error(err.message || 'Impersonation failed');
             setImpersonating(null);
         }
