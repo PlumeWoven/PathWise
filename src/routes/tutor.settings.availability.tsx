@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -8,7 +8,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES, detectTimezone } from "../pathwise/scheduling";
 import { Globe, Clock, Copy, Save, AlertTriangle } from "lucide-react";
 
-
+export const Route = createFileRoute("/tutor/settings/availability")({
+  head: () => ({
+    meta: [
+      { title: "Availability — PathWise" },
+      { name: "description", content: "Set your weekly availability, buffer time, and time off." },
+    ],
+  }),
+  component: AvailabilityPage,
+});
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_INDEX = [1, 2, 3, 4, 5, 6, 0];
@@ -17,9 +25,12 @@ const BUFFER_OPTIONS = [0, 15, 30, 60];
 
 type CellState = "free" | "available" | "blocked" | "booked";
 
-export function TutorAvailabilityPage() {
+function AvailabilityPage() {
   const { user, isLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isInsideDashboard = location.pathname.startsWith('/dashboard');
+
   const [grid, setGrid] = useState<Record<string, CellState>>({});
   const [tz, setTz] = useState(detectTimezone());
   const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
@@ -194,7 +205,7 @@ export function TutorAvailabilityPage() {
 
   return (
     <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]" onMouseUp={() => (dragMode.current = null)} onMouseLeave={() => (dragMode.current = null)}>
-      <PWHeader />
+      {!isInsideDashboard && <PWHeader />}
       <main className="px-5 sm:px-8 py-6 max-w-5xl mx-auto pb-24">
         <div className="flex items-baseline justify-between flex-wrap gap-3">
           <div>
@@ -319,13 +330,5 @@ function Legend({ color, label, border }: { color: string; label: string; border
 }
 
 // ===== NAMED EXPORT FOR DASHBOARD REUSE =====
-
-export const Route = createFileRoute("/tutor/settings/availability")({
-  head: () => ({
-    meta: [
-      { title: "Availability — PathWise" },
-      { name: "description", content: "Set your weekly availability, buffer time, and time off." },
-    ],
-  }),
-  component: TutorAvailabilityPage,
-});
+const TutorAvailabilityComponent = Route.options.component;
+export { TutorAvailabilityComponent as TutorAvailabilityPage };
