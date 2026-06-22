@@ -65,6 +65,9 @@ function AdminUsers() {
             localStorage.setItem('impersonating', 'true');
             localStorage.setItem('impersonating_user_name', userName);
 
+            // 🔥 SIGN OUT THE ADMIN BEFORE REDIRECTING
+            await supabase.auth.signOut();
+
             // Redirect to the magic link
             window.location.href = magicLink;
         } catch (err: any) {
