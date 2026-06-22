@@ -3,11 +3,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { ConfirmationModal } from "@/components/ConfirmationModal";
+import { toast } from "sonner";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export function LoginModal() {
-  const { loginOpen, closeLogin } = useAuth();
+  const { loginOpen, closeLogin, emailConfirmed, resendConfirmation } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("signin");
   const [role, setRole] = useState<Role | null>(null);
@@ -17,6 +19,9 @@ export function LoginModal() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // State for confirmation modal
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [signupEmail, setSignupEmail] = useState("");
 
   // Reset state whenever the modal opens.
   useEffect(() => {
@@ -29,6 +34,8 @@ export function LoginModal() {
       setError("");
       setInfo("");
       setSubmitting(false);
+      setShowConfirmation(false);
+      setSignupEmail("");
     }
   }, [loginOpen]);
 
@@ -128,7 +135,15 @@ export function LoginModal() {
       setError(err.message);
       return;
     }
-    if (data.user) await routeAfterAuth(data.user.id);
+    if (data.user) {
+      // Check if email is confirmed; if not, show modal instead of routing
+      if (!data.user.confirmed_at) {
+        setSignupEmail(email);
+        setShowConfirmation(true);
+        return;
+      }
+      await routeAfterAuth(data.user.id);
+    }
   }
 
   async function handleSignUp(e: FormEvent) {
@@ -143,7 +158,7 @@ export function LoginModal() {
       return;
     }
     setSubmitting(true);
-    const redirectTo = `${window.location.origin}/`;
+    const redirectTo = `${window.location.origin}/confirm-email`; // explicit route
     const { data, error: err } = await supabase.auth.signUp({
       email: email.trim(),
       password,
@@ -158,13 +173,18 @@ export function LoginModal() {
       return;
     }
     if (data.user) {
+      // Always upsert profile (in case trigger didn't fire)
       await supabase
         .from("profiles")
         .upsert(
           { id: data.user.id, role, display_name: name.trim(), full_name: name.trim() },
           { onConflict: "id" },
         );
-      await routeAfterAuth(data.user.id);
+      // Show confirmation modal instead of routing immediately
+      setSignupEmail(email.trim());
+      setShowConfirmation(true);
+      // Do NOT call routeAfterAuth yet – the user must confirm email first.
+      // The confirmation page will handle routing after confirmation.
     }
   }
 
@@ -191,113 +211,126 @@ export function LoginModal() {
         : "We'll email you a reset link";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
-      style={{ background: "rgba(26,26,26,0.45)", backdropFilter: "blur(6px)" }}
-      onClick={handleClose}
-    >
+    <>
       <div
-        className="pw-card w-full max-w-[520px] p-7 relative"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-50 flex items-center justify-center px-4"
+        style={{ background: "rgba(26,26,26,0.45)", backdropFilter: "blur(6px)" }}
+        onClick={handleClose}
       >
-        <button
-          onClick={handleClose}
-          aria-label="Close"
-          className="absolute right-4 top-4 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-xl leading-none"
+        <div
+          className="pw-card w-full max-w-[520px] p-7 relative"
+          onClick={(e) => e.stopPropagation()}
         >
-          ×
-        </button>
+          <button
+            onClick={handleClose}
+            aria-label="Close"
+            className="absolute right-4 top-4 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-xl leading-none"
+          >
+            ×
+          </button>
 
-        <h2 className="font-display text-[28px] leading-tight">{title}</h2>
-        <p className="mt-1 text-[14px] text-[var(--pw-ink-2)]">{subtitle}</p>
+          <h2 className="font-display text-[28px] leading-tight">{title}</h2>
+          <p className="mt-1 text-[14px] text-[var(--pw-ink-2)]">{subtitle}</p>
 
-        {mode === "signup" && (
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <RoleCard
-              emoji="🎓"
-              label="Student"
-              sub="Get a roadmap & tutor"
-              selected={role === "student"}
-              onClick={() => { setRole("student"); setError(""); }}
-            />
-            <RoleCard
-              emoji="👨‍🏫"
-              label="Tutor"
-              sub="Teach & earn"
-              selected={role === "tutor"}
-              onClick={() => { setRole("tutor"); setError(""); }}
-            />
-            <RoleCard
-              emoji="🔁"
-              label="Both"
-              sub="Learn and teach"
-              selected={role === "both"}
-              onClick={() => { setRole("both"); setError(""); }}
-            />
-          </div>
-        )}
-
-        {mode === "signin" && (
-          <form onSubmit={handleSignIn} className="mt-6 space-y-3">
-            <Field label="Email" type="email" value={email} onChange={setEmail} />
-            <Field label="Password" type="password" value={password} onChange={setPassword} />
-            {error && <ErrorLine msg={error} />}
-            <SubmitButton submitting={submitting} label="Sign In →" />
-            <OrDivider />
-            <GoogleButton onClick={handleGoogle} submitting={submitting} />
-            <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
-              <button type="button" onClick={() => { setMode("forgot"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
-                Forgot password?
-              </button>
-              <button type="button" onClick={() => { setMode("signup"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
-                Create account
-              </button>
+          {mode === "signup" && (
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              <RoleCard
+                emoji="🎓"
+                label="Student"
+                sub="Get a roadmap & tutor"
+                selected={role === "student"}
+                onClick={() => { setRole("student"); setError(""); }}
+              />
+              <RoleCard
+                emoji="👨‍🏫"
+                label="Tutor"
+                sub="Teach & earn"
+                selected={role === "tutor"}
+                onClick={() => { setRole("tutor"); setError(""); }}
+              />
+              <RoleCard
+                emoji="🔁"
+                label="Both"
+                sub="Learn and teach"
+                selected={role === "both"}
+                onClick={() => { setRole("both"); setError(""); }}
+              />
             </div>
-          </form>
-        )}
+          )}
 
-        {mode === "signup" && (
-          <form onSubmit={handleSignUp} className="mt-6 space-y-3">
-            <Field label="Full name" type="text" value={name} onChange={setName} />
-            <Field label="Email" type="email" value={email} onChange={setEmail} />
-            <Field label="Password" type="password" value={password} onChange={setPassword} />
-            {error && <ErrorLine msg={error} />}
-            <SubmitButton submitting={submitting} label="Create Free Account →" disabled={!role} />
-            <OrDivider />
-            <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
-            {!role && (
-              <p className="text-[11px] text-[var(--pw-ink-2)] text-center">Pick a role above to enable Google sign-up.</p>
-            )}
-            <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
-              Already have an account?{" "}
-              <button type="button" onClick={() => { setMode("signin"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
-                Sign in
-              </button>
-            </div>
-          </form>
-        )}
-
-        {mode === "forgot" && (
-          <form onSubmit={handleForgot} className="mt-6 space-y-3">
-            <Field label="Email" type="email" value={email} onChange={setEmail} />
-            {error && <ErrorLine msg={error} />}
-            {info && (
-              <div className="text-[12px]" style={{ color: "var(--pw-accent-2)" }}>
-                {info}
+          {mode === "signin" && (
+            <form onSubmit={handleSignIn} className="mt-6 space-y-3">
+              <Field label="Email" type="email" value={email} onChange={setEmail} />
+              <Field label="Password" type="password" value={password} onChange={setPassword} />
+              {error && <ErrorLine msg={error} />}
+              <SubmitButton submitting={submitting} label="Sign In →" />
+              <OrDivider />
+              <GoogleButton onClick={handleGoogle} submitting={submitting} />
+              <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
+                <button type="button" onClick={() => { setMode("forgot"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                  Forgot password?
+                </button>
+                <button type="button" onClick={() => { setMode("signup"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                  Create account
+                </button>
               </div>
-            )}
-            <SubmitButton submitting={submitting} label="Send reset link →" />
-            <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
-              <button type="button" onClick={() => { setMode("signin"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
-                Back to sign in
-              </button>
-            </div>
-          </form>
-        )}
+            </form>
+          )}
+
+          {mode === "signup" && (
+            <form onSubmit={handleSignUp} className="mt-6 space-y-3">
+              <Field label="Full name" type="text" value={name} onChange={setName} />
+              <Field label="Email" type="email" value={email} onChange={setEmail} />
+              <Field label="Password" type="password" value={password} onChange={setPassword} />
+              {error && <ErrorLine msg={error} />}
+              <SubmitButton submitting={submitting} label="Create Free Account →" disabled={!role} />
+              <OrDivider />
+              <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
+              {!role && (
+                <p className="text-[11px] text-[var(--pw-ink-2)] text-center">Pick a role above to enable Google sign-up.</p>
+              )}
+              <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
+                Already have an account?{" "}
+                <button type="button" onClick={() => { setMode("signin"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                  Sign in
+                </button>
+              </div>
+            </form>
+          )}
+
+          {mode === "forgot" && (
+            <form onSubmit={handleForgot} className="mt-6 space-y-3">
+              <Field label="Email" type="email" value={email} onChange={setEmail} />
+              {error && <ErrorLine msg={error} />}
+              {info && (
+                <div className="text-[12px]" style={{ color: "var(--pw-accent-2)" }}>
+                  {info}
+                </div>
+              )}
+              <SubmitButton submitting={submitting} label="Send reset link →" />
+              <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
+                <button type="button" onClick={() => { setMode("signin"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                  Back to sign in
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        open={showConfirmation}
+        onOpenChange={setShowConfirmation}
+        email={signupEmail}
+        isConfirmed={emailConfirmed}
+        onResend={resendConfirmation}
+      />
+    </>
   );
 }
+
+// ---------- Helper Components ----------
 
 function RoleCard({
   emoji,
@@ -411,10 +444,10 @@ function GoogleButton({
       className="w-full inline-flex justify-center items-center gap-2 pw-border rounded-md px-6 py-3 text-[14px] font-medium bg-white hover:bg-[var(--pw-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden>
-        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.7 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>
-        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
-        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.5-5.3l-6.2-5.3c-2 1.5-4.6 2.4-7.3 2.4-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/>
-        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.5l6.2 5.3C40.9 35.6 44 30.3 44 24c0-1.3-.1-2.4-.4-3.5z"/>
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.7 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.5-5.3l-6.2-5.3c-2 1.5-4.6 2.4-7.3 2.4-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z" />
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.5l6.2 5.3C40.9 35.6 44 30.3 44 24c0-1.3-.1-2.4-.4-3.5z" />
       </svg>
       Continue with Google
     </button>

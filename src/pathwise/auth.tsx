@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export type Role = "student" | "tutor" | "both" | "admin";
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
@@ -21,7 +22,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: Role;
-  app_metadata?: Record<string, any>; // ADDED: includes custom claims like 'admin'
+  app_metadata?: Record<string, any>; // includes custom claims like 'admin'
 }
 
 interface AuthContextValue {
@@ -33,13 +34,15 @@ interface AuthContextValue {
   isLoggedIn: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
-  /** Kept for backwards-compat with components that called logout() */
   logout: () => Promise<void>;
   loginOpen: boolean;
   openLogin: () => void;
   closeLogin: () => void;
-  /** Re-fetch the profile after a mutation (e.g. avatar upload). */
   refreshProfile: () => Promise<void>;
+  // New confirmation fields
+  emailConfirmed: boolean;
+  confirmationSent: boolean;
+  resendConfirmation: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -71,25 +74,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
+  // New state for email confirmation
+  const [emailConfirmed, setEmailConfirmed] = useState(false);
+  const [confirmationSent, setConfirmationSent] = useState(false);
+
+  // Helper to update confirmation state from a user
+  const updateConfirmationState = (user: User | null) => {
+    if (user) {
+      const confirmed = !!user.confirmed_at;
+      setEmailConfirmed(confirmed);
+      // If the user is signed in but email not confirmed, mark that we've sent a confirmation (if not already)
+      if (!confirmed && user.email) {
+        setConfirmationSent(true);
+      } else {
+        setConfirmationSent(false);
+      }
+    } else {
+      setEmailConfirmed(false);
+      setConfirmationSent(false);
+    }
+  };
 
   useEffect(() => {
-    // 1) Subscribe FIRST to avoid missing events.
+    // 1) Subscribe to auth changes
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
-        // Defer Supabase calls to avoid deadlock with the auth listener.
+        updateConfirmationState(newSession.user);
+        // Defer profile fetch to avoid deadlock
         setTimeout(() => {
           fetchProfile(newSession.user.id).then((p) => {
             setProfile(p);
-            // After an OAuth redirect (e.g. Google), the user lands back on the
-            // origin (usually "/"). Auto-route them to the right place so the
-            // landing page doesn't appear to "swallow" the login.
+            // After OAuth redirect, route accordingly
             if (event === "SIGNED_IN" && typeof window !== "undefined") {
               const path = window.location.pathname;
               const onPublicEntry = path === "/" || path === "/login";
               if (onPublicEntry) {
                 claimAnonymousRecords(newSession.user.id).finally(() => {
                   if (!p) return;
+                  // If email not confirmed, stay on page (let modal handle it)
+                  if (!newSession.user.confirmed_at) {
+                    // Do not redirect, the confirmation modal will show
+                    return;
+                  }
                   if (!p.onboarding_completed) {
                     window.location.replace(p.role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
                     return;
@@ -102,18 +129,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }, 0);
       } else {
         setProfile(null);
+        updateConfirmationState(null);
       }
     });
 
-    // 2) Then read the existing session.
+    // 2) Read existing session
     supabase.auth.getSession().then(({ data: { session: existing } }) => {
       setSession(existing);
       if (existing?.user) {
+        updateConfirmationState(existing.user);
         fetchProfile(existing.user.id).then((p) => {
           setProfile(p);
           setLoading(false);
         });
       } else {
+        updateConfirmationState(null);
         setLoading(false);
       }
     });
@@ -127,6 +157,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session?.user) {
       const p = await fetchProfile(session.user.id);
       setProfile(p);
+      // Also refresh confirmation state from current user
+      if (session.user) {
+        updateConfirmationState(session.user);
+      }
     }
   };
 
@@ -134,6 +168,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setSession(null);
     setProfile(null);
+    updateConfirmationState(null);
+  };
+
+  const resendConfirmation = async () => {
+    const email = session?.user?.email;
+    if (!email) {
+      toast.error("No email address found");
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      });
+      if (error) throw error;
+      setConfirmationSent(true);
+      toast.success("Confirmation email resent! Check your inbox.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend confirmation");
+      throw err;
+    }
   };
 
   const supabaseUser = session?.user ?? null;
@@ -145,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: supabaseUser.email ?? "",
         name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
         role: profile.role,
-        app_metadata: supabaseUser.app_metadata, // ADDED: exposes custom claims
+        app_metadata: supabaseUser.app_metadata,
       }
       : null;
 
@@ -165,6 +220,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         openLogin: () => setLoginOpen(true),
         closeLogin: () => setLoginOpen(false),
         refreshProfile,
+        // New values
+        emailConfirmed,
+        confirmationSent,
+        resendConfirmation,
       }}
     >
       {children}

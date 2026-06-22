@@ -17,6 +17,7 @@ import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as FindTutorRouteImport } from './routes/find-tutor'
 import { Route as DemoRouteImport } from './routes/demo'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ConfirmEmailRouteImport } from './routes/confirm-email'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionsIndexRouteImport } from './routes/sessions.index'
@@ -84,6 +85,11 @@ const DemoRoute = DemoRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConfirmEmailRoute = ConfirmEmailRouteImport.update({
+  id: '/confirm-email',
+  path: '/confirm-email',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -233,6 +239,7 @@ const TutorCoursesCourseIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/confirm-email': typeof ConfirmEmailRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/confirm-email': typeof ConfirmEmailRoute
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
   '/matches': typeof MatchesRoute
@@ -307,6 +315,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/confirm-email': typeof ConfirmEmailRoute
   '/dashboard': typeof DashboardRouteWithChildren
   '/demo': typeof DemoRoute
   '/find-tutor': typeof FindTutorRoute
@@ -347,6 +356,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/confirm-email'
     | '/dashboard'
     | '/demo'
     | '/find-tutor'
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/confirm-email'
     | '/demo'
     | '/find-tutor'
     | '/matches'
@@ -420,6 +431,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/confirm-email'
     | '/dashboard'
     | '/demo'
     | '/find-tutor'
@@ -459,6 +471,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  ConfirmEmailRoute: typeof ConfirmEmailRoute
   DashboardRoute: typeof DashboardRouteWithChildren
   DemoRoute: typeof DemoRoute
   FindTutorRoute: typeof FindTutorRoute
@@ -538,6 +551,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/confirm-email': {
+      id: '/confirm-email'
+      path: '/confirm-email'
+      fullPath: '/confirm-email'
+      preLoaderRoute: typeof ConfirmEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -795,6 +815,7 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  ConfirmEmailRoute: ConfirmEmailRoute,
   DashboardRoute: DashboardRouteWithChildren,
   DemoRoute: DemoRoute,
   FindTutorRoute: FindTutorRoute,
