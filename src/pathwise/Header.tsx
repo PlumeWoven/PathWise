@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
@@ -7,18 +7,25 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [, forceUpdate] = useState(0);
 
-  // Impersonation state
-  const [impersonating, setImpersonating] = useState(false);
-  const [impersonatingName, setImpersonatingName] = useState('');
+  // Read impersonation state from localStorage
+  const impersonating = localStorage.getItem('impersonating') === 'true';
+  const impersonatingName = localStorage.getItem('impersonating_user_name') || 'User';
 
+  // Force re-render on storage changes (e.g., from other tabs)
   useEffect(() => {
-    const imp = localStorage.getItem('impersonating') === 'true';
-    const name = localStorage.getItem('impersonating_user_name') || 'User';
-    setImpersonating(imp);
-    setImpersonatingName(name);
+    const handleStorage = () => forceUpdate((n) => n + 1);
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
+
+  // Force re-render on location change (navigation)
+  useEffect(() => {
+    forceUpdate((n) => n + 1);
+  }, [location.pathname]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.pageYOffset > 10);
@@ -33,14 +40,12 @@ export function PWHeader() {
   };
 
   const handleExitImpersonation = async () => {
-    // Clear all impersonation state
+    // Clear impersonation state
     localStorage.removeItem('impersonating');
     localStorage.removeItem('impersonating_user_name');
     localStorage.removeItem('admin_user_id');
     localStorage.removeItem('admin_email');
     localStorage.removeItem('admin_access_token');
-
-    // Sign out the impersonated user and redirect to admin
     await logout();
     navigate({ to: '/admin' });
   };
