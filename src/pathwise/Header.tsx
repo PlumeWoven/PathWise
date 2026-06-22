@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
@@ -7,25 +7,38 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
-  const [, forceUpdate] = useState(0);
 
-  // Read impersonation state from localStorage
-  const impersonating = localStorage.getItem('impersonating') === 'true';
-  const impersonatingName = localStorage.getItem('impersonating_user_name') || 'User';
+  const [impersonating, setImpersonating] = useState(false);
+  const [impersonatingName, setImpersonatingName] = useState('');
 
-  // Force re-render on storage changes (e.g., from other tabs)
+  // Read impersonation flags on mount and whenever localStorage changes
+  const readImpersonationState = () => {
+    const imp = localStorage.getItem('impersonating') === 'true';
+    const name = localStorage.getItem('impersonating_user_name') || 'User';
+    setImpersonating(imp);
+    setImpersonatingName(name);
+  };
+
   useEffect(() => {
-    const handleStorage = () => forceUpdate((n) => n + 1);
+    readImpersonationState();
+
+    // Listen for storage changes (in case another tab changes it)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'impersonating' || e.key === 'impersonating_user_name') {
+        readImpersonationState();
+      }
+    };
     window.addEventListener('storage', handleStorage);
+
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
-  // Force re-render on location change (navigation)
+  // Force re‑read after the page loads (for cases where the flag was set just before redirect)
   useEffect(() => {
-    forceUpdate((n) => n + 1);
-  }, [location.pathname]);
+    const timer = setTimeout(readImpersonationState, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.pageYOffset > 10);
@@ -40,12 +53,14 @@ export function PWHeader() {
   };
 
   const handleExitImpersonation = async () => {
-    // Clear impersonation state
+    // Clear all impersonation state
     localStorage.removeItem('impersonating');
     localStorage.removeItem('impersonating_user_name');
     localStorage.removeItem('admin_user_id');
     localStorage.removeItem('admin_email');
     localStorage.removeItem('admin_access_token');
+
+    // Sign out the impersonated user and redirect to admin
     await logout();
     navigate({ to: '/admin' });
   };

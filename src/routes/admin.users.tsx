@@ -65,15 +65,18 @@ function AdminUsers() {
             if (user) {
                 localStorage.setItem('admin_user_id', user.id);
                 localStorage.setItem('admin_email', user.email || '');
-                localStorage.setItem('admin_access_token', adminToken); // store token
+                localStorage.setItem('admin_access_token', adminToken);
             }
 
             localStorage.setItem('impersonating', 'true');
             localStorage.setItem('impersonating_user_name', userName);
 
-            // Sign out admin before redirect
+            // 🔥 Sign out admin and wait for it to complete
             await supabase.auth.signOut();
+            // Small delay to ensure session is cleared
+            await new Promise(resolve => setTimeout(resolve, 500));
 
+            // Redirect to magic link
             window.location.href = magicLink;
         } catch (err: any) {
             console.error('Impersonation error:', err);
