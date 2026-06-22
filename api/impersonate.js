@@ -1,12 +1,10 @@
 // api/impersonate.js
 import { createClient } from '@supabase/supabase-js';
 
-// Hardcoded credentials – replace with your actual service role key
 const SUPABASE_URL = 'https://tarnqywokrildahzhmjv.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcm5xeXdva3JpbGRhaHpobWp2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODc3NzI1NSwiZXhwIjoyMDk0MzUzMjU1fQ.Axrf2vnBcP6S-3Ifw0kaI8DrgBqVzU6C2Np-ATMKF-g'; // ← paste your key
 
 export default async function handler(req, res) {
-    // Only allow POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -23,23 +21,26 @@ export default async function handler(req, res) {
         }
         const adminToken = authHeader.split(' ')[1];
 
-        // Create Supabase admin client
         const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
             auth: { autoRefreshToken: false, persistSession: false },
         });
 
-        // 1. Validate admin
+        // 🔴 TEMPORARY: Hardcode admin email for testing
+        const ADMIN_EMAIL = 'inistorica1@gmail.com'; // your admin email
+
         const { data: adminUser, error: adminError } = await supabaseAdmin.auth.getUser(adminToken);
         if (adminError || !adminUser) {
             console.error('[Impersonate] Admin validation error:', adminError);
             return res.status(401).json({ error: 'Invalid admin token' });
         }
-        const role = adminUser.user?.app_metadata?.role;
-        if (role !== 'admin') {
+
+        // Check email instead of app_metadata.role
+        if (adminUser.user?.email !== ADMIN_EMAIL) {
+            console.error('[Impersonate] Not admin email:', adminUser.user?.email);
             return res.status(403).json({ error: 'Not authorized' });
         }
 
-        // 2. Get target user email
+        // Get target user
         const { data: targetUser, error: targetError } = await supabaseAdmin.auth.admin.getUserById(userId);
         if (targetError || !targetUser) {
             console.error('[Impersonate] Target user error:', targetError);
@@ -50,7 +51,7 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'Target user has no email' });
         }
 
-        // 3. Generate magic link
+        // Generate magic link
         const { data: magicLinkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
             type: 'magiclink',
             email,
