@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
@@ -7,12 +7,12 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
   const [impersonating, setImpersonating] = useState(false);
   const [impersonatingName, setImpersonatingName] = useState('');
 
-  // Read impersonation flags on mount and whenever localStorage changes
   const readImpersonationState = () => {
     const imp = localStorage.getItem('impersonating') === 'true';
     const name = localStorage.getItem('impersonating_user_name') || 'User';
@@ -20,24 +20,20 @@ export function PWHeader() {
     setImpersonatingName(name);
   };
 
+  // Re‑read on mount and every route change (location.pathname)
   useEffect(() => {
     readImpersonationState();
+  }, [location.pathname]);
 
-    // Listen for storage changes (in case another tab changes it)
+  // Also listen for storage changes from other tabs
+  useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'impersonating' || e.key === 'impersonating_user_name') {
         readImpersonationState();
       }
     };
     window.addEventListener('storage', handleStorage);
-
     return () => window.removeEventListener('storage', handleStorage);
-  }, []);
-
-  // Force re‑read after the page loads (for cases where the flag was set just before redirect)
-  useEffect(() => {
-    const timer = setTimeout(readImpersonationState, 300);
-    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -107,34 +103,23 @@ export function PWHeader() {
                 </span>
               )}
               {(user.role === "tutor" || user.role === "both") && (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                    activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
-                  >
-                    Dashboard
-                  </Link>
-                </>
+                <Link
+                  to="/dashboard"
+                  className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
+                  activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
+                >
+                  Dashboard
+                </Link>
               )}
               {(user.role === "student" || user.role === "both") && (
                 <>
-                  <Link
-                    to="/roadmap"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                  >
+                  <Link to="/roadmap" className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors">
                     My Roadmap
                   </Link>
-                  <Link
-                    to="/find-tutor"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex"
-                  >
+                  <Link to="/find-tutor" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
                     Find a tutor
                   </Link>
-                  <Link
-                    to="/sessions"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex"
-                  >
+                  <Link to="/sessions" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
                     My sessions
                   </Link>
                 </>
