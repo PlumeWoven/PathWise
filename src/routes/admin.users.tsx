@@ -41,7 +41,6 @@ function AdminUsers() {
                 body: JSON.stringify({ userId }),
             });
 
-            // Read response as text first – helps debug non‑JSON responses
             const text = await response.text();
             let data;
             try {
@@ -61,14 +60,20 @@ function AdminUsers() {
                 throw new Error('No magic link returned from server');
             }
 
-            // Store impersonation state for the banner
+            // Store admin info for exit (including access token)
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                localStorage.setItem('admin_user_id', user.id);
+                localStorage.setItem('admin_email', user.email || '');
+                localStorage.setItem('admin_access_token', adminToken); // store token
+            }
+
             localStorage.setItem('impersonating', 'true');
             localStorage.setItem('impersonating_user_name', userName);
 
-            // 🔥 SIGN OUT THE ADMIN BEFORE REDIRECTING
+            // Sign out admin before redirect
             await supabase.auth.signOut();
 
-            // Redirect to the magic link
             window.location.href = magicLink;
         } catch (err: any) {
             console.error('Impersonation error:', err);

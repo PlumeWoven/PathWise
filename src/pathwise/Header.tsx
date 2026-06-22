@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
 
-  // Impersonation state
   const [impersonating, setImpersonating] = useState(false);
   const [impersonatingName, setImpersonatingName] = useState('');
 
@@ -33,17 +34,69 @@ export function PWHeader() {
   };
 
   const handleExitImpersonation = async () => {
-    // Clear impersonation flags
-    localStorage.removeItem('impersonating');
-    localStorage.removeItem('impersonating_user_name');
-    // Sign out and redirect to admin
-    await logout();
-    navigate({ to: "/admin" });
+    try {
+      // Retrieve stored admin info and token
+      const adminUserId = localStorage.getItem('admin_user_id');
+      const adminToken = localStorage.getItem('admin_access_token');
+      const adminEmail = localStorage.getItem('admin_email');
+
+      if (!adminUserId || !adminToken) {
+        // Fallback: sign out and redirect to admin
+        localStorage.removeItem('impersonating');
+        localStorage.removeItem('impersonating_user_name');
+        localStorage.removeItem('admin_user_id');
+        localStorage.removeItem('admin_email');
+        localStorage.removeItem('admin_access_token');
+        await logout();
+        navigate({ to: '/admin' });
+        return;
+      }
+
+      // Generate magic link for admin using stored admin token
+      const response = await fetch('/api/impersonate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({ userId: adminUserId }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error('Exit impersonation API error:', text);
+        throw new Error('Failed to get admin magic link');
+      }
+
+      const { magicLink } = await response.json();
+      if (!magicLink) throw new Error('No magic link returned');
+
+      // Clear impersonation state
+      localStorage.removeItem('impersonating');
+      localStorage.removeItem('impersonating_user_name');
+      localStorage.removeItem('admin_user_id');
+      localStorage.removeItem('admin_email');
+      localStorage.removeItem('admin_access_token');
+
+      // Sign out the impersonated user and redirect to magic link
+      await logout();
+      window.location.href = magicLink;
+    } catch (err: any) {
+      console.error('Exit impersonation error:', err);
+      toast.error(err.message || 'Failed to exit impersonation');
+      // Fallback: sign out and redirect to admin
+      await logout();
+      localStorage.removeItem('impersonating');
+      localStorage.removeItem('impersonating_user_name');
+      localStorage.removeItem('admin_user_id');
+      localStorage.removeItem('admin_email');
+      localStorage.removeItem('admin_access_token');
+      navigate({ to: '/admin' });
+    }
   };
 
   return (
     <>
-      {/* Impersonation Banner */}
       {impersonating && (
         <div className="sticky top-0 z-50 w-full bg-amber-50 border-b border-amber-300 px-5 py-2 flex items-center justify-between text-sm">
           <span className="text-amber-800">
@@ -83,43 +136,29 @@ export function PWHeader() {
                 </span>
               )}
               {(user.role === "tutor" || user.role === "both") && (
-                <>
-                  <Link
-                    to="/dashboard"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                    activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
-                  >
-                    Dashboard
-                  </Link>
-                </>
+                <Link
+                  to="/dashboard"
+                  className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
+                  activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
+                >
+                  Dashboard
+                </Link>
               )}
               {(user.role === "student" || user.role === "both") && (
                 <>
-                  <Link
-                    to="/roadmap"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                  >
+                  <Link to="/roadmap" className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors">
                     My Roadmap
                   </Link>
-                  <Link
-                    to="/find-tutor"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex"
-                  >
+                  <Link to="/find-tutor" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
                     Find a tutor
                   </Link>
-                  <Link
-                    to="/sessions"
-                    className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex"
-                  >
+                  <Link to="/sessions" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
                     My sessions
                   </Link>
                 </>
               )}
               {(user as any).app_metadata?.role === 'admin' && (
-                <Link
-                  to="/admin"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                >
+                <Link to="/admin" className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors">
                   Admin
                 </Link>
               )}
