@@ -15,10 +15,6 @@ export function ConfirmationModal({ open, onOpenChange, email, isConfirmed, onRe
     const [resending, setResending] = useState(false);
 
     const handleResend = async () => {
-        if (!onResend) {
-            console.error('onResend prop is missing or undefined');
-            return;
-        }
         setResending(true);
         try {
             await onResend();
@@ -27,7 +23,6 @@ export function ConfirmationModal({ open, onOpenChange, email, isConfirmed, onRe
         }
     };
 
-    // Auto-close when confirmed
     useEffect(() => {
         if (isConfirmed && open) {
             const timer = setTimeout(() => {
@@ -39,9 +34,16 @@ export function ConfirmationModal({ open, onOpenChange, email, isConfirmed, onRe
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent
+                className="sm:max-w-md pw-card"
+                style={{
+                    background: 'var(--pw-surface)',
+                    color: 'var(--pw-ink)',
+                    border: '1px solid var(--pw-border)',
+                }}
+            >
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
+                    <DialogTitle className="flex items-center gap-2 text-[var(--pw-ink)]">
                         {isConfirmed ? (
                             <>
                                 <CheckCircle className="size-5 text-[var(--pw-accent-2)]" />
@@ -54,7 +56,7 @@ export function ConfirmationModal({ open, onOpenChange, email, isConfirmed, onRe
                             </>
                         )}
                     </DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription className="text-[var(--pw-ink-2)]">
                         {isConfirmed
                             ? 'Your email has been verified. Redirecting you to your dashboard...'
                             : `We've sent a confirmation link to ${email}. Click it to get started.`
@@ -79,6 +81,11 @@ export function ConfirmationModal({ open, onOpenChange, email, isConfirmed, onRe
                                 onClick={handleResend}
                                 disabled={resending}
                                 className="mt-4"
+                                style={{
+                                    color: 'var(--pw-accent)',
+                                    borderColor: 'var(--pw-border)',
+                                    background: 'transparent',
+                                }}
                             >
                                 <RefreshCw className={`size-4 mr-2 ${resending ? 'animate-spin' : ''}`} />
                                 {resending ? 'Sending...' : 'Resend email'}
