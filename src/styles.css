@@ -240,6 +240,35 @@
   textarea.bg-white {
     background-color: var(--pw-input-bg) !important;
   }
+
+  /* ----- Dialog / Modal dark overrides ----- */
+  .dark .pw-card {
+    background: #2A2A28 !important;
+    border-color: #3A3A38 !important;
+  }
+
+  .dark .dialog-content,
+  .dark [role="dialog"] {
+    background: #2A2A28 !important;
+    border-color: #3A3A38 !important;
+  }
+
+  .dark .dialog-header h2,
+  .dark .dialog-header p {
+    color: #F5F5F0 !important;
+  }
+
+  .dark .dialog-header .text-[var(--pw-ink-2)] {
+    color: #A8A8A0 !important;
+  }
+
+  .dark .dialog-content .text-sm {
+    color: #A8A8A0 !important;
+  }
+
+  .dark .dialog-content .mt-4 {
+    border-color: #3A3A38 !important;
+  }
 }
 
 @layer base {
