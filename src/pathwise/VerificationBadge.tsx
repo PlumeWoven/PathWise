@@ -6,7 +6,6 @@ export type VerificationTier = "unverified" | "email" | "identity" | "premium";
 /** Map raw profile.verification_status -> a display tier. */
 export function statusToTier(status: VerificationStatus, hasEmail: boolean = true): VerificationTier {
   if (status === "verified") return "identity";
-  // 'pending' | 'rejected' | 'unverified' all fall back to email-only when the user has an email
   return hasEmail ? "email" : "unverified";
 }
 
@@ -58,14 +57,15 @@ export function VerificationBadge({
     size === "sm"
       ? "px-2 py-0.5 text-[10px] gap-1"
       : size === "lg"
-      ? "px-3 py-1.5 text-[13px] gap-2"
-      : "px-2.5 py-1 text-[11px] gap-1.5";
+        ? "px-3 py-1.5 text-[13px] gap-2"
+        : "px-2.5 py-1 text-[11px] gap-1.5";
 
   return (
     <span
-      className={`pw-pill inline-flex items-center font-medium uppercase pw-tracking-wide ${sizing} ${className}`}
+      className={`verification-badge pw-pill inline-flex items-center font-medium uppercase pw-tracking-wide ${sizing} ${className}`}
       style={{ color: t.color, background: t.bg, borderColor: t.border, borderWidth: 1, borderStyle: "solid" }}
       title={t.label}
+      data-tier={tier}
     >
       <span aria-hidden className="inline-flex items-center">{t.icon}</span>
       {t.label}

@@ -145,19 +145,39 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
 
-  /* ----- ID Verified pill (black background) ----- */
-  .verification-badge {
-    background: #000000 !important;
-    color: #F5F5F0 !important;
-    border-color: #4C7A5E !important;
-  }
-
-  .verification-badge .verified-dot {
-    background: #4C7A5E !important;
-  }
-
-  .verification-badge .verified-icon {
+  /* ----- Verification badges (dark mode) – background matches page bg ----- */
+  .verification-badge[data-tier="identity"] {
+    background: #1F1F1E !important;
     color: #4C7A5E !important;
+    border: 1px solid #4C7A5E !important;
+  }
+
+  .verification-badge[data-tier="email"] {
+    background: #1F1F1E !important;
+    color: #3B82F6 !important;
+    border: 1px solid #3B82F6 !important;
+  }
+
+  .verification-badge[data-tier="unverified"] {
+    background: #1F1F1E !important;
+    color: #9CA3AF !important;
+    border: 1px solid #9CA3AF !important;
+  }
+
+  .verification-badge[data-tier="premium"] {
+    background: #1F1F1E !important;
+    color: #FACC15 !important;
+    border: 1px solid #FACC15 !important;
+  }
+
+  /* ----- Unverified banner (dark mode) – consistent with page bg ----- */
+  .unverified-banner {
+    background: #1F1F1E !important;
+    border-color: #3A3A38 !important;
+  }
+
+  .unverified-banner .text-[var(--pw-ink-2)] {
+    color: #A8A8A0 !important;
   }
 
   /* ----- Impersonation banner (dark mode) ----- */
@@ -191,9 +211,9 @@
 
   /* ----- Impersonate button (dark mode) ----- */
   .admin-impersonate-btn {
-    background: #000000 !important;
+    background: #1F1F1E !important;
     color: #F5F5F0 !important;
-    border-color: #4C7A5E !important;
+    border: 1px solid #4C7A5E !important;
   }
 
   .admin-impersonate-btn:hover {
