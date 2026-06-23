@@ -2,6 +2,21 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* FORCE DARK BACKGROUND – top-level rule */
+html.dark {
+  background-color: #1F1F1E !important;
+}
+
+html.dark body {
+  background-color: #1F1F1E !important;
+  color: #F5F5F0 !important;
+}
+
+html:not(.dark) body {
+  background-color: #FAFAF7 !important;
+  color: #1A1A1A !important;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
