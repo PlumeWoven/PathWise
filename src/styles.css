@@ -270,12 +270,16 @@
   .dark .dialog-content .mt-4 {
     border-color: #3A3A38 !important;
   }
-}
 
-/* Force body background in dark mode */
-.dark body {
-  background-color: #1F1F1E !important;
-  color: #F5F5F0 !important;
+  /* ----- Force html and body background ----- */
+  html.dark {
+    background-color: #1F1F1E !important;
+  }
+
+  .dark body {
+    background-color: #1F1F1E !important;
+    color: #F5F5F0 !important;
+  }
 }
 
 @layer base {
