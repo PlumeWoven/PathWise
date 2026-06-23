@@ -83,7 +83,7 @@ export function PWHeader() {
     <>
       {/* Impersonation Banner */}
       {impersonating && (
-        <div className="sticky top-0 z-50 w-full bg-amber-50 border-b border-amber-300 px-5 py-2 flex items-center justify-between text-sm">
+        <div className="sticky top-0 z-50 w-full bg-amber-50 border-b border-amber-300 px-5 py-2 flex items-center justify-between text-sm impersonation-banner">
           <span className="text-amber-800">
             🔒 You are impersonating <strong>{impersonatingName}</strong>. Actions will affect their account.
           </span>
@@ -117,7 +117,7 @@ export function PWHeader() {
               pointerEvents: 'none',
             }}
             onAnimationComplete={() => {
-              toggleTheme(); // switches theme and applies dark/light class
+              toggleTheme();
               setWaveActive(false);
             }}
           />
@@ -131,9 +131,10 @@ export function PWHeader() {
           borderBottom: scrolled ? "1px solid var(--pw-border)" : "1px solid transparent",
         }}
       >
-        <Link to="/" className="flex items-center gap-3">
-          <span className="font-display italic text-[24px] leading-none text-[var(--pw-ink)]">PathWise</span>
-          {/* Dark mode toggle – replaces the beta-free pill */}
+        <div className="flex items-center gap-3">
+          <Link to="/" className="font-display italic text-[24px] leading-none text-[var(--pw-ink)]">
+            PathWise
+          </Link>
           <button
             onClick={handleDarkToggle}
             className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors hover:bg-[var(--pw-surface-2)] focus:outline-none"
@@ -141,7 +142,7 @@ export function PWHeader() {
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-        </Link>
+        </div>
 
         <div className="flex items-center gap-3">
           {isLoggedIn && user ? (
