@@ -70,22 +70,12 @@ export function DashboardShell({
         <div className="lg:hidden fixed inset-0 z-40 bg-black/40" onClick={() => setOpen(false)} />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar – removed duplicate logo, solid background */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-[260px] shrink-0 flex flex-col border-r border-[var(--pw-border)] bg-[var(--pw-surface)]/80 backdrop-blur-md transition-transform ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-[260px] shrink-0 flex flex-col border-r border-[var(--pw-border)] bg-[var(--pw-bg)] transition-transform ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
           }`}
       >
-        {/* Brand */}
-        <div className="px-5 py-5 border-b border-[var(--pw-border)]">
-          <Link to="/" className="font-display italic text-[22px] text-[var(--pw-ink)]">PathWise</Link>
-          {isDemo && (
-            <div className="mt-1 inline-block text-[10px] px-2 py-0.5 rounded-full bg-[var(--pw-accent)]/15 text-[var(--pw-accent)] font-mono-pw uppercase tracking-wider">
-              Demo
-            </div>
-          )}
-        </div>
-
-        {/* User */}
+        {/* User profile (now at the top) */}
         <div className="px-5 py-4 flex items-center gap-3 border-b border-[var(--pw-border)]">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-[13px] font-semibold text-white shrink-0"
@@ -109,8 +99,8 @@ export function DashboardShell({
                 ? pathname === item.to || pathname.startsWith(item.to + "/")
                 : false;
             const className = `relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] transition-colors ${isActive
-              ? "bg-[var(--pw-accent-soft)] text-[var(--pw-accent)] font-medium"
-              : "text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)]"
+                ? "bg-[var(--pw-accent-soft)] text-[var(--pw-accent)] font-medium"
+                : "text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)]"
               }`;
             const inner = (
               <>

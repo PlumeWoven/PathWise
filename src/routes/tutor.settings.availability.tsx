@@ -337,5 +337,4 @@ function Legend({ color, label, border }: { color: string; label: string; border
 }
 
 // Named export for dashboard reuse
-const TutorAvailabilityComponent = Route.options.component;
-export { TutorAvailabilityComponent as TutorAvailabilityPage };
+export { AvailabilityPage as TutorAvailabilityPage };
