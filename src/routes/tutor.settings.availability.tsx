@@ -31,7 +31,6 @@ function AvailabilityPage() {
   const { isDark } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
-
   const isInsideDashboard = location.pathname.startsWith('/dashboard');
 
   const [grid, setGrid] = useState<Record<string, CellState>>({});
@@ -299,13 +298,11 @@ function Hour({ hour, cellState, onMouseDown, onMouseEnter }: {
     const hr = hour % 12 === 0 ? 12 : hour % 12;
     return `${hr}${ampm}`;
   }, [hour]);
-
   return (
     <>
       <div className="text-right pr-2 font-mono-pw text-[11px] text-[var(--pw-ink-2)] py-1">{label}</div>
       {DAY_INDEX.map((day) => {
         const state = cellState(day, hour);
-        // Use CSS classes for colors (respect dark mode)
         let bgClass = "";
         if (state === "available") bgClass = "bg-[var(--pw-accent-2)]";
         else if (state === "blocked") bgClass = "bg-[var(--pw-ink-2)]";
@@ -336,5 +333,6 @@ function Legend({ color, label, border }: { color: string; label: string; border
   );
 }
 
-// Named export for dashboard reuse
-export { AvailabilityPage as TutorAvailabilityPage };
+// ===== NAMED EXPORT FOR DASHBOARD REUSE =====
+const TutorAvailabilityComponent = Route.options.component;
+export { TutorAvailabilityComponent as TutorAvailabilityPage };
