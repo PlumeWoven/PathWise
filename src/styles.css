@@ -145,6 +145,57 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+
+  /* ----- ID Verified pill (black background) ----- */
+  .verification-badge {
+    background: #000000 !important;
+    color: #F5F5F0 !important;
+    border-color: #4C7A5E !important;
+  }
+
+  .verification-badge .verified-dot {
+    background: #4C7A5E !important;
+  }
+
+  .verification-badge .verified-icon {
+    color: #4C7A5E !important;
+  }
+
+  /* ----- Impersonation banner (dark mode) ----- */
+  .impersonation-banner {
+    background: #3D2B20 !important;
+    border-color: #5C3A2A !important;
+  }
+
+  .impersonation-banner span {
+    color: #F5F5F0 !important;
+  }
+
+  .impersonation-banner button {
+    background: #E85D26 !important;
+  }
+
+  /* ----- Course page top card (dark mode) ----- */
+  .course-hero {
+    background: #2A2A28 !important;
+    border-color: #3A3A38 !important;
+  }
+
+  .course-hero .course-title {
+    color: #F5F5F0 !important;
+  }
+
+  .course-hero .course-subtitle,
+  .course-hero .course-meta {
+    color: #A8A8A0 !important;
+  }
+
+  /* ----- Admin impersonate button (dark mode) ----- */
+  .admin-impersonate-btn {
+    background: #333332 !important;
+    color: #F5F5F0 !important;
+    border-color: #4C7A5E !important;
+  }
 }
 
 @layer base {
@@ -207,53 +258,6 @@
   .pw-card {
     background: var(--pw-surface);
     border-color: var(--pw-border);
-  }
-
-  /* ----- Impersonation banner (dark mode) ----- */
-  .dark .impersonation-banner {
-    background: #3D2B20 !important;
-    border-color: #5C3A2A !important;
-  }
-
-  .dark .impersonation-banner span {
-    color: #F5F5F0 !important;
-  }
-
-  .dark .impersonation-banner button {
-    background: #E85D26 !important;
-  }
-
-  /* ----- ID Verified pill (dark mode) ----- */
-  .dark .verification-badge {
-    background: #2A2A28 !important;
-    color: #F5F5F0 !important;
-    border-color: #4C7A5E !important;
-  }
-
-  .dark .verification-badge .verified-dot {
-    background: #4C7A5E !important;
-  }
-
-  /* ----- Course page top card (dark mode) ----- */
-  .dark .course-hero {
-    background: #2A2A28 !important;
-    border-color: #3A3A38 !important;
-  }
-
-  .dark .course-hero .course-title {
-    color: #F5F5F0 !important;
-  }
-
-  .dark .course-hero .course-subtitle,
-  .dark .course-hero .course-meta {
-    color: #A8A8A0 !important;
-  }
-
-  /* ----- Admin impersonate button (dark mode) ----- */
-  .dark .admin-impersonate-btn {
-    background: #333332 !important;
-    color: #F5F5F0 !important;
-    border-color: #4C7A5E !important;
   }
 }
 
