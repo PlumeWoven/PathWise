@@ -10,6 +10,7 @@ import {
   Camera, Check, ChevronLeft, ChevronRight, Search, Sparkles,
   Upload, Video as VideoIcon, X, Plus, Clock, DollarSign, Eye,
 } from "lucide-react";
+import { AvailabilityGrid, type CellState } from "@/pathwise/AvailabilityGrid";
 
 export const Route = createFileRoute("/onboarding/tutor")({
   head: () => ({ meta: [{ title: "Tutor onboarding — PathWise" }] }),
@@ -26,8 +27,6 @@ const STEPS = [
   "Review",
 ];
 const EDU_LEVELS = ["High School", "Bachelor's", "Master's", "PhD", "Other"];
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 interface Subject { id: string; name: string; category: string | null }
 
@@ -98,7 +97,7 @@ function loadLocal(): Partial<WizardState> {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; }
 }
 function saveLocal(s: WizardState) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { }
 }
 
 function TutorWizard() {
@@ -282,7 +281,7 @@ function TutorWizard() {
     }
     confetti({ particleCount: 140, spread: 80, origin: { y: 0.65 } });
     setTimeout(() => confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 } }), 250);
-    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    try { localStorage.removeItem(STORAGE_KEY); } catch { }
     await refreshProfile();
     toast.success("Profile published! 🎉");
     setTimeout(() => navigate({ to: "/dashboard" }), 1200);
@@ -886,28 +885,44 @@ function Step3({
   );
 }
 
-/* ─────────────── Step 4: Availability ─────────────── */
+/* ─────────────── Step 4: Availability (drag-to-paint) ─────────────── */
 
 function Step4({
   state, update,
 }: { state: WizardState; update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void }) {
-  const set = useMemo(() => {
-    const s = new Set<string>();
-    state.availability.forEach((x) => s.add(`${x.day}-${x.hour}`));
-    return s;
+  // Build grid from availability array
+  const buildGrid = (availability: AvailSlot[]): Record<string, CellState> => {
+    const grid: Record<string, CellState> = {};
+    availability.forEach((slot) => {
+      const key = `${slot.day}-${slot.hour}`;
+      grid[key] = "available";
+    });
+    return grid;
+  };
+
+  const [grid, setGrid] = useState<Record<string, CellState>>(() => buildGrid(state.availability));
+
+  // Sync when state.availability changes (e.g., hydration)
+  useEffect(() => {
+    setGrid(buildGrid(state.availability));
   }, [state.availability]);
 
-  function toggle(day: number, hour: number) {
-    const key = `${day}-${hour}`;
-    const next = set.has(key)
-      ? state.availability.filter((x) => `${x.day}-${x.hour}` !== key)
-      : [...state.availability, { day, hour }];
-    update("availability", next);
-  }
+  const handleGridChange = (newGrid: Record<string, CellState>) => {
+    setGrid(newGrid);
+    // Convert to availability array (only available slots)
+    const slots: AvailSlot[] = [];
+    Object.entries(newGrid).forEach(([key, value]) => {
+      if (value === "available") {
+        const [day, hour] = key.split("-").map(Number);
+        slots.push({ day, hour });
+      }
+    });
+    update("availability", slots);
+  };
 
   return (
     <div className="space-y-5">
-      <p className="text-[14px] text-[var(--pw-ink-2)]">When are you available each week? Tap an hour to toggle.</p>
+      <p className="text-[14px] text-[var(--pw-ink-2)]">When are you available each week? Drag to paint multiple cells.</p>
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
@@ -952,43 +967,12 @@ function Step4({
         </div>
       </div>
 
-      <div>
-        <Label>Weekly availability</Label>
-        <div className="mt-2 overflow-x-auto pw-border border rounded-md">
-          <table className="w-full text-[11px] font-mono-pw">
-            <thead>
-              <tr>
-                <th className="p-1.5 text-left text-[var(--pw-ink-2)]">Hr</th>
-                {DAYS.map((d) => <th key={d} className="p-1.5 text-[var(--pw-ink-2)]">{d}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {HOURS.map((h) => (
-                <tr key={h} className="border-t pw-border">
-                  <td className="p-1 text-[var(--pw-ink-2)]">{h.toString().padStart(2, "0")}</td>
-                  {DAYS.map((_, dayIdx) => {
-                    const on = set.has(`${dayIdx}-${h}`);
-                    return (
-                      <td key={dayIdx} className="p-0.5">
-                        <button
-                          type="button"
-                          onClick={() => toggle(dayIdx, h)}
-                          className="w-full h-6 rounded-sm transition-colors"
-                          style={{
-                            background: on ? "var(--pw-accent)" : "var(--pw-surface-2)",
-                          }}
-                          aria-label={`${DAYS[dayIdx]} ${h}:00`}
-                        />
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[11.5px] text-[var(--pw-ink-2)] mt-1">{state.availability.length} hourly slots selected</p>
-      </div>
+      <AvailabilityGrid
+        grid={grid}
+        onChange={handleGridChange}
+        bookedSlots={new Set()}
+        className="mt-2"
+      />
     </div>
   );
 }
