@@ -112,6 +112,7 @@ function AdminUsers() {
                                     <Button
                                         variant="outline"
                                         size="sm"
+                                        className="admin-impersonate-btn"
                                         onClick={() => handleImpersonate(u.id, u.display_name || u.full_name || 'User')}
                                         disabled={impersonating === u.id}
                                     >

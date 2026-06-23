@@ -199,7 +199,7 @@ function computeCompleteness(p: ProfileFull | null, availability: number) {
     return { items, score };
 }
 
-// ---------- Components (unchanged from original) ----------
+// ---------- Components ----------
 function MetricCard({ label, value, change, skeleton }:
     { label: string; value: string; change: number | null; skeleton?: boolean }) {
     if (skeleton) return <div className="pw-card p-5 h-[112px] animate-pulse bg-[var(--pw-surface-2)]" />;
@@ -282,8 +282,11 @@ function EarningsChart({ earnings }: { earnings: EarningRow[] }) {
                 </div>
                 <div className="flex gap-1 p-1 rounded-full bg-[var(--pw-surface-2)]">
                     {(["daily", "weekly", "monthly"] as Range[]).map(r => (
-                        <button key={r} onClick={() => setRange(r)}
-                            className={`px-3 py-1 text-[12px] rounded-full capitalize ${range === r ? "bg-white shadow-sm font-medium" : "text-[var(--pw-ink-2)]"}`}>
+                        <button
+                            key={r}
+                            onClick={() => setRange(r)}
+                            className={`chart-range-pill px-3 py-1 text-[12px] rounded-full capitalize ${range === r ? "active" : ""}`}
+                        >
                             {r}
                         </button>
                     ))}
