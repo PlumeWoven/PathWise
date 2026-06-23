@@ -76,6 +76,7 @@
   --pw-accent-3: #F4C430;
   --pw-border: #E8E3DB;
   --pw-danger: #E05A5A;
+  --pw-input-bg: #ffffff;
 
   --background: oklch(0.985 0.005 80);
   --foreground: oklch(0.2 0.01 60);
@@ -124,6 +125,7 @@
   --pw-accent-2: #4C7A5E;
   --pw-accent-3: #D4A830;
   --pw-danger: #E05A5A;
+  --pw-input-bg: #2A2A28;
 
   /* Tailwind dark variables (oklch) */
   --background: oklch(0.129 0.042 264.695);
@@ -179,6 +181,63 @@
 
   .font-mono-pw {
     font-family: "DM Mono", ui-monospace, monospace;
+  }
+
+  /* ----- Global dark overrides for form elements ----- */
+  input,
+  select,
+  textarea {
+    background-color: var(--pw-input-bg);
+    color: var(--pw-ink);
+    border-color: var(--pw-border);
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--pw-accent);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--pw-accent-soft);
+  }
+
+  /* ----- Quiz and step containers ----- */
+  .quiz-option,
+  .step-container {
+    background: var(--pw-surface);
+    border-color: var(--pw-border);
+    color: var(--pw-ink);
+  }
+
+  .quiz-option.selected {
+    background: var(--pw-accent-soft);
+    border-color: var(--pw-accent);
+  }
+
+  /* ----- Dashboard cards & sidebar ----- */
+  .pw-card {
+    background: var(--pw-surface);
+    border-color: var(--pw-border);
+  }
+
+  /* ----- Calendar cells (override inline styles) ----- */
+  .calendar-cell-available {
+    background: #10B981;
+  }
+
+  .calendar-cell-blocked {
+    background: #9CA3AF;
+  }
+
+  .calendar-cell-booked {
+    background: #3B82F6;
+  }
+
+  .calendar-cell-free {
+    background: var(--pw-input-bg);
+  }
+
+  .dark .calendar-cell-free {
+    background: #2A2A28;
   }
 }
 

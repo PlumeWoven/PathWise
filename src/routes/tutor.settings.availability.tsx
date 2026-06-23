@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
+import { useDarkMode } from "../pathwise/DarkMode";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES, detectTimezone } from "../pathwise/scheduling";
 import { Globe, Clock, Copy, Save, AlertTriangle } from "lucide-react";
@@ -27,8 +28,10 @@ type CellState = "free" | "available" | "blocked" | "booked";
 
 function AvailabilityPage() {
   const { user, isLoggedIn } = useAuth();
+  const { isDark } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
+
   const isInsideDashboard = location.pathname.startsWith('/dashboard');
 
   const [grid, setGrid] = useState<Record<string, CellState>>({});
@@ -225,20 +228,20 @@ function AvailabilityPage() {
         <div className="pw-card mt-4 p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] flex items-center gap-1.5"><Globe className="w-3 h-3" /> Timezone</label>
-            <select value={tz} onChange={(e) => setTz(e.target.value)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-white">
+            <select value={tz} onChange={(e) => setTz(e.target.value)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-input-bg)]">
               {[tz, ...COMMON_TIMEZONES.filter((t) => t !== tz)].map((z) => <option key={z} value={z}>{z}</option>)}
             </select>
             <p className="text-[11px] text-[var(--pw-ink-2)] mt-1">Current: <strong>{tz}</strong></p>
           </div>
           <div>
             <label className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] flex items-center gap-1.5"><Clock className="w-3 h-3" /> Buffer between sessions</label>
-            <select value={bufferMinutes} onChange={(e) => setBufferMinutes(Number(e.target.value))} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-white">
+            <select value={bufferMinutes} onChange={(e) => setBufferMinutes(Number(e.target.value))} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-input-bg)]">
               {BUFFER_OPTIONS.map((b) => <option key={b} value={b}>{b === 0 ? "No buffer" : `${b} min`}</option>)}
             </select>
           </div>
           <div>
             <label className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Min advance booking</label>
-            <select value={minAdvanceHours} onChange={(e) => setMinAdvanceHours(Number(e.target.value))} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-white">
+            <select value={minAdvanceHours} onChange={(e) => setMinAdvanceHours(Number(e.target.value))} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-input-bg)]">
               {[2, 6, 12, 24, 48, 72].map((h) => <option key={h} value={h}>{h} hours</option>)}
             </select>
           </div>
@@ -247,7 +250,7 @@ function AvailabilityPage() {
             <button
               onClick={() => setInstantBookings((v) => !v)}
               className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] text-left"
-              style={{ background: instantBookings ? "var(--pw-accent-soft)" : "white" }}
+              style={{ background: instantBookings ? "var(--pw-accent-soft)" : "var(--pw-input-bg)" }}
             >
               {instantBookings ? "On — auto-confirm" : "Off — you confirm each one"}
             </button>
@@ -258,7 +261,7 @@ function AvailabilityPage() {
           <Legend color="#10B981" label="Available" />
           <Legend color="#9CA3AF" label="Blocked / time off" />
           <Legend color="#3B82F6" label="Booked" />
-          <Legend color="white" label="Free" border />
+          <Legend color="white" label="Free" border={isDark} />
           <button onClick={copyMondayToAll} className="pw-btn-outline px-3 py-1.5 text-[12px] flex items-center gap-1.5 ml-auto">
             <Copy className="w-3 h-3" /> Copy Monday to all days
           </button>
@@ -296,22 +299,26 @@ function Hour({ hour, cellState, onMouseDown, onMouseEnter }: {
     const hr = hour % 12 === 0 ? 12 : hour % 12;
     return `${hr}${ampm}`;
   }, [hour]);
+
   return (
     <>
       <div className="text-right pr-2 font-mono-pw text-[11px] text-[var(--pw-ink-2)] py-1">{label}</div>
       {DAY_INDEX.map((day) => {
         const state = cellState(day, hour);
-        const bg = state === "available" ? "#10B981"
-          : state === "blocked" ? "#9CA3AF"
-            : state === "booked" ? "#3B82F6"
-              : "white";
+        // Use CSS classes for colors (respect dark mode)
+        let bgClass = "";
+        if (state === "available") bgClass = "bg-[var(--pw-accent-2)]";
+        else if (state === "blocked") bgClass = "bg-[var(--pw-ink-2)]";
+        else if (state === "booked") bgClass = "bg-[var(--pw-accent)]";
+        else bgClass = "bg-[var(--pw-input-bg)]";
+
         return (
           <div
             key={`${day}-${hour}`}
             onMouseDown={() => onMouseDown(day, hour)}
             onMouseEnter={() => onMouseEnter(day, hour)}
-            className="h-7 rounded cursor-pointer pw-border hover:opacity-80 transition-opacity"
-            style={{ background: bg, opacity: state === "booked" ? 0.9 : 1 }}
+            className={`h-7 rounded cursor-pointer pw-border hover:opacity-80 transition-opacity ${bgClass}`}
+            style={{ opacity: state === "booked" ? 0.9 : 1 }}
             title={`${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]} ${hour}:00 — ${state}`}
           />
         );
@@ -329,6 +336,6 @@ function Legend({ color, label, border }: { color: string; label: string; border
   );
 }
 
-// ===== NAMED EXPORT FOR DASHBOARD REUSE =====
+// Named export for dashboard reuse
 const TutorAvailabilityComponent = Route.options.component;
 export { TutorAvailabilityComponent as TutorAvailabilityPage };
