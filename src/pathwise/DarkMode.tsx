@@ -13,6 +13,21 @@ const DarkModeContext = createContext<DarkModeContextValue | null>(null);
 export function DarkModeProvider({ children }: { children: ReactNode }) {
     const [theme, setTheme] = useState<Theme>('light');
 
+    const applyTheme = (t: Theme) => {
+        const root = document.documentElement;
+        if (t === 'dark') {
+            root.classList.add('dark');
+            // Force body background via inline style (overrides any CSS)
+            document.body.style.backgroundColor = '#1F1F1E';
+            document.body.style.color = '#F5F5F0';
+        } else {
+            root.classList.remove('dark');
+            document.body.style.backgroundColor = '#FAFAF7';
+            document.body.style.color = '#1A1A1A';
+        }
+        localStorage.setItem('pw-theme', t);
+    };
+
     useEffect(() => {
         const stored = localStorage.getItem('pw-theme') as Theme | null;
         if (stored === 'dark' || stored === 'light') {
@@ -25,16 +40,6 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
             applyTheme(initial);
         }
     }, []);
-
-    const applyTheme = (t: Theme) => {
-        const root = document.documentElement;
-        if (t === 'dark') {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
-        }
-        localStorage.setItem('pw-theme', t);
-    };
 
     const toggleTheme = () => {
         const newTheme = theme === 'light' ? 'dark' : 'light';
