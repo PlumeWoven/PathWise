@@ -1,7 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
-
 import appCss from "../styles.css?url";
 import { AuthProvider } from "../pathwise/auth";
+import { DarkModeProvider } from "../pathwise/DarkMode";
 import { LoginModal } from "../pathwise/LoginModal";
 import { Toaster } from "sonner";
 
@@ -74,10 +74,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <AuthProvider>
-      <Outlet />
-      <LoginModal />
-      <Toaster position="top-center" richColors />
-    </AuthProvider>
+    <DarkModeProvider>
+      <AuthProvider>
+        <Outlet />
+        <LoginModal />
+        <Toaster position="top-center" richColors />
+      </AuthProvider>
+    </DarkModeProvider>
   );
 }
