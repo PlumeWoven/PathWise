@@ -17,13 +17,17 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
         const root = document.documentElement;
         if (t === 'dark') {
             root.classList.add('dark');
-            // Force body background via inline style (overrides any CSS)
+            // Force background on both html and body
+            root.style.backgroundColor = '#1F1F1E';
             document.body.style.backgroundColor = '#1F1F1E';
             document.body.style.color = '#F5F5F0';
+            console.log('Dark mode ON, class list:', root.classList);
         } else {
             root.classList.remove('dark');
-            document.body.style.backgroundColor = '#FAFAF7';
-            document.body.style.color = '#1A1A1A';
+            root.style.backgroundColor = '';
+            document.body.style.backgroundColor = '';
+            document.body.style.color = '';
+            console.log('Dark mode OFF, class list:', root.classList);
         }
         localStorage.setItem('pw-theme', t);
     };
