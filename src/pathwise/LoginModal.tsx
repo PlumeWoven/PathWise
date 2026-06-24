@@ -77,10 +77,30 @@ export function LoginModal() {
 
   async function handleGoogle() {
     setError("");
+    // In sign-up mode the role picker must be used; in sign-in mode
+    // the role is whatever already exists on the profile.
+    if (mode === "signup" && !role) {
+      setError("Please choose your role first.");
+      return;
+    }
     setSubmitting(true);
     try {
+      if (role) {
+        // Survive the OAuth redirect so we can apply the picked role
+        // after the browser returns from Google.
+        try {
+          sessionStorage.setItem("pathwise_pending_role", role);
+        } catch {
+          /* ignore storage errors */
+        }
+      }
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
+        // Forwarded into raw_user_meta_data so the DB trigger picks up
+        // the role on first insert. extraParams is a defensive duplicate
+        // for providers that don't honor `data`.
+        data: role ? { role } : undefined,
+        extraParams: role ? { role } : undefined,
       });
       if (result.redirected) return; // browser redirecting to Google
       if (result.error) {
@@ -88,30 +108,41 @@ export function LoginModal() {
         setSubmitting(false);
         return;
       }
-      // Tokens received & session set
+      // Tokens received & session set (no redirect happened).
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        // For brand-new Google users, ensure a profile exists.
-        const { data: existing } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("id", data.user.id)
-          .maybeSingle();
-        if (!existing) {
-          const fallbackName =
-            (data.user.user_metadata?.full_name as string) ||
-            (data.user.user_metadata?.name as string) ||
-            data.user.email?.split("@")[0] ||
-            "Learner";
-          await supabase.from("profiles").upsert(
-            {
-              id: data.user.id,
-              role: role ?? "student",
-              display_name: fallbackName,
-              full_name: fallbackName,
-            },
-            { onConflict: "id" },
-          );
+        // Display name is safe to upsert (no semantic ownership concern).
+        const fallbackName =
+          (data.user.user_metadata?.full_name as string) ||
+          (data.user.user_metadata?.name as string) ||
+          data.user.email?.split("@")[0] ||
+          "Learner";
+        await supabase.from("profiles").upsert(
+          {
+            id: data.user.id,
+            display_name: fallbackName,
+            full_name: fallbackName,
+          },
+          { onConflict: "id" },
+        );
+
+        // Apply pending role via the one-shot RPC, which only writes
+        // when the column is currently NULL (so returning users are safe).
+        let pending: Role | null = role;
+        try {
+          const stored = sessionStorage.getItem("pathwise_pending_role") as Role | null;
+          if (stored) pending = stored;
+          sessionStorage.removeItem("pathwise_pending_role");
+        } catch {
+          /* ignore storage errors */
+        }
+        if (pending) {
+          const { error: rpcErr } = await supabase.rpc("set_profile_role", {
+            target_role: pending,
+          });
+          if (rpcErr && !/already set/i.test(rpcErr.message)) {
+            console.warn("[auth] set_profile_role", rpcErr);
+          }
         }
         await routeAfterAuth(data.user.id);
       }
@@ -173,13 +204,23 @@ export function LoginModal() {
       return;
     }
     if (data.user) {
-      // Always upsert profile (in case trigger didn't fire)
+      // Names are safe to repair with an upsert (no ownership concern).
       await supabase
         .from("profiles")
         .upsert(
-          { id: data.user.id, role, display_name: name.trim(), full_name: name.trim() },
+          { id: data.user.id, display_name: name.trim(), full_name: name.trim() },
           { onConflict: "id" },
         );
+      // Role: use the one-shot RPC. The trigger normally already wrote
+      // the role from user_metadata; this is a safety net for the
+      // (rare) case where it didn't fire, and it cannot overwrite an
+      // already-assigned role.
+      const { error: rpcErr } = await supabase.rpc("set_profile_role", {
+        target_role: role,
+      });
+      if (rpcErr && !/already set/i.test(rpcErr.message)) {
+        console.warn("[auth] set_profile_role", rpcErr);
+      }
       // Show confirmation modal instead of routing immediately
       setSignupEmail(email.trim());
       setShowConfirmation(true);
