@@ -4,17 +4,17 @@
 
 /* FORCE DARK BACKGROUND – top-level rule */
 html.dark {
-  background-color: #1F1F1E !important;
+  background-color: #1f1f1e !important;
 }
 
 html.dark body {
-  background-color: #1F1F1E !important;
-  color: #F5F5F0 !important;
+  background-color: #1f1f1e !important;
+  color: #f5f5f0 !important;
 }
 
 html:not(.dark) body {
-  background-color: #FAFAF7 !important;
-  color: #1A1A1A !important;
+  background-color: #fafaf7 !important;
+  color: #1a1a1a !important;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -64,19 +64,19 @@ html:not(.dark) body {
 
 :root {
   --radius: 0.75rem;
-  --pw-bg: #FAFAF7;
-  --pw-surface: #FFFFFF;
-  --pw-surface-2: #F3F0EA;
-  --pw-ink: #1A1A1A;
-  --pw-ink-2: #6B6560;
-  --pw-accent: #E85D26;
-  --pw-accent-soft: #FFF5F0;
-  --pw-accent-2: #2D6A4F;
-  --pw-accent-3: #F4C430;
-  --pw-border: #E8E3DB;
-  --pw-danger: #E05A5A;
+  --pw-bg: #fafaf7;
+  --pw-surface: #ffffff;
+  --pw-surface-2: #f3f0ea;
+  --pw-ink: #1a1a1a;
+  --pw-ink-2: #6b6560;
+  --pw-accent: #e85d26;
+  --pw-accent-soft: #fff5f0;
+  --pw-accent-2: #2d6a4f;
+  --pw-accent-3: #f4c430;
+  --pw-border: #e8e3db;
+  --pw-danger: #e05a5a;
   --pw-input-bg: #ffffff;
-  --pw-input-text: #1A1A1A;
+  --pw-input-text: #1a1a1a;
 
   --background: oklch(0.985 0.005 80);
   --foreground: oklch(0.2 0.01 60);
@@ -113,19 +113,19 @@ html:not(.dark) body {
 }
 
 .dark {
-  --pw-bg: #1F1F1E;
-  --pw-surface: #2A2A28;
+  --pw-bg: #1f1f1e;
+  --pw-surface: #2a2a28;
   --pw-surface-2: #333332;
-  --pw-ink: #F5F5F0;
-  --pw-ink-2: #A8A8A0;
-  --pw-border: #3A3A38;
-  --pw-accent: #E85D26;
-  --pw-accent-soft: #1F1F1E;
-  --pw-accent-2: #4C7A5E;
-  --pw-accent-3: #D4A830;
-  --pw-danger: #E05A5A;
-  --pw-input-bg: #1F1F1E;
-  --pw-input-text: #F5F5F0;
+  --pw-ink: #f5f5f0;
+  --pw-ink-2: #a8a8a0;
+  --pw-border: #3a3a38;
+  --pw-accent: #e85d26;
+  --pw-accent-soft: #1f1f1e;
+  --pw-accent-2: #4c7a5e;
+  --pw-accent-3: #d4a830;
+  --pw-danger: #e05a5a;
+  --pw-input-bg: #1f1f1e;
+  --pw-input-text: #f5f5f0;
 
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
@@ -159,102 +159,110 @@ html:not(.dark) body {
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+}
 
-  /* ----- Verification badges (dark mode) – background matches page bg ----- */
-  .verification-badge[data-tier="identity"] {
-    background: #1F1F1E !important;
-    color: #4C7A5E !important;
-    border: 1px solid #4C7A5E !important;
-  }
+/* ===== Dark-mode component overrides =====
+   Intentionally de-nested (`.dark .foo`) instead of nested inside
+   `.dark { ... }`. Tailwind v4's Lightning CSS compiler DROPS the bare
+   custom-property declarations from a `.dark` rule that also contains nested
+   style rules, which silently breaks the entire dark theme (every component
+   reads var(--pw-bg)/var(--background), etc.). Keeping `.dark` as a pure
+   declarations block (like `:root`) avoids that. */
 
-  .verification-badge[data-tier="email"] {
-    background: #1F1F1E !important;
-    color: #3B82F6 !important;
-    border: 1px solid #3B82F6 !important;
-  }
+/* ----- Verification badges (dark mode) – background matches page bg ----- */
+.dark .verification-badge[data-tier="identity"] {
+  background: #1f1f1e !important;
+  color: #4c7a5e !important;
+  border: 1px solid #4c7a5e !important;
+}
 
-  .verification-badge[data-tier="unverified"] {
-    background: #1F1F1E !important;
-    color: #9CA3AF !important;
-    border: 1px solid #9CA3AF !important;
-  }
+.dark .verification-badge[data-tier="email"] {
+  background: #1f1f1e !important;
+  color: #3b82f6 !important;
+  border: 1px solid #3b82f6 !important;
+}
 
-  .verification-badge[data-tier="premium"] {
-    background: #1F1F1E !important;
-    color: #FACC15 !important;
-    border: 1px solid #FACC15 !important;
-  }
+.dark .verification-badge[data-tier="unverified"] {
+  background: #1f1f1e !important;
+  color: #9ca3af !important;
+  border: 1px solid #9ca3af !important;
+}
 
-  /* ----- Unverified banner (dark mode) – consistent with page bg ----- */
-  .unverified-banner {
-    background: #1F1F1E !important;
-    border-color: #3A3A38 !important;
-  }
+.dark .verification-badge[data-tier="premium"] {
+  background: #1f1f1e !important;
+  color: #facc15 !important;
+  border: 1px solid #facc15 !important;
+}
 
-  .unverified-banner .text-[var(--pw-ink-2)] {
-    color: #A8A8A0 !important;
-  }
+/* ----- Unverified banner (dark mode) – consistent with page bg ----- */
+.dark .unverified-banner {
+  background: #1f1f1e !important;
+  border-color: #3a3a38 !important;
+}
 
-  /* ----- Impersonation banner (dark mode) ----- */
-  .impersonation-banner {
-    background: #3D2B20 !important;
-    border-color: #5C3A2A !important;
-  }
+.dark .unverified-banner .text-\[var\(--pw-ink-2\)\] {
+  color: #a8a8a0 !important;
+}
 
-  .impersonation-banner span {
-    color: #F5F5F0 !important;
-  }
+/* ----- Impersonation banner (dark mode) ----- */
+.dark .impersonation-banner {
+  background: #3d2b20 !important;
+  border-color: #5c3a2a !important;
+}
 
-  .impersonation-banner button {
-    background: #E85D26 !important;
-  }
+.dark .impersonation-banner span {
+  color: #f5f5f0 !important;
+}
 
-  /* ----- Course page top card (dark mode) ----- */
-  .course-hero {
-    background: #2A2A28 !important;
-    border-color: #3A3A38 !important;
-  }
+.dark .impersonation-banner button {
+  background: #e85d26 !important;
+}
 
-  .course-hero .course-title {
-    color: #F5F5F0 !important;
-  }
+/* ----- Course page top card (dark mode) ----- */
+.dark .course-hero {
+  background: #2a2a28 !important;
+  border-color: #3a3a38 !important;
+}
 
-  .course-hero .course-subtitle,
-  .course-hero .course-meta {
-    color: #A8A8A0 !important;
-  }
+.dark .course-hero .course-title {
+  color: #f5f5f0 !important;
+}
 
-  /* ----- Impersonate button (dark mode) ----- */
-  .admin-impersonate-btn {
-    background: #1F1F1E !important;
-    color: #F5F5F0 !important;
-    border: 1px solid #4C7A5E !important;
-  }
+.dark .course-hero .course-subtitle,
+.dark .course-hero .course-meta {
+  color: #a8a8a0 !important;
+}
 
-  .admin-impersonate-btn:hover {
-    background: #2A2A28 !important;
-  }
+/* ----- Impersonate button (dark mode) ----- */
+.dark .admin-impersonate-btn {
+  background: #1f1f1e !important;
+  color: #f5f5f0 !important;
+  border: 1px solid #4c7a5e !important;
+}
 
-  /* ----- Daily/Weekly/Monthly pills (dark mode) ----- */
-  .chart-range-pill {
-    background: transparent !important;
-    color: var(--pw-ink) !important;
-    border-color: transparent !important;
-  }
+.dark .admin-impersonate-btn:hover {
+  background: #2a2a28 !important;
+}
 
-  .chart-range-pill.active {
-    background: #D4D4D4 !important;
-    color: #000000 !important;
-    font-weight: 500;
-    box-shadow: none !important;
-  }
+/* ----- Daily/Weekly/Monthly pills (dark mode) ----- */
+.dark .chart-range-pill {
+  background: transparent !important;
+  color: var(--pw-ink) !important;
+  border-color: transparent !important;
+}
 
-  /* ----- Override hardcoded bg-white on inputs, selects, textareas ----- */
-  input.bg-white,
-  select.bg-white,
-  textarea.bg-white {
-    background-color: var(--pw-input-bg) !important;
-  }
+.dark .chart-range-pill.active {
+  background: #d4d4d4 !important;
+  color: #000000 !important;
+  font-weight: 500;
+  box-shadow: none !important;
+}
+
+/* ----- Override hardcoded bg-white on inputs, selects, textareas ----- */
+.dark input.bg-white,
+.dark select.bg-white,
+.dark textarea.bg-white {
+  background-color: var(--pw-input-bg) !important;
 }
 
 @layer base {
@@ -367,7 +375,6 @@ html:not(.dark) body {
   }
 
   @keyframes pw-bounce-chev {
-
     0%,
     100% {
       transform: translateY(0);
@@ -403,7 +410,6 @@ html:not(.dark) body {
   }
 
   @keyframes pw-flash-green {
-
     0%,
     100% {
       border-color: var(--pw-border);
@@ -420,7 +426,6 @@ html:not(.dark) body {
   }
 
   @keyframes pw-flash-red {
-
     0%,
     100% {
       border-color: var(--pw-border);

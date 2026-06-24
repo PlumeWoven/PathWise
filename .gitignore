@@ -18,3 +18,4 @@ supabase/.temp/
 supabase/.branches/
 *.local.*.vercel/
 .vercel
+.env*
