@@ -259,8 +259,8 @@ function QuizPageInner() {
                       key={g.id}
                       onClick={() => pickGoal(g.id)}
                       className={`pw-pill px-5 py-3 pw-border text-[14px] transition-all duration-250 ${selected
-                          ? "text-white border-[var(--pw-accent)]"
-                          : "bg-white hover:border-[var(--pw-accent)]"
+                          ? "text-[var(--pw-surface)] border-[var(--pw-accent)]"
+                          : "bg-[var(--pw-surface)] hover:border-[var(--pw-accent)]"
                         }`}
                       style={selected ? { background: "var(--pw-accent)" } : undefined}
                     >
@@ -344,7 +344,7 @@ function QuizPageInner() {
                       pw.answers[pw.answers.length - 1]?.questionId === questions[qIndex].id &&
                       pw.answers[pw.answers.length - 1]?.selected === i;
                     const isCorrect = i === questions[qIndex].correctIndex;
-                    let cls = "bg-white hover:border-[var(--pw-accent)]";
+                    let cls = "bg-[var(--pw-surface)] hover:border-[var(--pw-accent)]";
                     if (feedback !== "none" && isCorrect) cls = "border-[var(--pw-accent-2)]";
                     if (feedback === "wrong" && selectedThis) cls = "border-[var(--pw-danger)]";
                     return (

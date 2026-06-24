@@ -315,7 +315,7 @@ function MatchesPage() {
             <select
               value={search.sort}
               onChange={(e) => updateSearch({ sort: e.target.value as SortId })}
-              className="pw-border rounded-md px-3 py-1.5 text-[13px] bg-white"
+              className="pw-border rounded-md px-3 py-1.5 text-[13px] bg-[var(--pw-surface)]"
             >
               {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>

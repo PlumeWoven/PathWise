@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { normalizeRole, postAuthDestination } from '@/pathwise/roles';
 
 export const Route = createFileRoute('/auth/callback')({
     component: AuthCallback,
@@ -19,17 +20,19 @@ function AuthCallback() {
                 if (error) throw error;
                 if (user) {
                     toast.success('Signed in successfully!');
-                    // Redirect to appropriate dashboard based on role
+                    // Redirect to the role-correct destination (tutor/both/
+                    // student/unknown + onboarding state) via the single helper.
                     const { data: profile } = await supabase
                         .from('profiles')
                         .select('role, onboarding_completed')
                         .eq('id', user.id)
-                        .single();
-                    if (profile?.onboarding_completed) {
-                        navigate({ to: profile.role === 'tutor' ? '/dashboard' : '/roadmap' });
-                    } else {
-                        navigate({ to: profile?.role === 'tutor' ? '/onboarding/tutor' : '/onboarding/student' });
-                    }
+                        .maybeSingle();
+                    navigate({
+                        to: postAuthDestination(
+                            normalizeRole(profile?.role),
+                            profile?.onboarding_completed,
+                        ),
+                    });
                 } else {
                     toast.error('No user found');
                     navigate({ to: '/' });

@@ -2,13 +2,17 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { normalizeRole, postAuthDestination, type Role } from "./roles";
 
-export type Role = "student" | "tutor" | "both" | "admin";
+// Re-exported so existing `import { type Role } from "./auth"` sites keep working.
+export type { Role };
 export type VerificationStatus = "unverified" | "pending" | "verified" | "rejected";
 
 export interface Profile {
   id: string;
-  role: Role;
+  // null when the user has no role assigned yet. NEVER defaulted to a concrete
+  // role here — callers must handle the unset case explicitly.
+  role: Role | null;
   display_name: string | null;
   avatar_url: string | null;
   full_name: string | null;
@@ -20,7 +24,7 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role: Role | null;
   app_metadata?: Record<string, any>;
 }
 
@@ -58,7 +62,7 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
   if (!data) return null;
   return {
     id: (data as any).id,
-    role: ((data as any).role as Role) ?? "student",
+    role: normalizeRole((data as any).role),
     display_name: (data as any).display_name ?? null,
     avatar_url: (data as any).avatar_url ?? null,
     full_name: (data as any).full_name ?? null,
@@ -107,11 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   if (!newSession.user.confirmed_at) {
                     return;
                   }
-                  if (!p.onboarding_completed) {
-                    window.location.replace(p.role === "tutor" ? "/onboarding/tutor" : "/onboarding/student");
-                    return;
-                  }
-                  window.location.replace(p.role === "tutor" ? "/dashboard" : "/roadmap");
+                  // Single, role-correct destination (handles tutor/both/
+                  // student/unknown + onboarding state). Skip the hard
+                  // redirect when the role is unknown so we don't bounce the
+                  // user somewhere wrong.
+                  const dest = postAuthDestination(p.role, p.onboarding_completed);
+                  if (dest !== "/") window.location.replace(dest);
                 });
               }
             }

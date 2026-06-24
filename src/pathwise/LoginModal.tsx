@@ -1,6 +1,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
+import { normalizeRole, postAuthDestination } from "./roles";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
@@ -49,7 +50,9 @@ export function LoginModal() {
       .select("role, onboarding_completed")
       .eq("id", userId)
       .maybeSingle();
-    const r: Role = (profile?.role as Role) ?? "student";
+    // Never default an unknown role to "student"; postAuthDestination sends
+    // unknown roles to "/" instead of mislabeling the user.
+    const r = normalizeRole(profile?.role);
     const onboarded = !!profile?.onboarding_completed;
     // Claim any anonymous diagnostic + roadmap rows created before signup.
     try {
@@ -67,12 +70,7 @@ export function LoginModal() {
       console.error("[auth] claim anonymous error", err);
     }
     closeLogin();
-    // If onboarding isn't done, route into the role-appropriate onboarding.
-    if (!onboarded) {
-      navigate({ to: r === "tutor" ? "/onboarding/tutor" : "/onboarding/student" });
-      return;
-    }
-    navigate({ to: r === "tutor" ? "/dashboard" : "/roadmap" });
+    navigate({ to: postAuthDestination(r, onboarded) });
   }
 
   async function handleGoogle() {
@@ -96,10 +94,8 @@ export function LoginModal() {
       }
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
-        // Forwarded into raw_user_meta_data so the DB trigger picks up
-        // the role on first insert. extraParams is a defensive duplicate
-        // for providers that don't honor `data`.
-        data: role ? { role } : undefined,
+        // Best-effort hint for the provider; the authoritative role write is
+        // the set_profile_role RPC after the redirect (see below).
         extraParams: role ? { role } : undefined,
       });
       if (result.redirected) return; // browser redirecting to Google
@@ -111,20 +107,17 @@ export function LoginModal() {
       // Tokens received & session set (no redirect happened).
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        // Display name is safe to upsert (no semantic ownership concern).
+        // Display name is safe to repair with an UPDATE (the trigger has
+        // already inserted the profile row by the time we get here).
         const fallbackName =
           (data.user.user_metadata?.full_name as string) ||
           (data.user.user_metadata?.name as string) ||
           data.user.email?.split("@")[0] ||
           "Learner";
-        await supabase.from("profiles").upsert(
-          {
-            id: data.user.id,
-            display_name: fallbackName,
-            full_name: fallbackName,
-          },
-          { onConflict: "id" },
-        );
+        await supabase
+          .from("profiles")
+          .update({ display_name: fallbackName, full_name: fallbackName })
+          .eq("id", data.user.id);
 
         // Apply pending role via the one-shot RPC, which only writes
         // when the column is currently NULL (so returning users are safe).
@@ -137,7 +130,8 @@ export function LoginModal() {
           /* ignore storage errors */
         }
         if (pending) {
-          const { error: rpcErr } = await supabase.rpc("set_profile_role", {
+          // Cast through any until generated types include the new RPC.
+          const { error: rpcErr } = await (supabase.rpc as any)("set_profile_role", {
             target_role: pending,
           });
           if (rpcErr && !/already set/i.test(rpcErr.message)) {
@@ -204,18 +198,18 @@ export function LoginModal() {
       return;
     }
     if (data.user) {
-      // Names are safe to repair with an upsert (no ownership concern).
+      // Names are safe to repair with an UPDATE (the trigger has already
+      // inserted the profile row from user_metadata at signUp time).
       await supabase
         .from("profiles")
-        .upsert(
-          { id: data.user.id, display_name: name.trim(), full_name: name.trim() },
-          { onConflict: "id" },
-        );
+        .update({ display_name: name.trim(), full_name: name.trim() })
+        .eq("id", data.user.id);
       // Role: use the one-shot RPC. The trigger normally already wrote
       // the role from user_metadata; this is a safety net for the
       // (rare) case where it didn't fire, and it cannot overwrite an
-      // already-assigned role.
-      const { error: rpcErr } = await supabase.rpc("set_profile_role", {
+      // already-assigned role. Cast through any until generated types
+      // include the new RPC.
+      const { error: rpcErr } = await (supabase.rpc as any)("set_profile_role", {
         target_role: role,
       });
       if (rpcErr && !/already set/i.test(rpcErr.message)) {
@@ -424,7 +418,7 @@ function Field({
         required
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+        className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
       />
     </div>
   );
@@ -482,7 +476,7 @@ function GoogleButton({
       type="button"
       onClick={onClick}
       disabled={submitting || disabled}
-      className="w-full inline-flex justify-center items-center gap-2 pw-border rounded-md px-6 py-3 text-[14px] font-medium bg-white hover:bg-[var(--pw-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full inline-flex justify-center items-center gap-2 pw-border rounded-md px-6 py-3 text-[14px] font-medium bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden>
         <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.7 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />

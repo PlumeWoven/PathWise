@@ -1,6 +1,7 @@
 import { useEffect, ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "./auth";
+import { roleOnboarding } from "./roles";
 
 /**
  * Wraps protected routes. While auth is loading, shows nothing.
@@ -17,9 +18,8 @@ export function RequireOnboarding({ children }: { children: ReactNode }) {
       openLogin();
       return;
     }
-    if (profile && !profile.onboarding_completed) {
-      const target = profile.role === "tutor" ? "/onboarding/tutor" : "/onboarding/student";
-      navigate({ to: target });
+    if (profile && !profile.onboarding_completed && profile.role) {
+      navigate({ to: roleOnboarding(profile.role) });
     }
   }, [loading, isLoggedIn, profile, openLogin, navigate]);
 

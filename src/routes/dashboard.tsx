@@ -4,6 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { PWHeader } from "../pathwise/Header";
 import { DashboardShell } from "../components/dashboard/TutorSidebar";
 import { useAuth } from "../pathwise/auth";
+import { isTutorSide } from "../pathwise/roles";
 import { RequireOnboarding } from "../pathwise/RequireOnboarding";
 
 export const Route = createFileRoute("/dashboard")({
@@ -20,7 +21,7 @@ function DashboardLayout() {
       openLogin();
       return;
     }
-    if (role && role !== "tutor" && role !== "both") {
+    if (role && !isTutorSide(role)) {
       navigate({ to: "/" });
     }
   }, [loading, isLoggedIn, role, openLogin, navigate]);
@@ -33,7 +34,7 @@ function DashboardLayout() {
       </div>
     );
   }
-  if (role !== "tutor" && role !== "both") return null;
+  if (!isTutorSide(role)) return null;
 
   return (
     <RequireOnboarding>

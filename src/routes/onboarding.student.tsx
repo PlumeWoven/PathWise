@@ -60,7 +60,7 @@ function StudentOnboarding() {
               required
               value={grade}
               onChange={(e) => setGrade(e.target.value === "" ? "" : Number(e.target.value))}
-              className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+              className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
             >
               <option value="">Select grade…</option>
               {[6,7,8,9,10,11,12].map((g) => (
@@ -77,7 +77,7 @@ function StudentOnboarding() {
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. Pass my algebra final, prep for SAT…"
-              className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+              className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
             />
           </div>
           <button

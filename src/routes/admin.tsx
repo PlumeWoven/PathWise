@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
+import { isAdmin } from "../pathwise/roles";
 
 export const Route = createFileRoute("/admin")({
     component: AdminLayout,
@@ -19,12 +20,12 @@ function AdminLayout() {
             return;
         }
         // Check the JWT claim (app_metadata.role) – not the profile role
-        if ((user as any).app_metadata?.role !== 'admin') {
+        if (!isAdmin(user.app_metadata)) {
             navigate({ to: "/dashboard" });
         }
     }, [loading, user, navigate]);
 
-    if (loading || !user || (user as any).app_metadata?.role !== 'admin') {
+    if (loading || !user || !isAdmin(user.app_metadata)) {
         return (
             <div className="min-h-screen bg-[var(--pw-bg)] flex items-center justify-center text-[var(--pw-ink-2)]">
                 Loading...

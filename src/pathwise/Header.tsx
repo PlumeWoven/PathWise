@@ -1,26 +1,21 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
+import { isAdmin } from "./roles";
 import { useDarkMode } from "./DarkMode";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { Sun, Moon } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
-  const { theme, toggleTheme, isDark } = useDarkMode();
+  const { isDark } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
   const [impersonating, setImpersonating] = useState(false);
   const [impersonatingName, setImpersonatingName] = useState('');
-
-  const [waveActive, setWaveActive] = useState(false);
-  const [waveOrigin, setWaveOrigin] = useState({ x: 0, y: 0 });
-  const [targetTheme, setTargetTheme] = useState<'light' | 'dark'>('light');
-  const waveColor = useMemo(() => targetTheme === 'dark' ? '#1F1F1E' : '#FAFAF7', [targetTheme]);
 
   const readImpersonationState = () => {
     const imp = localStorage.getItem('impersonating') === 'true';
@@ -72,13 +67,6 @@ export function PWHeader() {
     navigate({ to: '/admin' });
   };
 
-  const handleDarkToggle = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setWaveOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
-    setTargetTheme(isDark ? 'light' : 'dark');
-    setWaveActive(true);
-  };
-
   return (
     <>
       {/* Impersonation Banner */}
@@ -96,34 +84,6 @@ export function PWHeader() {
         </div>
       )}
 
-      <AnimatePresence>
-        {waveActive && (
-          <motion.div
-            key="wave"
-            initial={{ scale: 0, opacity: 0.9 }}
-            animate={{ scale: 200, opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            style={{
-              position: 'fixed',
-              top: waveOrigin.y,
-              left: waveOrigin.x,
-              width: 20,
-              height: 20,
-              borderRadius: '50%',
-              background: waveColor,
-              transform: 'translate(-50%, -50%)',
-              zIndex: 9999,
-              pointerEvents: 'none',
-            }}
-            onAnimationComplete={() => {
-              toggleTheme();
-              setWaveActive(false);
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       <header
         className="sticky top-0 z-40 w-full px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-3 transition-all duration-200 backdrop-blur-md"
         style={{
@@ -135,13 +95,7 @@ export function PWHeader() {
           <Link to="/" className="font-display italic text-[24px] leading-none text-[var(--pw-ink)]">
             PathWise
           </Link>
-          <button
-            onClick={handleDarkToggle}
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors hover:bg-[var(--pw-surface-2)] focus:outline-none"
-            aria-label="Toggle dark mode"
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
+          <ThemeToggle />
         </div>
 
         <div className="flex items-center gap-3">
@@ -178,7 +132,7 @@ export function PWHeader() {
                   </Link>
                 </>
               )}
-              {(user as any).app_metadata?.role === 'admin' && (
+              {isAdmin(user.app_metadata) && (
                 <Link
                   to="/admin"
                   className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"

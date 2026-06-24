@@ -435,7 +435,7 @@ function BookPage() {
                         <div className="mt-3 grid sm:grid-cols-3 gap-3">
                           <div>
                             <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">Frequency</label>
-                            <select value={frequency} onChange={(e) => setFrequency(e.target.value as Frequency)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-white">
+            <select value={frequency} onChange={(e) => setFrequency(e.target.value as Frequency)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]">
                               <option value="weekly">Weekly</option>
                               <option value="biweekly">Bi-weekly</option>
                               <option value="monthly">Monthly</option>
@@ -443,23 +443,23 @@ function BookPage() {
                           </div>
                           <div>
                             <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">Ends</label>
-                            <select value={endMode} onChange={(e) => setEndMode(e.target.value as any)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-white">
+            <select value={endMode} onChange={(e) => setEndMode(e.target.value as any)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]">
                               <option value="count">After N sessions</option>
                               <option value="date">On a date</option>
                               <option value="ongoing">Ongoing (cap 26)</option>
                             </select>
                           </div>
                           <div>
-                            {endMode === "count" && (
-                              <>
-                                <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">Number of sessions</label>
-                                <input type="number" min={2} max={26} value={recCount} onChange={(e) => setRecCount(Math.max(2, Math.min(26, Number(e.target.value) || 2)))} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-white" />
+            {endMode === "count" && (
+              <>
+                <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">Number of sessions</label>
+                <input type="number" min={2} max={26} value={recCount} onChange={(e) => setRecCount(Math.max(2, Math.min(26, Number(e.target.value) || 2)))} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]" />
                               </>
                             )}
-                            {endMode === "date" && (
-                              <>
-                                <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">End date</label>
-                                <input type="date" value={recEndDate ? recEndDate.toISOString().slice(0, 10) : ""} onChange={(e) => setRecEndDate(e.target.value ? new Date(e.target.value) : undefined)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-white" />
+            {endMode === "date" && (
+              <>
+                <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">End date</label>
+                <input type="date" value={recEndDate ? recEndDate.toISOString().slice(0, 10) : ""} onChange={(e) => setRecEndDate(e.target.value ? new Date(e.target.value) : undefined)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]" />
                               </>
                             )}
                             {endMode === "ongoing" && (
@@ -488,7 +488,7 @@ function BookPage() {
                 <div className="pw-card p-4">
                   <label className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Your timezone (auto-detected)</label>
                   <select
-                    className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-white"
+                    className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)]"
                     value={tz}
                     onChange={(e) => setTz(e.target.value)}
                   >

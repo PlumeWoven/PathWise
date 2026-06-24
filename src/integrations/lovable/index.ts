@@ -7,9 +7,6 @@ const lovableAuth = createLovableAuth();
 type SignInOptions = {
   redirect_uri?: string;
   extraParams?: Record<string, string>;
-  // Forwarded into user_metadata for new users so the DB trigger can
-  // populate role / display_name without a destructive client upsert.
-  data?: Record<string, unknown>;
 };
 
 export const lovable = {
@@ -20,9 +17,7 @@ export const lovable = {
         extraParams: {
           ...opts?.extraParams,
         },
-        // Cast so older SDK type defs (without `data`) compile.
-        ...(opts?.data ? { data: opts.data } : {}),
-      } as any);
+      });
 
       if (result.redirected) {
         return result;

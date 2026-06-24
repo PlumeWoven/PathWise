@@ -232,7 +232,7 @@ function SessionDetail() {
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={3}
-              className="mt-1 w-full pw-border rounded-md px-3 py-2 text-sm bg-white"
+              className="mt-1 w-full pw-border rounded-md px-3 py-2 text-sm bg-[var(--pw-surface)]"
               placeholder="Schedule conflict, no longer needed, etc."
             />
             <div className="flex gap-2 mt-2">
@@ -261,7 +261,7 @@ function SessionDetail() {
               value={reviewBody}
               onChange={(e) => setReviewBody(e.target.value)}
               rows={3}
-              className="mt-3 w-full pw-border rounded-md px-3 py-2 text-sm bg-white"
+              className="mt-3 w-full pw-border rounded-md px-3 py-2 text-sm bg-[var(--pw-surface)]"
               placeholder="Tell other students about this tutor"
             />
             <button onClick={handleSubmitReview} className="pw-btn-primary px-4 py-2 text-sm mt-3">Submit review</button>

@@ -375,7 +375,7 @@ function UploadModal({
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 20, opacity: 0 }}
-        className="pw-card w-full max-w-lg p-6 sm:p-7 bg-white"
+        className="pw-card w-full max-w-lg p-6 sm:p-7 bg-[var(--pw-surface)]"
         onClick={(e) => e.stopPropagation()}
       >
         <Stepper step={step} />

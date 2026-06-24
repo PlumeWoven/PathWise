@@ -340,7 +340,7 @@ function TutorProfilePage() {
                 {(tutor.credentials ?? []).map((c, i) => (
                   <li key={i} className="flex items-start gap-3 rounded-xl border border-[var(--pw-border)] bg-[var(--pw-surface)] p-4">
                     {c.logo ? (
-                      <img src={c.logo} alt="" className="size-10 rounded object-contain bg-white border border-[var(--pw-border)]" />
+                      <img src={c.logo} alt="" className="size-10 rounded object-contain bg-[var(--pw-surface)] border border-[var(--pw-border)]" />
                     ) : (
                       <div className="size-10 rounded bg-[var(--pw-accent-soft)] grid place-items-center text-[var(--pw-accent)] font-semibold">
                         {(c.institution ?? c.title).slice(0, 1).toUpperCase()}
@@ -498,13 +498,13 @@ function TutorProfilePage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setTestimonialIdx((i) => (i - 1 + testimonials.length) % testimonials.length)}
-                    className="size-8 grid place-items-center rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface)] hover:bg-white"
+                    className="size-8 grid place-items-center rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)]"
                     aria-label="Previous testimonial"
                   ><ChevronLeft className="size-4" /></button>
                   <span className="text-[12px] text-[var(--pw-ink-2)] tabular-nums">{testimonialIdx + 1}/{testimonials.length}</span>
                   <button
                     onClick={() => setTestimonialIdx((i) => (i + 1) % testimonials.length)}
-                    className="size-8 grid place-items-center rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface)] hover:bg-white"
+                    className="size-8 grid place-items-center rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)]"
                     aria-label="Next testimonial"
                   ><ChevronRight className="size-4" /></button>
                 </div>
@@ -622,7 +622,7 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       className={`px-2.5 py-1 rounded-full text-[12px] border transition ${
         active
-          ? "bg-[var(--pw-ink)] text-white border-[var(--pw-ink)]"
+          ? "bg-[var(--pw-ink)] text-[var(--pw-bg)] border-[var(--pw-ink)]"
           : "bg-[var(--pw-surface)] border-[var(--pw-border)] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)]"
       }`}
     >

@@ -5,6 +5,7 @@ type Theme = "light" | "dark";
 interface DarkModeContextValue {
   theme: Theme;
   toggleTheme: () => void;
+  setTheme: (next: Theme) => void;
   isDark: boolean;
 }
 
@@ -43,8 +44,12 @@ export function DarkModeProvider({ children }: { children: ReactNode }) {
     setTheme((t) => (t === "light" ? "dark" : "light"));
   };
 
+  const setThemeValue = (next: Theme) => {
+    setTheme(next);
+  };
+
   return (
-    <DarkModeContext.Provider value={{ theme, toggleTheme, isDark: theme === "dark" }}>
+    <DarkModeContext.Provider value={{ theme, toggleTheme, setTheme: setThemeValue, isDark: theme === "dark" }}>
       {children}
     </DarkModeContext.Provider>
   );

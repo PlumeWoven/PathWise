@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
+import { isAdmin } from "../pathwise/roles";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CourseRow, updateCourse } from "../pathwise/courses";
@@ -14,13 +15,14 @@ export const Route = createFileRoute("/admin/review")({
 });
 
 function AdminReview() {
-  const { profile, loading } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<CourseRow[] | null>(null);
 
   useEffect(() => {
     if (loading) return;
-    if (!profile || (profile.role as string) !== "admin") {
+    // Admin is a JWT claim (app_metadata.role), not a profile role.
+    if (!user || !isAdmin(user.app_metadata)) {
       toast.error("Admin access required");
       navigate({ to: "/" });
       return;
@@ -34,7 +36,7 @@ function AdminReview() {
         if (error) toast.error(error.message);
         setItems(data ?? []);
       });
-  }, [loading, profile, navigate]);
+  }, [loading, user, navigate]);
 
   const decide = async (c: CourseRow, status: "published" | "draft") => {
     try {

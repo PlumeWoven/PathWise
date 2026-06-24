@@ -464,7 +464,7 @@ function Step1({
         <div className="flex-1">
           <Label>Profile photo</Label>
           <p className="text-[12.5px] text-[var(--pw-ink-2)] mt-0.5">Square 1:1, min 400×400px.</p>
-          <label className="mt-2 inline-flex items-center gap-1.5 pw-pill pw-border border px-3 py-1.5 text-[13px] cursor-pointer bg-white hover:bg-[var(--pw-surface-2)]">
+          <label className="mt-2 inline-flex items-center gap-1.5 pw-pill pw-border border px-3 py-1.5 text-[13px] cursor-pointer bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)]">
             <Upload className="size-3.5" /> Choose photo
             <input type="file" accept="image/*" className="hidden" onChange={onPick} />
           </label>
@@ -473,7 +473,7 @@ function Step1({
 
       {cropFile && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => !uploading && setCropFile(null)}>
-          <div className="bg-white rounded-xl p-4 max-w-[480px] w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-[var(--pw-surface)] rounded-xl p-4 max-w-[480px] w-full" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-display text-[20px]">Crop your photo</h3>
             <div className="relative mt-3 h-[320px] bg-black rounded-md overflow-hidden">
               <Cropper
@@ -528,7 +528,7 @@ function Step1({
           value={state.bio}
           onChange={(e) => update("bio", e.target.value)}
           placeholder="**About me…** Share your teaching style, experience, what you love."
-          className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)] font-mono-pw"
+          className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)] font-mono-pw"
         />
       </div>
 
@@ -547,7 +547,7 @@ function Step1({
           <select
             value={state.education_level}
             onChange={(e) => update("education_level", e.target.value)}
-            className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+            className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
           >
             <option value="">Select…</option>
             {EDU_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -608,7 +608,7 @@ function Step2({
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search subjects…"
-            className="w-full pw-border border rounded-md pl-9 pr-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+            className="w-full pw-border border rounded-md pl-9 pr-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
           />
         </div>
         <div className="mt-3 flex flex-wrap gap-2 max-h-[180px] overflow-y-auto">
@@ -698,9 +698,9 @@ function TagField({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAdd(); } }}
           placeholder="Type and press Enter"
-          className="flex-1 pw-border border rounded-md px-3 py-2 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+          className="flex-1 pw-border border rounded-md px-3 py-2 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
         />
-        <button type="button" onClick={onAdd} className="pw-pill border pw-border px-3 text-[13px] bg-white hover:bg-[var(--pw-surface-2)]">
+        <button type="button" onClick={onAdd} className="pw-pill border pw-border px-3 text-[13px] bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)]">
           <Plus className="size-3.5" />
         </button>
       </div>
@@ -854,7 +854,7 @@ function Step3({
           <video src={previewUrl} controls poster={state.video_thumbnail_url ?? undefined} className="w-full rounded-md bg-black aspect-video" />
           <div className="mt-3 flex gap-2">
             <button onClick={() => { setPreviewUrl(null); update("video_intro_url", null); update("video_thumbnail_url", null); }}
-              className="pw-pill border pw-border px-3 py-1.5 text-[13px] bg-white">Re-record / Replace</button>
+              className="pw-pill border pw-border px-3 py-1.5 text-[13px] bg-[var(--pw-surface)]">Re-record / Replace</button>
           </div>
         </div>
       ) : (
@@ -872,7 +872,7 @@ function Step3({
                 Stop recording
               </button>
             )}
-            <label className="pw-pill border pw-border px-3 py-2 text-[13px] cursor-pointer bg-white inline-flex items-center gap-1.5 hover:bg-[var(--pw-surface-2)]">
+            <label className="pw-pill border pw-border px-3 py-2 text-[13px] cursor-pointer bg-[var(--pw-surface)] inline-flex items-center gap-1.5 hover:bg-[var(--pw-surface-2)]">
               <Upload className="size-3.5" /> Upload file
               <input type="file" accept="video/*" className="hidden" onChange={onUploadFile} />
             </label>
@@ -935,7 +935,7 @@ function Step4({
           <select
             value={state.buffer_minutes}
             onChange={(e) => update("buffer_minutes", Number(e.target.value))}
-            className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+            className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
           >
             {[0, 15, 30, 60].map((v) => <option key={v} value={v}>{v} min</option>)}
           </select>
@@ -1005,7 +1005,7 @@ function Step5({
           <input
             type="number" min={0} value={state.hourly_rate}
             onChange={(e) => update("hourly_rate", e.target.value)}
-            className="w-full pw-border border rounded-md pl-9 pr-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)]"
+            className="w-full pw-border border rounded-md pl-9 pr-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
             placeholder="50"
           />
         </div>
@@ -1063,7 +1063,7 @@ function Step5({
           <span className="font-display text-[24px]">${rate || "—"}</span>
           <span className="text-[12px] text-[var(--pw-ink-2)]">/ hour</span>
           {state.first_session_free && (
-            <span className="ml-auto pw-pill border pw-border px-2 py-0.5 text-[11px] bg-white">First free</span>
+            <span className="ml-auto pw-pill border pw-border px-2 py-0.5 text-[11px] bg-[var(--pw-surface)]">First free</span>
           )}
         </div>
         {state.packages.some((p) => p.enabled) && (
@@ -1180,5 +1180,5 @@ function Label({ children }: { children: React.ReactNode }) {
   return <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] block">{children}</label>;
 }
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={"mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-white outline-none focus:border-[var(--pw-accent)] " + (props.className ?? "")} />;
+  return <input {...props} className={"mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)] " + (props.className ?? "")} />;
 }

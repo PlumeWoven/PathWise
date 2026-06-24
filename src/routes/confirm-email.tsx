@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeRole, postAuthDestination } from '@/pathwise/roles';
 import { PWHeader } from '../pathwise/Header';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -28,38 +29,49 @@ function ConfirmEmailPage() {
 
                     // Get user_metadata (includes role from signup)
                     const metadata = user.user_metadata || {};
-                    const metaRole = metadata.role;
+                    const metaRole = (metadata.role as string | undefined) || undefined;
 
                     // Fetch profile
                     const { data: profile, error: profileError } = await supabase
                         .from('profiles')
-                        .select('role, onboarding_completed')
+                        .select('role, onboarding_completed, display_name, full_name')
                         .eq('id', user.id)
                         .maybeSingle();
 
                     if (profileError) throw profileError;
 
-                    const role = profile?.role || metaRole || 'student';
                     const displayName = metadata.display_name || metadata.full_name || user.email?.split('@')[0] || 'Learner';
                     const fullName = metadata.full_name || metadata.display_name || user.email?.split('@')[0] || 'Learner';
 
-                    // If profile doesn't exist or role mismatch, upsert
-                    if (!profile || profile.role !== metaRole) {
-                        await supabase.from('profiles').upsert({
-                            id: user.id,
-                            role: metaRole || 'student',
-                            display_name: displayName,
-                            full_name: fullName,
-                        }, { onConflict: 'id' });
+                    // Names are safe to repair (no semantic ownership concern).
+                    // Only write fields that are currently missing on the profile.
+                    const namePatch: { display_name?: string; full_name?: string } = {};
+                    if (!profile?.display_name) namePatch.display_name = displayName;
+                    if (!profile?.full_name) namePatch.full_name = fullName;
+                    if (Object.keys(namePatch).length > 0) {
+                        await supabase.from('profiles').update(namePatch).eq('id', user.id);
                     }
 
-                    // Wait a moment, then redirect
-                    setTimeout(() => {
-                        if (profile?.onboarding_completed) {
-                            navigate({ to: role === 'tutor' ? '/dashboard' : '/roadmap' });
+                    // Role repair: ONLY when the row is missing a role. Never
+                    // overwrite a role that has already been set. Falls back to
+                    // user_metadata.role from the signup payload.
+                    let role = normalizeRole(profile?.role);
+                    if (!role && metaRole) {
+                        // Cast through any until generated types include the new RPC.
+                        const { error: rpcErr } = await (supabase.rpc as any)('set_profile_role', {
+                            target_role: metaRole,
+                        });
+                        if (rpcErr && !/already set/i.test(rpcErr.message)) {
+                            console.warn('[confirm-email] set_profile_role', rpcErr);
                         } else {
-                            navigate({ to: role === 'tutor' ? '/onboarding/tutor' : '/onboarding/student' });
+                            role = normalizeRole(metaRole);
                         }
+                    }
+
+                    // Wait a moment, then redirect via the single role-correct
+                    // helper (handles tutor/both/student/unknown + onboarding).
+                    setTimeout(() => {
+                        navigate({ to: postAuthDestination(role, profile?.onboarding_completed) });
                     }, 2000);
 
                 } else {

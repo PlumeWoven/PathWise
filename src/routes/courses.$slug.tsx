@@ -349,7 +349,7 @@ function PublicCoursePage() {
 
             {/* Sidebar card (desktop sticky) */}
             <aside className="hidden lg:block sticky top-6">
-              <div className="rounded-2xl border border-white/10 bg-white text-[var(--pw-ink)] shadow-2xl overflow-hidden">
+              <div className="rounded-2xl border border-[var(--pw-border)] bg-[var(--pw-surface)] text-[var(--pw-ink)] shadow-2xl overflow-hidden">
                 {course.thumbnail_url ? (
                   <img src={course.thumbnail_url} alt={course.title} className="w-full aspect-[16/9] object-cover" />
                 ) : (
