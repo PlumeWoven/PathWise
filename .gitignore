@@ -19,3 +19,4 @@ supabase/.branches/
 *.local.*.vercel/
 .vercel
 .env*
+.DS_Store
