@@ -1,65 +1,57 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
-type Theme = 'light' | 'dark';
+type Theme = "light" | "dark";
 
 interface DarkModeContextValue {
-    theme: Theme;
-    toggleTheme: () => void;
-    isDark: boolean;
+  theme: Theme;
+  toggleTheme: () => void;
+  isDark: boolean;
 }
 
 const DarkModeContext = createContext<DarkModeContextValue | null>(null);
 
+// Read the theme the inline bootstrap script in __root.tsx has already
+// applied to <html>. Falls back to 'light' on the server (where there is no
+// DOM) so SSR output is deterministic — the bootstrap script reconciles
+// before hydration runs.
+function readInitialTheme(): Theme {
+  if (typeof document === "undefined") return "light";
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
 export function DarkModeProvider({ children }: { children: ReactNode }) {
-    const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>(readInitialTheme);
 
-    const applyTheme = (t: Theme) => {
-        const root = document.documentElement;
-        if (t === 'dark') {
-            root.classList.add('dark');
-            // Force background on both html and body
-            root.style.backgroundColor = '#1F1F1E';
-            document.body.style.backgroundColor = '#1F1F1E';
-            document.body.style.color = '#F5F5F0';
-            console.log('Dark mode ON, class list:', root.classList);
-        } else {
-            root.classList.remove('dark');
-            root.style.backgroundColor = '';
-            document.body.style.backgroundColor = '';
-            document.body.style.color = '';
-            console.log('Dark mode OFF, class list:', root.classList);
-        }
-        localStorage.setItem('pw-theme', t);
-    };
+  // Keep <html> in sync with state and persist the user's choice. We only
+  // toggle the class — colors come from styles.css so we don't fight CSS
+  // with inline element styles.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    try {
+      localStorage.setItem("pw-theme", theme);
+    } catch {
+      // localStorage may be unavailable (private mode, SSR fallback) — ignore.
+    }
+  }, [theme]);
 
-    useEffect(() => {
-        const stored = localStorage.getItem('pw-theme') as Theme | null;
-        if (stored === 'dark' || stored === 'light') {
-            setTheme(stored);
-            applyTheme(stored);
-        } else {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const initial = prefersDark ? 'dark' : 'light';
-            setTheme(initial);
-            applyTheme(initial);
-        }
-    }, []);
+  const toggleTheme = () => {
+    setTheme((t) => (t === "light" ? "dark" : "light"));
+  };
 
-    const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        applyTheme(newTheme);
-    };
-
-    return (
-        <DarkModeContext.Provider value={{ theme, toggleTheme, isDark: theme === 'dark' }}>
-            {children}
-        </DarkModeContext.Provider>
-    );
+  return (
+    <DarkModeContext.Provider value={{ theme, toggleTheme, isDark: theme === "dark" }}>
+      {children}
+    </DarkModeContext.Provider>
+  );
 }
 
 export function useDarkMode() {
-    const ctx = useContext(DarkModeContext);
-    if (!ctx) throw new Error('useDarkMode must be used within DarkModeProvider');
-    return ctx;
+  const ctx = useContext(DarkModeContext);
+  if (!ctx) throw new Error("useDarkMode must be used within DarkModeProvider");
+  return ctx;
 }
