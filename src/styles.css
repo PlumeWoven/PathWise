@@ -4,17 +4,21 @@
 
 /* FORCE DARK BACKGROUND – top-level rule */
 html.dark {
-  background-color: #1f1f1e !important;
+  background-color: #1e1e1c !important;
 }
 
 html.dark body {
-  background-color: #1f1f1e !important;
+  background-color: #1e1e1c !important;
   color: #f5f5f0 !important;
 }
 
 html:not(.dark) body {
-  background-color: #fafaf7 !important;
-  color: #1a1a1a !important;
+  background-color: #f5f3f0 !important;
+  color: #2a2a28 !important;
+}
+
+html, body, #root {
+  min-height: 100%;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -60,16 +64,34 @@ html:not(.dark) body {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* PathWise neomorphic theme extensions */
+  --color-pw-bg: var(--pw-bg);
+  --color-pw-surface: var(--pw-surface);
+  --color-pw-ink: var(--pw-ink);
+  --color-pw-muted: var(--pw-muted);
+  --color-pw-accent: var(--pw-accent);
+  --color-pw-secondary: var(--pw-secondary);
+  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
 }
 
 :root {
   --radius: 0.75rem;
-  --pw-bg: #fafaf7;
+  /* PathWise neomorphic palette — light mode */
+  --pw-bg: #f5f3f0;
   --pw-surface: #ffffff;
+  --pw-ink: #2a2a28;
+  --pw-muted: #5a5a58;
+  --pw-accent: #e07a4a;
+  --pw-secondary: #3d8b6a;
+  /* neomorphic shadow channels */
+  --pw-shadow-dark: rgba(0, 0, 0, 0.10);
+  --pw-shadow-light: rgba(255, 255, 255, 0.85);
+
+  /* Legacy / extended variables for backward compatibility */
   --pw-surface-2: #f3f0ea;
-  --pw-ink: #1a1a1a;
   --pw-ink-2: #6b6560;
-  --pw-accent: #e85d26;
   --pw-accent-soft: #fff5f0;
   --pw-accent-2: #2d6a4f;
   --pw-accent-3: #f4c430;
@@ -113,16 +135,22 @@ html:not(.dark) body {
 }
 
 .dark {
-  --pw-bg: #1f1f1e;
+  --pw-bg: #1e1e1c;
   --pw-surface: #2a2a28;
-  --pw-surface-2: #333332;
   --pw-ink: #f5f5f0;
+  --pw-muted: #bfbfbc;
+  --pw-accent: #e07a4a;
+  --pw-secondary: #3d8b6a;
+  --pw-shadow-dark: rgba(0, 0, 0, 0.5);
+  --pw-shadow-light: rgba(255, 255, 255, 0.08);
+
+  /* Legacy / extended variables for backward compatibility */
+  --pw-surface-2: #333332;
   --pw-ink-2: #a8a8a0;
-  --pw-border: #3a3a38;
-  --pw-accent: #e85d26;
   --pw-accent-soft: #1f1f1e;
   --pw-accent-2: #4c7a5e;
   --pw-accent-3: #d4a830;
+  --pw-border: #3a3a38;
   --pw-danger: #e05a5a;
   --pw-input-bg: #1f1f1e;
   --pw-input-text: #f5f5f0;
@@ -171,32 +199,32 @@ html:not(.dark) body {
 
 /* ----- Verification badges (dark mode) – background matches page bg ----- */
 .dark .verification-badge[data-tier="identity"] {
-  background: #1f1f1e !important;
+  background: #1e1e1c !important;
   color: #4c7a5e !important;
   border: 1px solid #4c7a5e !important;
 }
 
 .dark .verification-badge[data-tier="email"] {
-  background: #1f1f1e !important;
+  background: #1e1e1c !important;
   color: #3b82f6 !important;
   border: 1px solid #3b82f6 !important;
 }
 
 .dark .verification-badge[data-tier="unverified"] {
-  background: #1f1f1e !important;
+  background: #1e1e1c !important;
   color: #9ca3af !important;
   border: 1px solid #9ca3af !important;
 }
 
 .dark .verification-badge[data-tier="premium"] {
-  background: #1f1f1e !important;
+  background: #1e1e1c !important;
   color: #facc15 !important;
   border: 1px solid #facc15 !important;
 }
 
 /* ----- Unverified banner (dark mode) – consistent with page bg ----- */
 .dark .unverified-banner {
-  background: #1f1f1e !important;
+  background: #1e1e1c !important;
   border-color: #3a3a38 !important;
 }
 
@@ -215,7 +243,7 @@ html:not(.dark) body {
 }
 
 .dark .impersonation-banner button {
-  background: #e85d26 !important;
+  background: #e07a4a !important;
 }
 
 /* ----- Course page top card (dark mode) ----- */
@@ -235,7 +263,7 @@ html:not(.dark) body {
 
 /* ----- Impersonate button (dark mode) ----- */
 .dark .admin-impersonate-btn {
-  background: #1f1f1e !important;
+  background: #1e1e1c !important;
   color: #f5f5f0 !important;
   border: 1px solid #4c7a5e !important;
 }
@@ -275,11 +303,14 @@ html:not(.dark) body {
     color: var(--pw-ink);
     font-family: "Outfit", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.3px;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   .font-display {
     font-family: "Fraunces", Georgia, serif;
     font-optical-sizing: auto;
+    letter-spacing: 0.6px;
   }
 
   .font-mono-pw {
@@ -320,12 +351,199 @@ html:not(.dark) body {
     background: var(--pw-accent-soft);
     border-color: var(--pw-accent);
   }
+}
 
-  /* ----- pw-card ----- */
-  .pw-card {
-    background: var(--pw-surface);
-    border-color: var(--pw-border);
-  }
+/* =====================================================================
+   PathWise neomorphic COMPONENT VOCABULARY
+   These are the reusable classes to apply across every page. Hand this
+   file to your agent — the comment beside each class says where to use it.
+   All of them reference the --pw-* variables + shadow channels, so they
+   invert automatically in dark mode (.dark on <html>).
+   ===================================================================== */
+
+/* ----- Neomorphic surface utilities ----- */
+
+/* Raised card (outer shadow) */
+.pw-raised {
+  background-color: var(--pw-surface);
+  box-shadow: 8px 8px 16px var(--pw-shadow-dark), -8px -8px 16px var(--pw-shadow-light);
+}
+
+/* Softer raised (smaller depth) */
+.pw-raised-sm {
+  background-color: var(--pw-surface);
+  box-shadow: 6px 6px 12px var(--pw-shadow-dark), -6px -6px 12px var(--pw-shadow-light);
+}
+
+/* Deeper raised (more lift) */
+.pw-raised-lg {
+  background-color: var(--pw-surface);
+  box-shadow: 12px 12px 24px var(--pw-shadow-dark), -12px -12px 24px var(--pw-shadow-light);
+}
+
+/* Inset / pressed (inner shadow) */
+.pw-inset {
+  background-color: var(--pw-bg);
+  box-shadow: inset 4px 4px 8px var(--pw-shadow-dark), inset -4px -4px 8px var(--pw-shadow-light);
+}
+
+/* CARD — metric cards, chart panels, roadmap stage cards, profile panels,
+   any raised content container. */
+.pw-card {
+  background-color: var(--pw-surface);
+  border-radius: 22px;
+  box-shadow: 8px 8px 16px var(--pw-shadow-dark), -8px -8px 16px var(--pw-shadow-light);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* WELL — recessed container: chart wells, avatar tiles, icon tiles,
+   anything that should read as carved-in rather than raised. */
+.pw-well {
+  background-color: var(--pw-bg);
+  border-radius: 18px;
+  box-shadow: inset 4px 4px 8px var(--pw-shadow-dark), inset -4px -4px 8px var(--pw-shadow-light);
+}
+
+/* PRIMARY BUTTON — main CTAs (Get verified, Complete profile, Book trial,
+   "See My Matched Tutors", primary submit). */
+.pw-btn-primary {
+  background-color: var(--pw-accent);
+  color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 8px 8px 16px var(--pw-shadow-dark), -8px -8px 16px var(--pw-shadow-light);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* SECONDARY / GHOST BUTTON — outline-style actions (Find a tutor,
+   View profile, Message, Clear all filters, Withdraw earnings). Pressed/inset
+   look, accent text. */
+.pw-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  color: var(--pw-ink);
+  background-color: var(--pw-bg);
+  box-shadow: inset 4px 4px 8px var(--pw-shadow-dark), inset -4px -4px 8px var(--pw-shadow-light);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* NAV PILL — top-nav buttons (Dashboard, My Roadmap, Find a tutor, My
+   sessions, Admin) AND sidebar items (Dashboard, My Courses, Calendar...).
+   Default = flat-on-surface; add .is-active for the selected state. */
+.pw-pill {
+  border-radius: 9999px;
+}
+
+/* SIDEBAR ITEM — left-rail nav rows; rounded rectangle pill. Use .is-active
+   for the highlighted row (light raised shadow + accent text). */
+.pw-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: var(--pw-muted);
+  background-color: transparent;
+  transition: box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+}
+.pw-nav-item:hover {
+  color: var(--pw-ink);
+  background-color: var(--pw-surface);
+  box-shadow: 4px 4px 8px var(--pw-shadow-dark), -4px -4px 8px var(--pw-shadow-light);
+}
+.pw-nav-item.is-active {
+  color: var(--pw-accent);
+  background-color: var(--pw-surface);
+  box-shadow: 6px 6px 12px var(--pw-shadow-dark), -6px -6px 12px var(--pw-shadow-light);
+}
+
+/* INPUT — text fields, selects, search boxes, the filter sidebar controls.
+   Soft inset well so fields read as carved-in. */
+.pw-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: none;
+  outline: none;
+  color: var(--pw-ink);
+  background-color: var(--pw-bg);
+  box-shadow: inset 4px 4px 8px var(--pw-shadow-dark), inset -4px -4px 8px var(--pw-shadow-light);
+  transition: box-shadow 0.3s ease;
+}
+.pw-input::placeholder {
+  color: var(--pw-muted);
+}
+.pw-input:focus {
+  box-shadow: inset 4px 4px 8px var(--pw-shadow-dark), inset -4px -4px 8px var(--pw-shadow-light), 0 0 0 2px var(--pw-accent);
+}
+
+/* BADGE — status chips (EMAIL VERIFIED, Locked, "45% Match", tag chips like
+   Fractions / Decimals / Mathematics). Soft raised-sm pill. */
+.pw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--pw-muted);
+  background-color: var(--pw-surface);
+  box-shadow: 4px 4px 8px var(--pw-shadow-dark), -4px -4px 8px var(--pw-shadow-light);
+}
+.pw-badge-accent {
+  color: var(--pw-accent);
+}
+
+/* ROW — list / table rows (upcoming sessions, reviews, admin users table,
+   lead-funnel rows). Subtle raised surface; separate rows with pw-divider
+   or vertical gap instead of hard borders. */
+.pw-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background-color: var(--pw-surface);
+  box-shadow: 4px 4px 8px var(--pw-shadow-dark), -4px -4px 8px var(--pw-shadow-light);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* DIVIDER — soft carved separator (footer, between table rows, card
+   sections). Replaces hard 1px borders. */
+.pw-divider {
+  height: 2px;
+  width: 100%;
+  border-radius: 9999px;
+  box-shadow: inset 0 1px 2px var(--pw-shadow-dark), inset 0 -1px 1px var(--pw-shadow-light);
+}
+
+/* PROGRESS — roadmap progress, profile-completeness, quiz step bar. Inset
+   track + accent fill. Set the fill width inline (e.g. style width:17%). */
+.pw-progress {
+  height: 10px;
+  width: 100%;
+  border-radius: 9999px;
+  background-color: var(--pw-bg);
+  box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
+  overflow: hidden;
+}
+.pw-progress > .pw-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background-color: var(--pw-accent);
 }
 
 @layer utilities {
@@ -335,27 +553,6 @@ html:not(.dark) body {
 
   .pw-border-accent {
     border: 1.5px solid var(--pw-accent);
-  }
-
-  .pw-card {
-    background: var(--pw-surface);
-    border: 1.5px solid var(--pw-border);
-    border-radius: 12px;
-  }
-
-  .pw-pill {
-    border-radius: 100px;
-  }
-
-  .pw-btn-primary {
-    background: var(--pw-accent);
-    color: #fff;
-    border-radius: 100px;
-    transition: all 250ms ease-out;
-  }
-
-  .pw-btn-primary:hover {
-    filter: brightness(0.95);
   }
 
   .pw-btn-outline {
@@ -439,6 +636,17 @@ html:not(.dark) body {
 
   .flash-red {
     animation: pw-flash-red 600ms ease-out;
+  }
+}
+
+/* ----- Reduced motion ----- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }
 
