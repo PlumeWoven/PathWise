@@ -690,6 +690,51 @@ html, body, #root {
   .flash-red {
     animation: pw-flash-red 600ms ease-out;
   }
+
+  @keyframes pw-float-1 {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+      transform: translateY(-10px) rotate(0.5deg);
+    }
+  }
+
+  @keyframes pw-float-2 {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+      transform: translateY(-8px) rotate(-0.5deg);
+    }
+  }
+
+  @keyframes pw-float-3 {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+      transform: translateY(-12px) rotate(1deg);
+    }
+  }
+
+  .animate-pw-float-1 {
+    animation: pw-float-1 4s ease-in-out infinite;
+  }
+
+  .animate-pw-float-2 {
+    animation: pw-float-2 5s ease-in-out infinite;
+  }
+
+  .animate-pw-float-3 {
+    animation: pw-float-3 3.5s ease-in-out infinite;
+  }
 }
 
 /* ----- Reduced motion ----- */
