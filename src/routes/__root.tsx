@@ -7,17 +7,18 @@ import { Toaster } from "sonner";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--pw-bg)] px-4">
+      <div className="pw-card max-w-md text-center py-10 px-8">
+        <div className="font-display italic text-[24px] text-[var(--pw-ink)]">PathWise</div>
+        <h1 className="font-display text-7xl font-bold text-[var(--pw-ink)] mt-4">404</h1>
+        <h2 className="mt-4 text-xl font-semibold text-[var(--pw-ink)]">Page not found</h2>
+        <p className="mt-2 text-sm text-[var(--pw-ink-2)]">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <div className="mt-6">
+        <div className="mt-8">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="pw-btn-primary inline-flex items-center justify-center px-8 py-3 text-[15px] font-medium"
           >
             Go home
           </Link>

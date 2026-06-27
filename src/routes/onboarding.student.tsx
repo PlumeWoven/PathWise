@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../pathwise/auth";
-import { supabase } from "@/integrations/supabase/client";
+import { updateProfile } from "@/pathwise/api";
 import { PWHeader } from "../pathwise/Header";
 import { toast } from "sonner";
 
@@ -26,19 +26,22 @@ function StudentOnboarding() {
     e.preventDefault();
     if (!profile) return;
     setSubmitting(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        grade: grade === "" ? null : Number(grade),
-        bio: goal || null,
+    try {
+      await updateProfile(profile.id, {
+        grade_level: grade === "" ? null : Number(grade),
+        learning_goal: goal || null,
         onboarding_completed: true,
-      })
-      .eq("id", profile.id);
-    setSubmitting(false);
-    if (error) {
-      toast.error("Couldn't save onboarding. Please try again.");
+      });
+    } catch (err) {
+      setSubmitting(false);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to save your grade and goal. Please try again.",
+      );
       return;
     }
+    setSubmitting(false);
     await refreshProfile();
     navigate({ to: "/roadmap" });
   }
@@ -49,13 +52,21 @@ function StudentOnboarding() {
     <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <PWHeader />
       <main className="max-w-[560px] mx-auto px-5 sm:px-8 py-12">
-        <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Step 1 of 1</div>
-        <h1 className="font-display text-[36px] leading-tight mt-2">Welcome, {profile.full_name || profile.display_name} 🎓</h1>
-        <p className="mt-2 text-[15px] text-[var(--pw-ink-2)]">A couple of details so we can tailor your roadmap.</p>
+        <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+          Step 1 of 1
+        </div>
+        <h1 className="font-display text-[36px] leading-tight mt-2">
+          Welcome, {profile.full_name || profile.display_name} 🎓
+        </h1>
+        <p className="mt-2 text-[15px] text-[var(--pw-ink-2)]">
+          A couple of details so we can tailor your roadmap.
+        </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5 pw-card p-6">
           <div>
-            <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Grade level</label>
+            <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+              Grade level
+            </label>
             <select
               required
               value={grade}
@@ -63,14 +74,18 @@ function StudentOnboarding() {
               className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
             >
               <option value="">Select grade…</option>
-              {[6,7,8,9,10,11,12].map((g) => (
-                <option key={g} value={g}>Grade {g}</option>
+              {[6, 7, 8, 9, 10, 11, 12].map((g) => (
+                <option key={g} value={g}>
+                  Grade {g}
+                </option>
               ))}
               <option value={13}>University / Other</option>
             </select>
           </div>
           <div>
-            <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">What's your goal?</label>
+            <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+              What's your goal?
+            </label>
             <textarea
               required
               rows={3}

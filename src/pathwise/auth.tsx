@@ -44,7 +44,7 @@ interface AuthContextValue {
   refreshProfile: () => Promise<void>;
   emailConfirmed: boolean;
   confirmationSent: boolean;
-  resendConfirmation: () => Promise<void>;
+  resendConfirmation: (email?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -52,7 +52,9 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, role, display_name, avatar_url, full_name, verification_status, onboarding_completed")
+    .select(
+      "id, role, display_name, avatar_url, full_name, verification_status, onboarding_completed",
+    )
     .eq("id", userId)
     .maybeSingle();
   if (error) {
@@ -164,22 +166,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateConfirmationState(null);
 
     // 🧹 Clear all impersonation state on sign‑out
-    localStorage.removeItem('impersonating');
-    localStorage.removeItem('impersonating_user_name');
-    localStorage.removeItem('admin_user_id');
-    localStorage.removeItem('admin_email');
-    localStorage.removeItem('admin_access_token');
+    localStorage.removeItem("impersonating");
+    localStorage.removeItem("impersonating_user_name");
+    localStorage.removeItem("admin_user_id");
+    localStorage.removeItem("admin_email");
+    localStorage.removeItem("admin_access_token");
   };
 
-  const resendConfirmation = async () => {
-    const email = session?.user?.email;
+  const resendConfirmation = async (targetEmail?: string) => {
+    const email = targetEmail || session?.user?.email;
     if (!email) {
       toast.error("No email address found");
       return;
     }
     try {
       const { error } = await supabase.auth.resend({
-        type: 'signup',
+        type: "signup",
         email,
       });
       if (error) throw error;
@@ -196,12 +198,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user: AuthUser | null =
     supabaseUser && profile
       ? {
-        id: supabaseUser.id,
-        email: supabaseUser.email ?? "",
-        name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
-        role: profile.role,
-        app_metadata: supabaseUser.app_metadata,
-      }
+          id: supabaseUser.id,
+          email: supabaseUser.email ?? "",
+          name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
+          role: profile.role,
+          app_metadata: supabaseUser.app_metadata,
+        }
       : null;
 
   return (
@@ -241,11 +243,19 @@ async function claimAnonymousRecords(userId: string) {
     const diagId = localStorage.getItem("pathwise_diagnostic_id");
     const roadmapId = localStorage.getItem("pathwise_roadmap_id");
     if (diagId) {
-      await supabase.from("diagnostic_results").update({ user_id: userId }).eq("id", diagId).is("user_id", null);
+      await supabase
+        .from("diagnostic_results")
+        .update({ user_id: userId })
+        .eq("id", diagId)
+        .is("user_id", null);
       localStorage.removeItem("pathwise_diagnostic_id");
     }
     if (roadmapId) {
-      await supabase.from("roadmaps").update({ user_id: userId }).eq("id", roadmapId).is("user_id", null);
+      await supabase
+        .from("roadmaps")
+        .update({ user_id: userId })
+        .eq("id", roadmapId)
+        .is("user_id", null);
       localStorage.removeItem("pathwise_roadmap_id");
     }
   } catch (err) {

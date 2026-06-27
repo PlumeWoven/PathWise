@@ -59,10 +59,18 @@ export function LoginModal() {
       const diagId = localStorage.getItem("pathwise_diagnostic_id");
       const roadmapId = localStorage.getItem("pathwise_roadmap_id");
       if (diagId) {
-        await supabase.from("diagnostic_results").update({ user_id: userId }).eq("id", diagId).is("user_id", null);
+        await supabase
+          .from("diagnostic_results")
+          .update({ user_id: userId })
+          .eq("id", diagId)
+          .is("user_id", null);
       }
       if (roadmapId) {
-        await supabase.from("roadmaps").update({ user_id: userId }).eq("id", roadmapId).is("user_id", null);
+        await supabase
+          .from("roadmaps")
+          .update({ user_id: userId })
+          .eq("id", roadmapId)
+          .is("user_id", null);
       }
       localStorage.removeItem("pathwise_diagnostic_id");
       localStorage.removeItem("pathwise_roadmap_id");
@@ -194,6 +202,13 @@ export function LoginModal() {
     });
     setSubmitting(false);
     if (err) {
+      const msg = err.message || "";
+      if (/already registered|email_exists|user already exists/i.test(msg)) {
+        const friendly = "An account with this email already exists. Please sign in instead.";
+        setError(friendly);
+        toast.error(friendly);
+        return;
+      }
       setError(err.message);
       return;
     }
@@ -237,7 +252,11 @@ export function LoginModal() {
   }
 
   const title =
-    mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset password";
+    mode === "signin"
+      ? "Welcome back"
+      : mode === "signup"
+        ? "Create your account"
+        : "Reset password";
   const subtitle =
     mode === "signin"
       ? "Choose how you're signing in"
@@ -274,21 +293,30 @@ export function LoginModal() {
                 label="Student"
                 sub="Get a roadmap & tutor"
                 selected={role === "student"}
-                onClick={() => { setRole("student"); setError(""); }}
+                onClick={() => {
+                  setRole("student");
+                  setError("");
+                }}
               />
               <RoleCard
                 emoji="👨‍🏫"
                 label="Tutor"
                 sub="Teach & earn"
                 selected={role === "tutor"}
-                onClick={() => { setRole("tutor"); setError(""); }}
+                onClick={() => {
+                  setRole("tutor");
+                  setError("");
+                }}
               />
               <RoleCard
                 emoji="🔁"
                 label="Both"
                 sub="Learn and teach"
                 selected={role === "both"}
-                onClick={() => { setRole("both"); setError(""); }}
+                onClick={() => {
+                  setRole("both");
+                  setError("");
+                }}
               />
             </div>
           )}
@@ -302,10 +330,26 @@ export function LoginModal() {
               <OrDivider />
               <GoogleButton onClick={handleGoogle} submitting={submitting} />
               <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
-                <button type="button" onClick={() => { setMode("forgot"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("forgot");
+                    setError("");
+                    setInfo("");
+                  }}
+                  className="underline-offset-4 hover:underline"
+                >
                   Forgot password?
                 </button>
-                <button type="button" onClick={() => { setMode("signup"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("signup");
+                    setError("");
+                    setInfo("");
+                  }}
+                  className="underline-offset-4 hover:underline"
+                >
                   Create account
                 </button>
               </div>
@@ -318,15 +362,30 @@ export function LoginModal() {
               <Field label="Email" type="email" value={email} onChange={setEmail} />
               <Field label="Password" type="password" value={password} onChange={setPassword} />
               {error && <ErrorLine msg={error} />}
-              <SubmitButton submitting={submitting} label="Create Free Account →" disabled={!role} />
+              <SubmitButton
+                submitting={submitting}
+                label="Create Free Account →"
+                disabled={!role}
+              />
               <OrDivider />
               <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
               {!role && (
-                <p className="text-[11px] text-[var(--pw-ink-2)] text-center">Pick a role above to enable Google sign-up.</p>
+                <p className="text-[11px] text-[var(--pw-ink-2)] text-center">
+                  Pick a role above to enable Google sign-up.
+                </p>
               )}
               <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
                 Already have an account?{" "}
-                <button type="button" onClick={() => { setMode("signin"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("signin");
+                    setError("");
+                    setInfo("");
+                    setShowConfirmation(false);
+                  }}
+                  className="underline-offset-4 hover:underline"
+                >
                   Sign in
                 </button>
               </div>
@@ -344,7 +403,15 @@ export function LoginModal() {
               )}
               <SubmitButton submitting={submitting} label="Send reset link →" />
               <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
-                <button type="button" onClick={() => { setMode("signin"); setError(""); setInfo(""); }} className="underline-offset-4 hover:underline">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("signin");
+                    setError("");
+                    setInfo("");
+                  }}
+                  className="underline-offset-4 hover:underline"
+                >
                   Back to sign in
                 </button>
               </div>
@@ -359,7 +426,7 @@ export function LoginModal() {
         onOpenChange={setShowConfirmation}
         email={signupEmail}
         isConfirmed={emailConfirmed}
-        onResend={resendConfirmation}
+        onResend={() => resendConfirmation(signupEmail)}
       />
     </>
   );
@@ -456,7 +523,9 @@ function OrDivider() {
   return (
     <div className="flex items-center gap-3 py-1">
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
-      <span className="text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] font-mono-pw">or</span>
+      <span className="text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] font-mono-pw">
+        or
+      </span>
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
     </div>
   );
@@ -476,13 +545,25 @@ function GoogleButton({
       type="button"
       onClick={onClick}
       disabled={submitting || disabled}
-        className="w-full inline-flex justify-center items-center gap-2 pw-border rounded-md px-6 py-3 text-[14px] font-medium bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full inline-flex justify-center items-center gap-2 pw-border rounded-md px-6 py-3 text-[14px] font-medium bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden>
-        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.7 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
-        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-        <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.5-5.3l-6.2-5.3c-2 1.5-4.6 2.4-7.3 2.4-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z" />
-        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.5l6.2 5.3C40.9 35.6 44 30.3 44 24c0-1.3-.1-2.4-.4-3.5z" />
+        <path
+          fill="#FFC107"
+          d="M43.6 20.5H42V20H24v8h11.3c-1.7 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
+        />
+        <path
+          fill="#FF3D00"
+          d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+        />
+        <path
+          fill="#4CAF50"
+          d="M24 44c5.2 0 9.9-2 13.5-5.3l-6.2-5.3c-2 1.5-4.6 2.4-7.3 2.4-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"
+        />
+        <path
+          fill="#1976D2"
+          d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.3 5.5l6.2 5.3C40.9 35.6 44 30.3 44 24c0-1.3-.1-2.4-.4-3.5z"
+        />
       </svg>
       Continue with Google
     </button>
