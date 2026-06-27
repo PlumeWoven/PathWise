@@ -3,7 +3,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { PWHeader } from "../pathwise/Header";
-import { GOALS, LEVEL_META, SUBJECTS, Subject, GoalId, levelFromScore, pickQuizQuestions } from "../pathwise/data";
+import {
+  GOALS,
+  LEVEL_META,
+  SUBJECTS,
+  Subject,
+  GoalId,
+  levelFromScore,
+  pickQuizQuestions,
+} from "../pathwise/data";
 import { setState, usePW, resetState } from "../pathwise/store";
 import { generateStages } from "../pathwise/roadmap-gen";
 import { toast } from "sonner";
@@ -15,9 +23,15 @@ export const Route = createFileRoute("/quiz")({
   head: () => ({
     meta: [
       { title: "Level Check — PathWise" },
-      { name: "description", content: "Take a 3-minute gamified diagnostic to find your exact level." },
+      {
+        name: "description",
+        content: "Take a 3-minute gamified diagnostic to find your exact level.",
+      },
       { property: "og:title", content: "Level Check — PathWise" },
-      { property: "og:description", content: "A short, fun diagnostic to reveal your starting level." },
+      {
+        property: "og:description",
+        content: "A short, fun diagnostic to reveal your starting level.",
+      },
       { property: "og:url", content: "/quiz" },
     ],
     links: [{ rel: "canonical", href: "/quiz" }],
@@ -53,7 +67,10 @@ function QuizPageInner() {
     setQIndex(0);
   }, []);
 
-  const questions = useMemo(() => (pw.subject ? pickQuizQuestions(pw.subject, 5) : []), [pw.subject]);
+  const questions = useMemo(
+    () => (pw.subject ? pickQuizQuestions(pw.subject, 5) : []),
+    [pw.subject],
+  );
 
   let progress = 0;
   if (phase === "subject") progress = 5;
@@ -76,10 +93,7 @@ function QuizPageInner() {
     if (feedback !== "none") return;
     const q = questions[qIndex];
     const correct = i === q.correctIndex;
-    const newAnswers = [
-      ...pw.answers,
-      { questionId: q.id, selected: i, correct, topic: q.topic },
-    ];
+    const newAnswers = [...pw.answers, { questionId: q.id, selected: i, correct, topic: q.topic }];
     let xp = pw.totalXP;
     let streak = pw.streak;
     if (correct) {
@@ -149,7 +163,7 @@ function QuizPageInner() {
       // 2. Compute results from store
       const score = pw.answers.filter((a) => a.correct).length;
       const wrongTopics = Array.from(
-        new Set(pw.answers.filter((a) => !a.correct).map((a) => a.topic))
+        new Set(pw.answers.filter((a) => !a.correct).map((a) => a.topic)),
       );
 
       // 3. Save diagnostic → get diagnostic_id
@@ -179,7 +193,7 @@ function QuizPageInner() {
       try {
         localStorage.setItem("pathwise_roadmap_id", roadmapId);
         localStorage.setItem("pathwise_diagnostic_id", diagnosticId);
-      } catch { }
+      } catch {}
 
       // 7. Navigate — pass roadmapId in search params as before
       navigate({ to: "/roadmap", search: { roadmapId } as any });
@@ -226,21 +240,24 @@ function QuizPageInner() {
         <AnimatePresence mode="wait">
           {phase === "subject" && (
             <Step key="subject" title="What do you want to get better at?" stepLabel="STEP 1 OF 2">
-              <div className="grid grid-cols-2 gap-3 mt-8">
+              <div className="grid grid-cols-2 gap-4 mt-8">
                 {SUBJECTS.map((s) => {
                   const selected = pw.subject === s.id;
                   return (
                     <button
                       key={s.id}
                       onClick={() => pickSubject(s.id)}
-                      className={`relative h-16 pw-card flex items-center justify-center gap-2 transition-all duration-250 ${selected ? "border-[var(--pw-accent)]" : "hover:border-[var(--pw-accent)]"
-                        }`}
+                      className={`relative h-16 pw-card flex items-center justify-center gap-2 transition-all duration-250 ${
+                        selected ? "border-[var(--pw-accent)]" : "hover:border-[var(--pw-accent)]"
+                      }`}
                       style={selected ? { background: "var(--pw-accent-soft)" } : undefined}
                     >
                       <span className="text-xl">{s.emoji}</span>
                       <span className="text-[14px] font-medium">{s.label}</span>
                       {selected && (
-                        <span className="absolute top-1.5 right-2 text-[var(--pw-accent)] text-sm">✓</span>
+                        <span className="absolute top-1.5 right-2 text-[var(--pw-accent)] text-sm">
+                          ✓
+                        </span>
                       )}
                     </button>
                   );
@@ -258,10 +275,11 @@ function QuizPageInner() {
                     <button
                       key={g.id}
                       onClick={() => pickGoal(g.id)}
-                      className={`pw-pill px-5 py-3 pw-border text-[14px] transition-all duration-250 ${selected
+                      className={`pw-pill px-5 py-3 pw-border text-[14px] transition-all duration-250 ${
+                        selected
                           ? "text-[var(--pw-surface)] border-[var(--pw-accent)]"
                           : "bg-[var(--pw-surface)] hover:border-[var(--pw-accent)]"
-                        }`}
+                      }`}
                       style={selected ? { background: "var(--pw-accent)" } : undefined}
                     >
                       <span className="mr-2">{g.emoji}</span>
@@ -284,14 +302,21 @@ function QuizPageInner() {
             >
               <div className="pw-card p-8 text-center">
                 <div className="text-5xl">🎮</div>
-                <h2 className="font-display text-[32px] mt-4 leading-tight">Level Check: Unlocked</h2>
+                <h2 className="font-display text-[32px] mt-4 leading-tight">
+                  Level Check: Unlocked
+                </h2>
                 <p className="text-[15px] text-[var(--pw-ink-2)] mt-3">
                   Answer 5 quick questions. We'll calculate your exact starting point.
                 </p>
                 <div className="mt-6">
-                  <div className="font-mono-pw text-[12px] text-[var(--pw-ink-2)] mb-2">XP: 0 / 500</div>
+                  <div className="font-mono-pw text-[12px] text-[var(--pw-ink-2)] mb-2">
+                    XP: 0 / 500
+                  </div>
                   <div className="h-2 rounded-full bg-[var(--pw-surface-2)] overflow-hidden">
-                    <div className="h-full" style={{ width: "0%", background: "var(--pw-accent)" }} />
+                    <div
+                      className="h-full"
+                      style={{ width: "0%", background: "var(--pw-accent)" }}
+                    />
                   </div>
                 </div>
                 <button
@@ -314,11 +339,14 @@ function QuizPageInner() {
               className="max-w-[560px] mx-auto mt-12"
             >
               <div
-                className={`pw-card p-6 sm:p-7 relative ${feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
-                  }`}
+                className={`pw-card p-6 sm:p-7 relative ${
+                  feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
+                }`}
               >
                 <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
-                  <span>Question {qIndex + 1} of {questions.length}</span>
+                  <span>
+                    Question {qIndex + 1} of {questions.length}
+                  </span>
                   <span
                     className="font-mono-pw text-[11px] px-2 py-0.5 pw-pill"
                     style={{ background: "var(--pw-accent-3)", color: "var(--pw-ink)" }}
@@ -329,15 +357,20 @@ function QuizPageInner() {
                 <div className="mt-3 h-1 rounded-full bg-[var(--pw-surface-2)] overflow-hidden">
                   <div
                     className="h-full transition-all duration-500"
-                    style={{ width: `${((qIndex + 1) / questions.length) * 100}%`, background: "var(--pw-accent)" }}
+                    style={{
+                      width: `${((qIndex + 1) / questions.length) * 100}%`,
+                      background: "var(--pw-accent)",
+                    }}
                   />
                 </div>
                 <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mt-5">
                   {questions[qIndex].topic}
                 </div>
-                <h3 className="text-[18px] font-medium mt-2 leading-snug">{questions[qIndex].question}</h3>
+                <h3 className="text-[18px] font-medium mt-2 leading-snug">
+                  {questions[qIndex].question}
+                </h3>
 
-                <div className="mt-5 space-y-2.5 relative">
+                <div className="mt-5 space-y-3 relative">
                   {questions[qIndex].options.map((opt, i) => {
                     const selectedThis =
                       feedback !== "none" &&
@@ -380,14 +413,17 @@ function QuizPageInner() {
                 )}
                 {feedback === "wrong" && (
                   <div className="mt-4 text-[13px] text-[var(--pw-ink-2)]">
-                    Not quite — the answer was <strong style={{ color: "var(--pw-accent-2)" }}>
+                    Not quite — the answer was{" "}
+                    <strong style={{ color: "var(--pw-accent-2)" }}>
                       {questions[qIndex].options[questions[qIndex].correctIndex]}
                     </strong>
                   </div>
                 )}
 
                 {pw.streak >= 3 && feedback === "correct" && (
-                  <div className="mt-2 text-[12px] text-[var(--pw-accent)]">🔥 {pw.streak} in a row!</div>
+                  <div className="mt-2 text-[12px] text-[var(--pw-accent)]">
+                    🔥 {pw.streak} in a row!
+                  </div>
                 )}
               </div>
             </motion.div>
@@ -402,8 +438,19 @@ function QuizPageInner() {
               className="flex flex-col items-center justify-center mt-24"
             >
               <div className="relative w-16 h-16">
-                <svg viewBox="0 0 50 50" className="w-full h-full animate-spin" style={{ animationDuration: "1.2s" }}>
-                  <circle cx="25" cy="25" r="20" stroke="var(--pw-surface-2)" strokeWidth="4" fill="none" />
+                <svg
+                  viewBox="0 0 50 50"
+                  className="w-full h-full animate-spin"
+                  style={{ animationDuration: "1.2s" }}
+                >
+                  <circle
+                    cx="25"
+                    cy="25"
+                    r="20"
+                    stroke="var(--pw-surface-2)"
+                    strokeWidth="4"
+                    fill="none"
+                  />
                   <circle
                     cx="25"
                     cy="25"
@@ -440,27 +487,43 @@ function QuizPageInner() {
               transition={{ type: "spring", stiffness: 180, damping: 16 }}
               className="max-w-[420px] mx-auto mt-16"
             >
-              <div className="pw-card p-8 text-center" style={{ borderWidth: 2, borderColor: "var(--pw-accent)" }}>
+              <div
+                className="pw-card p-8 text-center"
+                style={{ borderWidth: 2, borderColor: "var(--pw-accent)" }}
+              >
                 <div className="flex justify-center">
                   <div
                     className="w-40 h-44 flex flex-col items-center justify-center text-white"
                     style={{
                       background: "var(--pw-accent)",
-                      clipPath:
-                        "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+                      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
                     }}
                   >
-                    <div className="font-mono-pw text-[11px] pw-tracking-wide opacity-90">YOUR LEVEL</div>
+                    <div className="font-mono-pw text-[11px] pw-tracking-wide opacity-90">
+                      YOUR LEVEL
+                    </div>
                     <div className="text-3xl mt-1">{LEVEL_META[lvl].emoji}</div>
-                    <div className="font-display text-[28px] font-bold leading-none mt-1">{lvl}</div>
-                    <div className="font-mono-pw text-[12px] mt-2 opacity-90">{score} / 5 correct</div>
+                    <div className="font-display text-[28px] font-bold leading-none mt-1">
+                      {lvl}
+                    </div>
+                    <div className="font-mono-pw text-[12px] mt-2 opacity-90">
+                      {score} / 5 correct
+                    </div>
                   </div>
                 </div>
-                <div className="mt-5 font-mono-pw text-[14px]" style={{ color: "var(--pw-accent)" }}>
+                <div
+                  className="mt-5 font-mono-pw text-[14px]"
+                  style={{ color: "var(--pw-accent)" }}
+                >
                   ✦ {pw.totalXP} XP Earned
                 </div>
-                {pw.answers.some((a, i) => a.correct && pw.answers.slice(0, i + 1).filter((x) => x.correct).length >= 3) && (
-                  <div className="text-[12px] text-[var(--pw-ink-2)] mt-1">🔥 streak bonus included</div>
+                {pw.answers.some(
+                  (a, i) =>
+                    a.correct && pw.answers.slice(0, i + 1).filter((x) => x.correct).length >= 3,
+                ) && (
+                  <div className="text-[12px] text-[var(--pw-ink-2)] mt-1">
+                    🔥 streak bonus included
+                  </div>
                 )}
                 <p className="text-[15px] text-[var(--pw-ink-2)] mt-4">{interp}</p>
                 {/* Button now calls handleBuildRoadmap — does both saves in one go */}
@@ -498,7 +561,9 @@ function Step({
       transition={{ duration: 0.25, ease: "easeOut" }}
       className="max-w-[560px] mx-auto mt-12 text-center"
     >
-      <div className="font-mono-pw text-[12px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">{stepLabel}</div>
+      <div className="font-mono-pw text-[12px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+        {stepLabel}
+      </div>
       <h2 className="font-display text-[32px] sm:text-[38px] leading-tight mt-3">{title}</h2>
       {children}
     </motion.div>
