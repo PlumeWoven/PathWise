@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StyleGuideRouteImport } from './routes/style-guide'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -48,6 +49,11 @@ import { Route as TutorCoursesNewRouteImport } from './routes/tutor.courses.new'
 import { Route as DashboardSettingsVerificationRouteImport } from './routes/dashboard.settings.verification'
 import { Route as TutorCoursesCourseIdEditRouteImport } from './routes/tutor.courses.$courseId.edit'
 
+const StyleGuideRoute = StyleGuideRouteImport.update({
+  id: '/style-guide',
+  path: '/style-guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -254,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/style-guide': typeof StyleGuideRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -292,6 +299,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/style-guide': typeof StyleGuideRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -332,6 +340,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/style-guide': typeof StyleGuideRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -374,6 +383,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roadmap'
     | '/sitemap.xml'
+    | '/style-guide'
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roadmap'
     | '/sitemap.xml'
+    | '/style-guide'
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
@@ -451,6 +462,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/roadmap'
     | '/sitemap.xml'
+    | '/style-guide'
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
@@ -492,6 +504,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   RoadmapRoute: typeof RoadmapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  StyleGuideRoute: typeof StyleGuideRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   BookTutorIdRoute: typeof BookTutorIdRoute
   CoursesSlugRoute: typeof CoursesSlugRoute
@@ -510,6 +523,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/style-guide': {
+      id: '/style-guide'
+      path: '/style-guide'
+      fullPath: '/style-guide'
+      preLoaderRoute: typeof StyleGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -844,6 +864,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   RoadmapRoute: RoadmapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  StyleGuideRoute: StyleGuideRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   BookTutorIdRoute: BookTutorIdRoute,
   CoursesSlugRoute: CoursesSlugRoute,

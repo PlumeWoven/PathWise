@@ -74,6 +74,13 @@ html, body, #root {
   --color-pw-secondary: var(--pw-secondary);
   --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Fraunces', Georgia, serif;
+
+  /* Neomorphic radius + shadow tokens (back rounded-pw / shadow-pw-* utilities) */
+  --radius-pw: 22px;
+  --shadow-pw-raised: 8px 8px 16px var(--pw-shadow-dark), -8px -8px 16px var(--pw-shadow-light);
+  --shadow-pw-raised-sm: 6px 6px 12px var(--pw-shadow-dark), -6px -6px 12px var(--pw-shadow-light);
+  --shadow-pw-raised-lg: 12px 12px 24px var(--pw-shadow-dark), -12px -12px 24px var(--pw-shadow-light);
+  --shadow-pw-inset: inset 4px 4px 8px var(--pw-shadow-dark), inset -4px -4px 8px var(--pw-shadow-light);
 }
 
 :root {
@@ -544,6 +551,52 @@ html, body, #root {
   height: 100%;
   border-radius: 9999px;
   background-color: var(--pw-accent);
+}
+
+/* =====================================================================
+   Design-system completions (ported from the design zip). Placed in
+   @layer components so per-call-site Tailwind utilities (p-*, px-*, py-*,
+   font-*, shadow-*) still override these defaults. Existing usages stay
+   unchanged; bare usages + the style guide get the full neomorphic look.
+   ===================================================================== */
+@layer components {
+  /* CARD — default interior padding (override with p-* utilities). */
+  .pw-card {
+    padding: 28px;
+  }
+
+  /* PRIMARY BUTTON — full flex/sizing/typography defaults. */
+  .pw-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  /* NAV PILL — flat-on-surface default; add .is-active for the selected state. */
+  .pw-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    color: var(--pw-ink);
+    background-color: transparent;
+    transition: box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+  }
+  .pw-pill:hover {
+    background-color: var(--pw-surface);
+    box-shadow: 4px 4px 8px var(--pw-shadow-dark), -4px -4px 8px var(--pw-shadow-light);
+  }
+  .pw-pill.is-active {
+    color: var(--pw-accent);
+    background-color: var(--pw-surface);
+    box-shadow: 4px 4px 8px var(--pw-shadow-dark), -4px -4px 8px var(--pw-shadow-light);
+  }
 }
 
 @layer utilities {
