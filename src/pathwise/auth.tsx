@@ -130,19 +130,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session: existing } }) => {
-      setSession(existing);
-      if (existing?.user) {
-        updateConfirmationState(existing.user);
-        fetchProfile(existing.user.id).then((p) => {
-          setProfile(p);
+    // Check for existing session with error handling
+    supabase.auth.getSession()
+      .then(({ data: { session: existing } }) => {
+        setSession(existing);
+        if (existing?.user) {
+          updateConfirmationState(existing.user);
+          fetchProfile(existing.user.id).then((p) => {
+            setProfile(p);
+            setLoading(false);
+          });
+        } else {
+          updateConfirmationState(null);
           setLoading(false);
-        });
-      } else {
-        updateConfirmationState(null);
+        }
+      })
+      .catch((err) => {
+        console.error("[auth] getSession error", err);
+        // If we can't get the session, still allow the app to load
         setLoading(false);
-      }
-    });
+      });
 
     return () => {
       sub.subscription.unsubscribe();
@@ -198,12 +205,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user: AuthUser | null =
     supabaseUser && profile
       ? {
-          id: supabaseUser.id,
-          email: supabaseUser.email ?? "",
-          name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
-          role: profile.role,
-          app_metadata: supabaseUser.app_metadata,
-        }
+        id: supabaseUser.id,
+        email: supabaseUser.email ?? "",
+        name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
+        role: profile.role,
+        app_metadata: supabaseUser.app_metadata,
+      }
       : null;
 
   return (
