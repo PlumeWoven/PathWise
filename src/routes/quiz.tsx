@@ -155,11 +155,12 @@ function QuizPageInner() {
     savedRef.current = true;
     setBuildingRoadmap(true);
 
-    try {
-      // 1. Get current user (null = anonymous)
-      const user = await getCurrentUser();
-      const userId = user?.id ?? null;
+    // 1. Get current user (null = anonymous)
+    let user = await getCurrentUser();
+    let userId = user?.id ?? null;
+    let session = user; // Store session for localStorage check
 
+    try {
       // 2. Compute results from store
       const score = pw.answers.filter((a) => a.correct).length;
       const wrongTopics = Array.from(
@@ -191,14 +192,49 @@ function QuizPageInner() {
 
       // 6. Persist roadmap_id to localStorage for the roadmap page
       try {
+        console.log('[quiz] Storing roadmap ID:', roadmapId);
+        console.log('[quiz] localStorage key: pathwise_roadmap_id');
         localStorage.setItem("pathwise_roadmap_id", roadmapId);
-        localStorage.setItem("pathwise_diagnostic_id", diagnosticId);
-      } catch {}
+
+        if (diagnosticId) {
+          console.log('[quiz] Storing diagnostic ID:', diagnosticId);
+          localStorage.setItem("pathwise_diagnostic_id", diagnosticId);
+        }
+      } catch (err) {
+        console.error('[quiz] Failed to store IDs in localStorage:', err);
+      }
 
       // 7. Navigate — pass roadmapId in search params as before
       navigate({ to: "/roadmap", search: { roadmapId } as any });
     } catch (err: any) {
       console.error("[quiz] handleBuildRoadmap error", err);
+      console.error("────────────────────────────────────────────────────────────");
+      console.error("Error Details:");
+      console.error("  • Error Code:", err?.code || "N/A");
+      console.error("  • Error Name:", err?.name || "N/A");
+      console.error("  • Error Message:", err?.message || "N/A");
+      console.error("  • Error Hint:", err?.hint || "N/A");
+      console.error("  • Error Details:", err?.details || "N/A");
+      console.error("  • HTTP Status:", err?.status || "N/A");
+      console.error("  • Location: src/routes/quiz.tsx, handleBuildRoadmap()");
+      console.error("────────────────────────────────────────────────────────────");
+      console.error("Diagnostic Information:");
+      console.error("  • Auth Session Exists:", !!user);
+      console.error("  • User ID:", user?.id ?? "anonymous (no session)");
+      console.error("  • Current URL:", window.location.href);
+      console.error("  • Attempting to insert diagnostic with user_id:", userId);
+      console.error("  • Request Payload:", {
+        user_id: userId,
+        subject: pw.subject,
+        goal: pw.goal,
+        score,
+        level: pw.level,
+        xp_earned: pw.totalXP,
+        wrong_topics: wrongTopics
+      });
+      console.error("  • Full Error Object:", JSON.stringify(err, null, 2));
+      console.error("────────────────────────────────────────────────────────────");
+
       toast.error(err?.message || "Couldn't build your roadmap. Please try again.");
       // Allow retry
       savedRef.current = false;
@@ -247,9 +283,8 @@ function QuizPageInner() {
                     <button
                       key={s.id}
                       onClick={() => pickSubject(s.id)}
-                      className={`relative h-16 pw-card flex items-center justify-center gap-2 transition-all duration-250 ${
-                        selected ? "border-[var(--pw-accent)]" : "hover:border-[var(--pw-accent)]"
-                      }`}
+                      className={`relative h-16 pw-card flex items-center justify-center gap-2 transition-all duration-250 ${selected ? "border-[var(--pw-accent)]" : "hover:border-[var(--pw-accent)]"
+                        }`}
                       style={selected ? { background: "var(--pw-accent-soft)" } : undefined}
                     >
                       <span className="text-xl">{s.emoji}</span>
@@ -275,11 +310,10 @@ function QuizPageInner() {
                     <button
                       key={g.id}
                       onClick={() => pickGoal(g.id)}
-                      className={`pw-pill px-5 py-3 pw-border text-[14px] transition-all duration-250 ${
-                        selected
-                          ? "text-[var(--pw-surface)] border-[var(--pw-accent)]"
-                          : "bg-[var(--pw-surface)] hover:border-[var(--pw-accent)]"
-                      }`}
+                      className={`pw-pill px-5 py-3 pw-border text-[14px] transition-all duration-250 ${selected
+                        ? "text-[var(--pw-surface)] border-[var(--pw-accent)]"
+                        : "bg-[var(--pw-surface)] hover:border-[var(--pw-accent)]"
+                        }`}
                       style={selected ? { background: "var(--pw-accent)" } : undefined}
                     >
                       <span className="mr-2">{g.emoji}</span>
@@ -339,9 +373,8 @@ function QuizPageInner() {
               className="max-w-[560px] mx-auto mt-12"
             >
               <div
-                className={`pw-card p-6 sm:p-7 relative ${
-                  feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
-                }`}
+                className={`pw-card p-6 sm:p-7 relative ${feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
+                  }`}
               >
                 <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
                   <span>
@@ -521,10 +554,10 @@ function QuizPageInner() {
                   (a, i) =>
                     a.correct && pw.answers.slice(0, i + 1).filter((x) => x.correct).length >= 3,
                 ) && (
-                  <div className="text-[12px] text-[var(--pw-ink-2)] mt-1">
-                    🔥 streak bonus included
-                  </div>
-                )}
+                    <div className="text-[12px] text-[var(--pw-ink-2)] mt-1">
+                      🔥 streak bonus included
+                    </div>
+                  )}
                 <p className="text-[15px] text-[var(--pw-ink-2)] mt-4">{interp}</p>
                 {/* Button now calls handleBuildRoadmap — does both saves in one go */}
                 <button

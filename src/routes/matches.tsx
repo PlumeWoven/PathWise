@@ -98,6 +98,10 @@ function MatchesPage() {
         // if no subject is known (same behaviour as before for that case).
         const effectiveSubject = search.subject ?? savedPrefs.subject;
 
+        // Get session for auth guard
+        const { data: { session } } = await supabase.auth.getSession();
+        const isAuthenticated = !!session;
+
         let tutorQuery = supabase
           .from("profiles")
           .select(
@@ -113,13 +117,24 @@ function MatchesPage() {
           tutorQuery = tutorQuery.contains("subject_specialties", [effectiveSubject]);
         }
 
-        const [tutorsRes, reviewsRes, availRes, packagesRes, coursesRes] = await Promise.all([
-          tutorQuery,
-          supabase.from("reviews").select("tutor_id, rating"),
-          supabase.from("tutor_availability").select("user_id"),
-          supabase.from("tutor_packages").select("user_id, discount_percent, enabled"),
-          supabase.from("courses").select("tutor_id, title, thumbnail_url, status").eq("status", "published"),
-        ]);
+        // Only fetch tutor data if authenticated (for privacy)
+        let tutorsRes, reviewsRes, availRes, packagesRes, coursesRes;
+        if (isAuthenticated) {
+          [tutorsRes, reviewsRes, availRes, packagesRes, coursesRes] = await Promise.all([
+            tutorQuery,
+            supabase.from("reviews").select("tutor_id, rating"),
+            supabase.from("tutor_availability").select("user_id"),
+            supabase.from("tutor_packages").select("user_id, discount_percent, enabled"),
+            supabase.from("courses").select("tutor_id, title, thumbnail_url, status").eq("status", "published"),
+          ]);
+        } else {
+          // Return empty data for anonymous users
+          tutorsRes = { data: [], error: null };
+          reviewsRes = { data: [], error: null };
+          availRes = { data: [], error: null };
+          packagesRes = { data: [], error: null };
+          coursesRes = { data: [], error: null };
+        }
 
         if (cancelled) return;
 

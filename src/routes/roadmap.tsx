@@ -11,6 +11,8 @@ import { useAuth } from "../pathwise/auth";
 import { RoleGate } from "../pathwise/RoleGate";
 // ─── api.ts replaces inline supabase calls ───────────────────────────────────
 import { getRoadmapWithStages, completeStage } from "../pathwise/api";
+import { requireAuth } from "../lib/authGuard";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DBStage {
   id: string;
@@ -94,28 +96,45 @@ function RoadmapPageInner() {
   // For the roadmap page we still need to fetch by roadmapId from the URL/localStorage,
   // so we keep a lightweight direct fetch here scoped to the specific roadmapId.
   async function fetchRoadmap() {
-    if (!roadmapId) return;
+    console.log('[roadmap] fetchRoadmap called');
+    console.log('[roadmap] roadmapId:', roadmapId);
+    if (!roadmapId) {
+      console.log('[roadmap] No roadmapId, redirecting to quiz');
+      navigate({ to: "/quiz" });
+      return;
+    }
     setLoading(true);
     try {
       // We use getRoadmapWithStages only when a logged-in user has no roadmapId in params.
       // When roadmapId IS known (from quiz navigation or localStorage), fetch it directly
       // so anonymous users can also see their roadmap without being logged in.
       const { supabase } = await import("@/integrations/supabase/client");
+      console.log('[roadmap] Fetching roadmap and stages from Supabase...');
       const [{ data: rm, error: rErr }, { data: st, error: sErr }] = await Promise.all([
         supabase.from("roadmaps").select("*").eq("id", roadmapId).maybeSingle(),
         supabase.from("roadmap_stages").select("*").eq("roadmap_id", roadmapId).order("stage_number"),
       ]);
+      console.log('[roadmap] Supabase responses:', { rm, rErr, st, sErr });
       if (rErr) throw rErr;
       if (sErr) throw sErr;
       if (!rm) {
+        console.log('[roadmap] Roadmap not found');
         toast.error("Roadmap not found.");
         navigate({ to: "/quiz" });
         return;
       }
+      console.log('[roadmap] Roadmap loaded successfully:', rm.id, rm.user_id);
       setRoadmap(rm as DBRoadmap);
       setStages((st ?? []) as DBStage[]);
+      console.log('[roadmap] Stages loaded:', (st ?? []).length);
     } catch (err: any) {
-      console.error("[roadmap] fetch", err);
+      console.error("[roadmap] fetch error", err);
+      console.error("[roadmap] Error details:", {
+        message: err?.message,
+        code: err?.code,
+        hint: err?.hint,
+        details: err?.details
+      });
       toast.error(err?.message || "Couldn't load your roadmap.");
     } finally {
       setLoading(false);
@@ -125,10 +144,54 @@ function RoadmapPageInner() {
   // ─── CHANGED: completeStage from api.ts ──────────────────────────────────
   // Previously 3 separate supabase calls inline.
   // Now one api.ts call that does the same thing: mark complete, unlock next, bump current_stage.
+  async function handleStartHere() {
+    if (!roadmap) return;
+
+    // Require authentication
+    const authenticated = await requireAuth(roadmap.id);
+    if (!authenticated) return; // Will redirect to sign-in
+
+    // Find the first stage that hasn't been started
+    const firstStage = stages.find(s => s.status === 'active');
+
+    if (!firstStage) {
+      console.log('All stages already started');
+      return;
+    }
+
+    try {
+      // Update the first stage to "in_progress"
+      const { error } = await supabase
+        .from('roadmap_stages')
+        .update({ status: 'in_progress' })
+        .eq('id', firstStage.id);
+
+      if (error) {
+        console.error('Failed to start stage:', error);
+        return;
+      }
+
+      // Update local state
+      setStages(prev =>
+        prev.map(s => s.id === firstStage.id ? { ...s, status: 'in_progress' } : s)
+      );
+
+      // Open the stage detail modal
+      setOpenStage(firstStage.stage_number);
+    } catch (err) {
+      console.error('Start here error:', err);
+    }
+  }
+
   async function handleMarkComplete(stage: DBStage) {
     if (completing !== null) return;
     if (stage.status !== "active") return;
     if (!roadmap) return;
+
+    // Require authentication before marking stage complete
+    const authenticated = await requireAuth(roadmap.id);
+    if (!authenticated) return;
+
     setCompleting(stage.stage_number);
     try {
       await completeStage(roadmap.id, stage.stage_number);
@@ -210,7 +273,7 @@ function RoadmapPageInner() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={openLogin}
+                onClick={() => openLogin()}
                 className="pw-pill px-3 py-1 text-[12px] text-white font-medium"
                 style={{ background: "var(--pw-accent)" }}
               >
@@ -340,12 +403,10 @@ function RoadmapPageInner() {
                       {nodeIcon}
                     </motion.div>
 
-                    <button
-                      type="button"
+                    <div
                       onClick={() => setOpenStage(s.stage_number)}
-                      className="text-left w-full pw-card p-5 relative transition-colors"
+                      className="text-left w-full pw-card p-5 relative transition-colors cursor-pointer"
                       style={{
-                        cursor: "pointer",
                         borderColor: isActive ? "var(--pw-accent)" : isCompleted ? "var(--pw-accent-2)" : "var(--pw-border)",
                         background: isCompleted ? "rgba(45,106,79,0.04)" : "var(--pw-surface)",
                       }}
@@ -361,9 +422,13 @@ function RoadmapPageInner() {
                           </span>
                         )}
                         {isActive && (
-                          <span className="pw-pill text-[11px] px-2.5 py-1 text-white whitespace-nowrap" style={{ background: "var(--pw-accent)" }}>
+                          <button
+                            onClick={handleStartHere}
+                            className="pw-pill text-[11px] px-2.5 py-1 text-white whitespace-nowrap"
+                            style={{ background: "var(--pw-accent)" }}
+                          >
                             ▶ START HERE
-                          </span>
+                          </button>
                         )}
                         {!isCompleted && !isActive && (
                           <span className="pw-pill text-[11px] px-2.5 py-1 text-[var(--pw-ink-2)] pw-border whitespace-nowrap">
@@ -410,7 +475,7 @@ function RoadmapPageInner() {
                           </span>
                         )}
                       </div>
-                    </button>
+                    </div>
                   </motion.div>
                 );
               })}
@@ -420,9 +485,20 @@ function RoadmapPageInner() {
 
         {/* CTA */}
         <div className="mt-12 max-w-2xl mx-auto text-center">
-          <Link to="/matches" className="pw-btn-primary inline-flex justify-center w-full px-7 py-4 text-[16px] font-medium">
+          <button
+            onClick={async (e) => {
+              e.preventDefault();
+              // Require authentication — opens login modal if not signed in
+              const authenticated = await requireAuth(roadmap.id);
+              if (authenticated) {
+                // Only navigate if authenticated
+                navigate({ to: "/matches" });
+              }
+            }}
+            className="pw-btn-primary inline-flex justify-center w-full px-7 py-4 text-[16px] font-medium"
+          >
             See My Matched Tutors & Courses →
-          </Link>
+          </button>
           <p className="mt-3 text-[12px] text-[var(--pw-ink-2)]">Free to browse · Book only when ready</p>
         </div>
       </main>
