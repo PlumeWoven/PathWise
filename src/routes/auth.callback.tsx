@@ -12,10 +12,10 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
     console.log('[claim] Starting claim process for user:', userId);
     // Check URL params first, then localStorage
     const params = new URLSearchParams(window.location.search);
-    const claimId = params.get('claim') || localStorage.getItem('pathwise_roadmap_id');
+    const claimId = params.get('claim') || localStorage.getItem('pendingRoadmapId');
 
     console.log('[claim] Claim ID from URL:', params.get('claim'));
-    console.log('[claim] Claim ID from localStorage:', localStorage.getItem('pathwise_roadmap_id'));
+    console.log('[claim] Claim ID from localStorage:', localStorage.getItem('pendingRoadmapId'));
 
     if (!claimId) {
         console.log('[claim] No claim ID found, skipping');
@@ -35,7 +35,7 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
 
         if (roadmapError) {
             console.error('[claim] Failed to claim roadmap:', roadmapError);
-            localStorage.removeItem('pathwise_roadmap_id');
+            localStorage.removeItem('pendingRoadmapId');
             return;
         }
 
@@ -60,7 +60,7 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
         }
 
         // 3. Clean up
-        localStorage.removeItem('pathwise_roadmap_id');
+        localStorage.removeItem('pendingRoadmapId');
         console.log('[claim] Claim process completed successfully');
     } catch (err) {
         console.error('[claim] Error claiming roadmap:', err);
@@ -80,7 +80,7 @@ function AuthCallback() {
                 if (error) throw error;
                 if (user) {
                     // Claim any pending anonymous roadmap
-                    const claimId = params.get('claim') || localStorage.getItem('pathwise_roadmap_id');
+                    const claimId = params.get('claim') || localStorage.getItem('pendingRoadmapId');
                     if (claimId) {
                         await claimPendingRoadmap(claimId);
                     }

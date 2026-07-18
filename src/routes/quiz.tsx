@@ -193,8 +193,8 @@ function QuizPageInner() {
       // 6. Persist roadmap_id to localStorage for the roadmap page
       try {
         console.log('[quiz] Storing roadmap ID:', roadmapId);
-        console.log('[quiz] localStorage key: pathwise_roadmap_id');
-        localStorage.setItem("pathwise_roadmap_id", roadmapId);
+        console.log('[quiz] localStorage key: pendingRoadmapId');
+        localStorage.setItem("pendingRoadmapId", roadmapId);
 
         if (diagnosticId) {
           console.log('[quiz] Storing diagnostic ID:', diagnosticId);

@@ -76,7 +76,7 @@ function RoadmapPageInner() {
 
   const roadmapId =
     search.roadmapId ||
-    (typeof window !== "undefined" ? localStorage.getItem("pathwise_roadmap_id") : null) ||
+    (typeof window !== "undefined" ? localStorage.getItem("pendingRoadmapId") : null) ||
     null;
 
   useEffect(() => {
