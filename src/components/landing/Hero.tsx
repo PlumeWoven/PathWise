@@ -25,10 +25,10 @@ export function Hero() {
   const isTutor = isLoggedIn && role === "tutor";
 
   return (
-    <section className="relative flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden bg-pw-bg px-5 py-28 sm:px-8">
+    <section data-floating-container className="relative h-screen w-full overflow-hidden bg-pw-bg">
       <FloatingCluster />
 
-      <div className="relative z-10 mx-auto max-w-2xl text-center">
+      <div data-hero-content className="relative z-20 mx-auto max-w-2xl text-center">
         <motion.h1
           custom={0}
           variants={fadeUp}

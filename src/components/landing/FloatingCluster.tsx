@@ -1,117 +1,99 @@
-import { TargetIcon, ZapIcon, RouteIcon } from "lucide-react";
-import type { ComponentType } from "react";
-
-type Depth = "sm" | "md" | "lg";
-
-const depthShadow: Record<Depth, string> = {
-  sm: "shadow-pw-raised-sm",
-  md: "shadow-pw-raised",
-  lg: "shadow-pw-raised-lg",
-};
-
-interface ChipData {
-  kind: "chip";
-  label: string;
-  text: string;
-  depth: Depth;
-  gridClass: string;
-  animationClass: string;
-}
-
-interface PodData {
-  kind: "pod";
-  value: string;
-  label: string;
-  icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
-  depth: Depth;
-  gridClass: string;
-  animationClass: string;
-}
-
-const items: (ChipData | PodData)[] = [
-  {
-    kind: "chip",
-    label: "Stage 01",
-    text: "Foundations",
-    depth: "sm",
-    gridClass: "col-start-1 row-start-1 self-start justify-self-start",
-    animationClass: "animate-pw-float-1",
-  },
-  {
-    kind: "chip",
-    label: "Stage 02",
-    text: "Core Skills",
-    depth: "md",
-    gridClass: "col-start-5 row-start-1 self-start justify-self-end",
-    animationClass: "animate-pw-float-2",
-  },
-  {
-    kind: "pod",
-    value: "3 min",
-    label: "avg",
-    icon: ZapIcon,
-    depth: "sm",
-    gridClass: "col-start-1 row-start-2 self-center justify-self-start",
-    animationClass: "animate-pw-float-3",
-  },
-  {
-    kind: "pod",
-    value: "94%",
-    label: "accuracy",
-    icon: TargetIcon,
-    depth: "md",
-    gridClass: "col-start-5 row-start-2 self-center justify-self-end",
-    animationClass: "animate-pw-float-1",
-  },
-  {
-    kind: "pod",
-    value: "No",
-    label: "signup",
-    icon: RouteIcon,
-    depth: "lg",
-    gridClass: "col-start-1 row-start-3 self-end justify-self-start",
-    animationClass: "animate-pw-float-2",
-  },
-  {
-    kind: "chip",
-    label: "Stage 05",
-    text: "Your Goal",
-    depth: "lg",
-    gridClass: "col-start-5 row-start-3 self-end justify-self-end",
-    animationClass: "animate-pw-float-3",
-  },
-];
+import { useDVDFloat } from "@/hooks/useDVDFloat";
 
 export function FloatingCluster() {
+  // DVD-style autonomous floating with collision detection
+  useDVDFloat([
+    { selector: '[data-dvd="stage-01"]', speed: 0.6, width: 130, height: 56 },
+    { selector: '[data-dvd="stage-02"]', speed: 0.55, width: 120, height: 56 },
+    { selector: '[data-dvd="stage-05"]', speed: 0.65, width: 130, height: 56 },
+    { selector: '[data-dvd="stat-3min"]', speed: 0.5, width: 100, height: 76 },
+    { selector: '[data-dvd="stat-94"]', speed: 0.58, width: 120, height: 76 },
+    { selector: '[data-dvd="no-signup"]', speed: 0.52, width: 110, height: 76 },
+  ]);
+
   return (
     <div
-      className="pointer-events-none absolute inset-0 z-0 hidden lg:grid grid-cols-5 grid-rows-3 gap-8 p-16"
+      className="pointer-events-none absolute inset-0 z-0 hidden lg:block"
       aria-hidden="true"
     >
-      {items.map((item, i) => (
-        <div key={`${item.kind}-${i}`} className={`${item.gridClass} ${item.animationClass}`}>
-          {item.kind === "chip" ? (
-            <div
-              className={`min-w-[140px] rounded-2xl bg-pw-surface px-5 py-4 text-center ${depthShadow[item.depth]}`}
-            >
-              <span className="block text-[11px] font-bold uppercase tracking-wider text-pw-accent">
-                {item.label}
-              </span>
-              <span className="mt-1 block text-sm font-semibold text-pw-ink">{item.text}</span>
-            </div>
-          ) : (
-            <div
-              className={`flex h-24 w-24 flex-col items-center justify-center rounded-[20px] bg-pw-surface px-2 text-center ${depthShadow[item.depth]}`}
-            >
-              <item.icon className="mb-1 h-4 w-4 text-pw-secondary" aria-hidden={true} />
-              <span className="text-lg font-bold leading-none text-pw-accent">{item.value}</span>
-              <span className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-pw-muted">
-                {item.label}
-              </span>
-            </div>
-          )}
-        </div>
-      ))}
+      {/* ═══ FLOATING ELEMENT 1: STAGE 01 ═══ */}
+      <div
+        data-dvd="stage-01"
+        className="absolute top-0 left-0 inline-flex flex-col items-start rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 px-5 py-3.5 pointer-events-none z-0"
+      >
+        <span className="text-orange-500 text-[11px] font-bold tracking-widest uppercase">
+          STAGE 01
+        </span>
+        <span className="text-zinc-900 dark:text-white text-sm font-semibold mt-0.5">Foundations</span>
+      </div>
+
+      {/* ═══ FLOATING ELEMENT 2: STAGE 02 ═══ */}
+      <div
+        data-dvd="stage-02"
+        className="absolute top-0 left-0 inline-flex flex-col items-start rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 px-5 py-3.5 pointer-events-none z-0"
+      >
+        <span className="text-orange-500 text-[11px] font-bold tracking-widest uppercase">
+          STAGE 02
+        </span>
+        <span className="text-zinc-900 dark:text-white text-sm font-semibold mt-0.5">Core Skills</span>
+      </div>
+
+      {/* ═══ FLOATING ELEMENT 3: STAGE 05 ═══ */}
+      <div
+        data-dvd="stage-05"
+        className="absolute top-0 left-0 inline-flex flex-col items-start rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 px-5 py-3.5 pointer-events-none z-0"
+      >
+        <span className="text-orange-500 text-[11px] font-bold tracking-widest uppercase">
+          STAGE 05
+        </span>
+        <span className="text-zinc-900 dark:text-white text-sm font-semibold mt-0.5">Your Goal</span>
+      </div>
+
+      {/* ═══ FLOATING ELEMENT 4: 3 min AVG ═══ */}
+      <div
+        data-dvd="stat-3min"
+        className="absolute top-0 left-0 inline-flex flex-col items-center rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 px-5 py-3.5 pointer-events-none z-0"
+      >
+        <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </svg>
+        <span className="text-orange-500 text-lg font-bold leading-none">3 min</span>
+        <span className="text-zinc-700 dark:text-white text-[11px] font-semibold tracking-wider uppercase mt-0.5">
+          AVG
+        </span>
+      </div>
+
+      {/* ═══ FLOATING ELEMENT 5: 94% ACCURACY ═══ */}
+      <div
+        data-dvd="stat-94"
+        className="absolute top-0 left-0 inline-flex flex-col items-center rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 px-5 py-3.5 pointer-events-none z-0"
+      >
+        <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path d="M9 12l2 2 4-4" />
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+        <span className="text-orange-500 text-lg font-bold leading-none">94%</span>
+        <span className="text-zinc-700 dark:text-white text-[11px] font-semibold tracking-wider uppercase mt-0.5">
+          ACCURACY
+        </span>
+      </div>
+
+      {/* ═══ FLOATING ELEMENT 6: No SIGNUP ═══ */}
+      <div
+        data-dvd="no-signup"
+        className="absolute top-0 left-0 inline-flex flex-col items-center rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm border border-zinc-200/50 dark:border-zinc-800/50 px-5 py-3.5 pointer-events-none z-0"
+      >
+        <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M15 9l-6 6" />
+          <path d="M9 9l6 6" />
+        </svg>
+        <span className="text-orange-500 text-lg font-bold leading-none">No</span>
+        <span className="text-zinc-700 dark:text-white text-[11px] font-semibold tracking-wider uppercase mt-0.5">
+          SIGNUP
+        </span>
+      </div>
     </div>
   );
 }
