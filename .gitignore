@@ -3,10 +3,9 @@ node_modules/
 bun.lockb
 package-lock.json
 
-# Environment
-.env
-.env.local
-.env.*.local
+# Environment — ignore every real env file, but keep the committed template
+.env*
+!.env.example
 
 # Build output
 dist/
@@ -18,5 +17,4 @@ supabase/.temp/
 supabase/.branches/
 *.local.*.vercel/
 .vercel
-.env*
 .DS_Store
