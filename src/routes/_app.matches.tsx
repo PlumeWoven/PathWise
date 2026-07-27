@@ -3,7 +3,6 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchCard } from "../pathwise/MatchCard";
@@ -33,7 +32,7 @@ const searchSchema = z.object({
   availableThisWeek: fallback(z.coerce.boolean(), false).default(false),
 });
 
-export const Route = createFileRoute("/matches")({
+export const Route = createFileRoute("/_app/matches")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
@@ -292,8 +291,7 @@ function MatchesPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 pb-24 max-w-6xl mx-auto">
         <div className="mt-2">
           <div className="text-[12px] text-[var(--pw-ink-2)]">

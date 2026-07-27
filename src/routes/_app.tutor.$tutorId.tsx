@@ -18,13 +18,12 @@ import {
   Newspaper,
   CheckCircle2,
 } from "lucide-react";
-import { PWHeader } from "../pathwise/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/tutor/$tutorId")({
+export const Route = createFileRoute("/_app/tutor/$tutorId")({
   head: ({ params }) => ({
     meta: [
       { title: `Tutor profile — PathWise` },
@@ -197,16 +196,14 @@ function TutorProfilePage() {
 
   if (tutor === undefined) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <div className="text-center py-32 text-[var(--pw-ink-2)]">Loading tutor…</div>
       </div>
     );
   }
   if (!tutor) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <main className="max-w-4xl mx-auto p-6">
           <p>This tutor profile isn't available.</p>
           <Link to="/find-tutor" className="text-[var(--pw-accent)] underline">Browse tutors</Link>
@@ -239,8 +236,7 @@ function TutorProfilePage() {
   const displayBio = !longBio || bioExpanded ? tutor.bio : (tutor.bio ?? "").slice(0, 360) + "…";
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
 
       {/* Cover + header */}
       <section className="relative">

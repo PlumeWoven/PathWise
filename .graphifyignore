@@ -1,0 +1,8 @@
+# Vendored agent skills — not PathWise application code.
+# These accounted for ~48% of graph nodes and dominated the largest
+# communities, crowding out src/ in every query result.
+.agents/
+skills/
+
+# Generated router tree — 56 declaration nodes with no hand-written logic.
+src/routeTree.gen.ts

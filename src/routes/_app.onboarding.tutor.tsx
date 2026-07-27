@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
-import { PWHeader } from "../pathwise/Header";
 import { toast } from "sonner";
 import Cropper, { Area } from "react-easy-crop";
 import confetti from "canvas-confetti";
@@ -12,7 +11,7 @@ import {
 } from "lucide-react";
 import { AvailabilityGrid, type CellState } from "@/pathwise/AvailabilityGrid";
 
-export const Route = createFileRoute("/onboarding/tutor")({
+export const Route = createFileRoute("/_app/onboarding/tutor")({
   head: () => ({ meta: [{ title: "Tutor onboarding — PathWise" }] }),
   component: TutorWizard,
 });
@@ -290,8 +289,7 @@ function TutorWizard() {
   if (loading || !profile) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-[760px] mx-auto px-5 sm:px-8 py-10">
         <ProgressBar step={state.step} />
 

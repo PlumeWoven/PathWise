@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import confetti from "canvas-confetti";
-import { PWHeader } from "../pathwise/Header";
 import {
   GOALS,
   LEVEL_META,
@@ -19,7 +18,7 @@ import { RoleGate } from "../pathwise/RoleGate";
 // ─── api.ts replaces inline supabase calls ───────────────────────────────────
 import { getCurrentUser, saveDiagnosticResult, createRoadmap } from "../pathwise/api";
 
-export const Route = createFileRoute("/quiz")({
+export const Route = createFileRoute("/_app/quiz")({
   head: () => ({
     meta: [
       { title: "Level Check — PathWise" },
@@ -160,6 +159,9 @@ function QuizPageInner() {
     let userId = user?.id ?? null;
     let session = user; // Store session for localStorage check
 
+    // Initialize roadmapId to handle AuthSessionMissingError case
+    let roadmapId: string | undefined;
+
     try {
       // 2. Compute results from store
       const score = pw.answers.filter((a) => a.correct).length;
@@ -182,7 +184,7 @@ function QuizPageInner() {
       const stages = generateStages(pw.subject, pw.level, pw.goal);
 
       // 5. Save roadmap + all 5 stages → get roadmap_id
-      const roadmapId = await createRoadmap({
+      roadmapId = await createRoadmap({
         user_id: userId,
         diagnostic_id: diagnosticId,
         subject: pw.subject,
@@ -193,8 +195,8 @@ function QuizPageInner() {
       // 6. Persist roadmap_id to localStorage for the roadmap page
       try {
         console.log('[quiz] Storing roadmap ID:', roadmapId);
-        console.log('[quiz] localStorage key: pendingRoadmapId');
-        localStorage.setItem("pendingRoadmapId", roadmapId);
+        console.log('[quiz] localStorage key: pathwise_roadmap_id');
+        localStorage.setItem("pathwise_roadmap_id", roadmapId);
 
         if (diagnosticId) {
           console.log('[quiz] Storing diagnostic ID:', diagnosticId);
@@ -235,6 +237,22 @@ function QuizPageInner() {
       console.error("  • Full Error Object:", JSON.stringify(err, null, 2));
       console.error("────────────────────────────────────────────────────────────");
 
+      // Handle AuthSessionMissingError for anonymous users
+      if (err?.name === 'AuthSessionMissingError') {
+        console.log('[quiz] Authentication session missing, storing roadmap ID for later claim');
+        try {
+          localStorage.setItem("pathwise_roadmap_id", roadmapId || "");
+          toast.success("Roadmap saved! Please sign in to view it.");
+          navigate({ to: "/roadmap", search: { roadmapId: roadmapId || "" } as any });
+        } catch (storageErr) {
+          console.error('[quiz] Failed to store roadmap ID:', storageErr);
+          toast.error("Failed to save your roadmap. Please try again.");
+          savedRef.current = false;
+          setBuildingRoadmap(false);
+        }
+        return;
+      }
+
       toast.error(err?.message || "Couldn't build your roadmap. Please try again.");
       // Allow retry
       savedRef.current = false;
@@ -270,7 +288,6 @@ function QuizPageInner() {
         </div>
       )}
 
-      <PWHeader />
 
       <main className="px-5 sm:px-8 pb-20">
         <AnimatePresence mode="wait">

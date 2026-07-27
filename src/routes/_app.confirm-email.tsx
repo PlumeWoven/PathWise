@@ -3,11 +3,10 @@ import { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { normalizeRole, postAuthDestination } from '@/pathwise/roles';
-import { PWHeader } from '../pathwise/Header';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-export const Route = createFileRoute('/confirm-email')({
+export const Route = createFileRoute('/_app/confirm-email')({
     component: ConfirmEmailPage,
 });
 
@@ -103,8 +102,7 @@ function ConfirmEmailPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-            <PWHeader />
+        <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
             <main className="flex items-center justify-center px-5 py-24">
                 <div className="max-w-md w-full pw-card p-8 text-center">
                     {status === 'loading' && (

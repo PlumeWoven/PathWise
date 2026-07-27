@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PWHeader } from "../pathwise/Header";
 import { DemoBanner } from "../pathwise/DemoBanner";
 import { Hero } from "@/components/landing/Hero";
 import { Features } from "@/components/landing/Features";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { Footer } from "@/components/landing/Footer";
+import { FloatingCluster } from "@/components/landing/FloatingCluster";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_app/")({
   head: () => ({
     meta: [
       { title: "PathWise — Find exactly where you stand" },
@@ -56,8 +56,7 @@ export const Route = createFileRoute("/")({
 
 function LandingPage() {
   return (
-    <div className="min-h-screen bg-pw-bg text-pw-ink">
-      <PWHeader />
+    <div className="bg-pw-bg text-pw-ink">
       <Hero />
       <Features />
       <Testimonials />

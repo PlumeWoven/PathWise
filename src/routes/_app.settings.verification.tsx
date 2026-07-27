@@ -2,12 +2,11 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/settings/verification")({
+export const Route = createFileRoute("/_app/settings/verification")({
   head: () => ({ meta: [{ title: "Verification Center — PathWise" }] }),
   component: VerificationCenter,
 });
@@ -63,8 +62,7 @@ export function VerificationCenter() {
 
   if (loading || !profile) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
         <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[14px] text-[var(--pw-ink-2)]">
           Loading…
         </main>
@@ -80,8 +78,7 @@ export function VerificationCenter() {
   const tier = statusToTier(identityStatus);
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-3xl mx-auto px-5 sm:px-8 py-10">
         <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
           Settings

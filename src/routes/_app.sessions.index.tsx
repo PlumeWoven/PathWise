@@ -1,11 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { STATUS_META, type SessionStatus } from "../pathwise/sessions";
 
-export const Route = createFileRoute("/sessions/")({
+export const Route = createFileRoute("/_app/sessions/")({
   head: () => ({ meta: [{ title: "My sessions — PathWise" }] }),
   component: SessionsList,
 });
@@ -61,8 +60,7 @@ function SessionsList() {
   if (authLoading) return null;
   if (!user) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <div className="p-8 text-center text-sm">Sign in to see your sessions.</div>
       </div>
     );
@@ -78,8 +76,7 @@ function SessionsList() {
   });
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
         <h1 className="font-display text-2xl">My sessions</h1>
         <div className="mt-3 flex gap-2">

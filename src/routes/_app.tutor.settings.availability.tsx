@@ -1,15 +1,14 @@
-import { createFileRoute, Link, useNavigate, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { useDarkMode } from "../pathwise/DarkMode";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES, detectTimezone } from "../pathwise/scheduling";
 import { Globe, Clock, Copy, Save, AlertTriangle } from "lucide-react";
 
-export const Route = createFileRoute("/tutor/settings/availability")({
+export const Route = createFileRoute("/_app/tutor/settings/availability")({
   head: () => ({
     meta: [
       { title: "Availability — PathWise" },
@@ -30,8 +29,6 @@ function AvailabilityPage() {
   const { user, isLoggedIn } = useAuth();
   const { isDark } = useDarkMode();
   const navigate = useNavigate();
-  const location = useLocation();
-  const isInsideDashboard = location.pathname.startsWith('/dashboard');
 
   const [grid, setGrid] = useState<Record<string, CellState>>({});
   const [tz, setTz] = useState(detectTimezone());
@@ -194,8 +191,7 @@ function AvailabilityPage() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <main className="max-w-md mx-auto px-5 py-12 text-center">
           <h1 className="font-display text-2xl">Sign in required</h1>
           <p className="text-sm text-[var(--pw-ink-2)] mt-2">Tutors only — please sign in.</p>
@@ -206,8 +202,7 @@ function AvailabilityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]" onMouseUp={() => (dragMode.current = null)} onMouseLeave={() => (dragMode.current = null)}>
-      {!isInsideDashboard && <PWHeader />}
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]" onMouseUp={() => (dragMode.current = null)} onMouseLeave={() => (dragMode.current = null)}>
       <main className="px-5 sm:px-8 py-6 max-w-5xl mx-auto pb-24">
         <div className="flex items-baseline justify-between flex-wrap gap-3">
           <div>

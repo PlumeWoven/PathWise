@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { isAdmin } from "../pathwise/roles";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,8 +48,7 @@ function AdminReview() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-4xl mx-auto px-5 sm:px-8 pb-20">
         <h1 className="font-display text-3xl mb-1">Course Review Queue</h1>
         <p className="text-[14px] text-[var(--pw-ink-2)] mb-6">

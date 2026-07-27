@@ -2,10 +2,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../pathwise/auth";
 import { updateProfile } from "@/pathwise/api";
-import { PWHeader } from "../pathwise/Header";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/onboarding/student")({
+export const Route = createFileRoute("/_app/onboarding/student")({
   head: () => ({ meta: [{ title: "Welcome — PathWise" }] }),
   component: StudentOnboarding,
 });
@@ -49,8 +48,7 @@ function StudentOnboarding() {
   if (loading || !profile) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-[560px] mx-auto px-5 sm:px-8 py-12">
         <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
           Step 1 of 1

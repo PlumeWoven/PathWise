@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -12,7 +11,7 @@ import {
 } from "../pathwise/sessions";
 import { SessionStateTracker } from "../pathwise/SessionStateTracker";
 
-export const Route = createFileRoute("/sessions/$id")({
+export const Route = createFileRoute("/_app/sessions/$id")({
   head: () => ({ meta: [{ title: "Session — PathWise" }] }),
   component: SessionDetail,
   errorComponent: ({ error }) => (
@@ -75,8 +74,8 @@ function SessionDetail() {
 
   useEffect(() => { void load(); }, [id]);
 
-  if (loading) return <div className="min-h-screen bg-[var(--pw-bg)]"><PWHeader /><div className="p-8 text-center text-sm">Loading…</div></div>;
-  if (!session) return <div className="min-h-screen bg-[var(--pw-bg)]"><PWHeader /><div className="p-8 text-center">Session not found.</div></div>;
+  if (loading) return <div className="bg-[var(--pw-bg)]"><div className="p-8 text-center text-sm">Loading…</div></div>;
+  if (!session) return <div className="bg-[var(--pw-bg)]"><div className="p-8 text-center">Session not found.</div></div>;
 
   const isTutor = user?.id === session.tutor_id;
   const isStudent = user?.id === session.student_id;
@@ -158,8 +157,7 @@ function SessionDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
         <div className="text-[12px] text-[var(--pw-ink-2)]">
           <Link to="/sessions" className="underline-offset-2 hover:underline">My sessions</Link>

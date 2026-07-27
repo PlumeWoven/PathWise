@@ -2,12 +2,11 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { RoleGate } from "../pathwise/RoleGate";
 
-export const Route = createFileRoute("/find-tutor")({
+export const Route = createFileRoute("/_app/find-tutor")({
   head: () => ({
     meta: [
       { title: "Find Your Tutor — PathWise" },
@@ -133,8 +132,7 @@ function FindTutorPageInner() {
   }, [isResults, user, answers]);
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
 
       {/* Progress bar */}
       <div className="sticky top-0 z-30 bg-[var(--pw-bg)]/90 backdrop-blur border-b border-[var(--pw-border)]">

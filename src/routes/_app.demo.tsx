@@ -1,14 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
-import { PWHeader } from "../pathwise/Header";
 
 const searchSchema = z.object({
   ref: fallback(z.string(), "").default(""),
   as: fallback(z.enum(["tutor", "student"]), "tutor").default("tutor"),
 });
 
-export const Route = createFileRoute("/demo")({
+export const Route = createFileRoute("/_app/demo")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
@@ -32,8 +31,7 @@ function DemoEntry() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-20 text-center">
         <span className="font-mono-pw text-[11px] uppercase tracking-wider text-[var(--pw-accent)]">Live Demo</span>
         <h1 className="mt-3 font-display text-[36px] sm:text-[46px] leading-tight">

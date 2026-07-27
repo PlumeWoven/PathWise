@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -29,7 +28,7 @@ import { Calendar as CalendarIcon, AlertTriangle, Repeat } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { addDays } from "date-fns";
 
-export const Route = createFileRoute("/book/$tutorId")({
+export const Route = createFileRoute("/_app/book/$tutorId")({
   head: () => ({
     meta: [
       { title: "Book a session — PathWise" },
@@ -253,8 +252,7 @@ function BookPage() {
       start, end,
     });
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <main className="px-5 sm:px-8 py-12 max-w-xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -278,8 +276,7 @@ function BookPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto">
         {/* Progress */}
         <div className="mt-4 flex items-center gap-2 text-[12px] text-[var(--pw-ink-2)]">

@@ -2,7 +2,6 @@ import { ReactNode, useEffect } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
 import { canAccess, isTutorSide, roleHome } from "./roles";
-import { PWHeader } from "./Header";
 
 /**
  * Restricts a route to specific roles.
@@ -35,8 +34,7 @@ export function RoleGate({
     const home = roleHome(role);
     const tutorSide = isTutorSide(role);
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
         <main className="px-5 sm:px-8 py-16 max-w-lg mx-auto text-center">
           <div className="text-5xl">🔒</div>
           <h1 className="font-display text-[28px] mt-3">This area isn't available for your account</h1>

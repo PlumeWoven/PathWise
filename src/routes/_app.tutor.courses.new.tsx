@@ -4,9 +4,8 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../pathwise/auth";
 import { createDraft } from "../pathwise/courses";
-import { PWHeader } from "../pathwise/Header";
 
-export const Route = createFileRoute("/tutor/courses/new")({
+export const Route = createFileRoute("/_app/tutor/courses/new")({
   component: NewCourseRedirect,
 });
 
@@ -31,8 +30,7 @@ function NewCourseRedirect() {
   }, [supabaseUser, loading, navigate]);
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <div className="grid place-items-center py-32 text-[var(--pw-ink-2)]">
         <Loader2 className="size-6 animate-spin" />
       </div>

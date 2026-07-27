@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { PWHeader } from "../pathwise/Header";
 
-export const Route = createFileRoute("/reset-password")({
+export const Route = createFileRoute("/_app/reset-password")({
   head: () => ({
     meta: [
       { title: "Reset password — PathWise" },
@@ -58,8 +57,7 @@ function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 py-12 max-w-md mx-auto">
         <h1 className="font-display text-[32px] leading-tight">Set a new password</h1>
         <p className="mt-2 text-[14px] text-[var(--pw-ink-2)]">

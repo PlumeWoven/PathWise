@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
-import { PWHeader } from "../pathwise/Header";
 import { LEVEL_META, Subject, Level } from "../pathwise/data";
 import { GOAL_LABELS, usePW } from "../pathwise/store";
 import { StageDetailModal } from "../pathwise/StageDetailModal";
@@ -35,7 +34,7 @@ interface DBRoadmap {
 
 type RoadmapSearch = { roadmapId?: string };
 
-export const Route = createFileRoute("/roadmap")({
+export const Route = createFileRoute("/_app/roadmap")({
   validateSearch: (search: Record<string, unknown>): RoadmapSearch => ({
     roadmapId: typeof search.roadmapId === "string" ? search.roadmapId : undefined,
   }),
@@ -74,20 +73,49 @@ function RoadmapPageInner() {
   const [overlay, setOverlay] = useState<{ stageNumber: number; nextTitle: string | null; xp: number } | null>(null);
   const [showAnonToast, setShowAnonToast] = useState(false);
 
-  const roadmapId =
-    search.roadmapId ||
-    (typeof window !== "undefined" ? localStorage.getItem("pendingRoadmapId") : null) ||
-    null;
+  // ─── FIX 3: Resolve roadmap ID from localStorage or database ───────────────────────
+  async function resolveRoadmapId(): Promise<string | null> {
+    // 1. Check localStorage first (immediate, no network)
+    const localId = localStorage.getItem("pathwise_roadmap_id");
+    if (localId) return localId;
+
+    // 2. If authenticated, look up by user_id in the database
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data } = await supabase
+        .from("roadmaps")
+        .select("id")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) return data.id;
+    }
+
+    // 3. Also check URL params (if you use /roadmap/:id routing)
+    // const urlId = /* parse from URL */;
+    // if (urlId) return urlId;
+
+    return null; // No roadmap — user needs to take the quiz
+  }
+
+  const [roadmapId, setRoadmapId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!roadmapId) {
-      navigate({ to: "/quiz" });
-      return;
+    async function initRoadmap() {
+      const id = await resolveRoadmapId();
+      setRoadmapId(id);
+      if (!id) {
+        navigate({ to: "/quiz" });
+        return;
+      }
+      void fetchRoadmap(id);
+      if (!isLoggedIn) setShowAnonToast(true);
     }
-    void fetchRoadmap();
-    if (!isLoggedIn) setShowAnonToast(true);
+    initRoadmap();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roadmapId, isLoggedIn]);
+  }, [isLoggedIn]);
 
   // ─── CHANGED: getRoadmapWithStages from api.ts ────────────────────────────
   // Previously called supabase directly with two parallel queries.
@@ -95,7 +123,7 @@ function RoadmapPageInner() {
   // One difference: api.ts fetches by user_id (most recent roadmap for the user).
   // For the roadmap page we still need to fetch by roadmapId from the URL/localStorage,
   // so we keep a lightweight direct fetch here scoped to the specific roadmapId.
-  async function fetchRoadmap() {
+  async function fetchRoadmap(roadmapId: string) {
     console.log('[roadmap] fetchRoadmap called');
     console.log('[roadmap] roadmapId:', roadmapId);
     if (!roadmapId) {
@@ -105,24 +133,115 @@ function RoadmapPageInner() {
     }
     setLoading(true);
     try {
-      // We use getRoadmapWithStages only when a logged-in user has no roadmapId in params.
-      // When roadmapId IS known (from quiz navigation or localStorage), fetch it directly
-      // so anonymous users can also see their roadmap without being logged in.
       const { supabase } = await import("@/integrations/supabase/client");
+
+      // ─── FIX 2: Claim the roadmap FIRST before fetching ───────────────────────────
+      // This eliminates the race condition — the claim and fetch happen sequentially
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const pendingId = localStorage.getItem('pathwise_roadmap_id');
+        if (pendingId) {
+          console.log('[roadmap] Claiming roadmap for user:', session.user.id);
+          const { data: claimData, error: claimErr } = await supabase
+            .from('roadmaps')
+            .update({ user_id: session.user.id })
+            .eq('id', pendingId)
+            .is('user_id', null)
+            .select()          // ← ADD .select() to get the updated row back
+            .maybeSingle();    // ← ADD .maybeSingle() to get the actual data
+
+          if (claimErr) {
+            console.error('[roadmap] Claim failed:', claimErr.message);
+          } else {
+            console.log('[roadmap] Claim succeeded');
+            localStorage.removeItem('pathwise_roadmap_id');
+
+            // If we got the claimed row back, use it directly instead of re-fetching
+            if (claimData) {
+              console.log('[roadmap] Using claimed roadmap directly:', claimData.id);
+              setRoadmap(claimData);
+              // Fetch stages for this roadmap
+              const { data: claimedStages } = await supabase
+                .from('roadmap_stages')
+                .select('*')
+                .eq('roadmap_id', claimData.id)
+                .order('stage_number');
+              if (claimedStages) {
+                console.log('[roadmap] Stages loaded:', claimedStages.length);
+                setStages(claimedStages);
+              }
+              return; // ← DONE — don't fall through to the normal fetch
+            }
+          }
+        }
+      }
+
+      // ─── Now fetch the roadmap ────────────────────────────────────────────────
+      // After claiming, the row has user_id set, so the authenticated
+      // SELECT policy (auth.uid() = user_id) will match.
       console.log('[roadmap] Fetching roadmap and stages from Supabase...');
       const [{ data: rm, error: rErr }, { data: st, error: sErr }] = await Promise.all([
         supabase.from("roadmaps").select("*").eq("id", roadmapId).maybeSingle(),
         supabase.from("roadmap_stages").select("*").eq("roadmap_id", roadmapId).order("stage_number"),
       ]);
       console.log('[roadmap] Supabase responses:', { rm, rErr, st, sErr });
+
       if (rErr) throw rErr;
       if (sErr) throw sErr;
+
       if (!rm) {
         console.log('[roadmap] Roadmap not found');
+        // If authenticated and still not found, try loading by user_id as fallback
+        if (session?.user) {
+          const { data: userRm } = await supabase
+            .from('roadmaps')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (userRm) {
+            console.log('[roadmap] Found roadmap by user_id:', userRm.id);
+            // Set this as the active roadmap and continue
+            setRoadmap(userRm);
+            // Also fetch stages for this roadmap
+            const { data: userStages } = await supabase
+              .from('roadmap_stages')
+              .select('*')
+              .eq('roadmap_id', userRm.id)
+              .order('stage_number');
+            if (userStages) setStages(userStages);
+            return;
+          }
+        }
+        // If authenticated but no roadmap found, try loading their latest roadmap
+        if (session?.user) {
+          const { data: latestRm } = await supabase
+            .from('roadmaps')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (latestRm) {
+            console.log('[roadmap] Found latest roadmap by user_id:', latestRm.id);
+            setRoadmap(latestRm);
+            const { data: latestStages } = await supabase
+              .from('roadmap_stages')
+              .select('*')
+              .eq('roadmap_id', latestRm.id)
+              .order('stage_number');
+            if (latestStages) setStages(latestStages);
+            return;
+          }
+        }
         toast.error("Roadmap not found.");
         navigate({ to: "/quiz" });
         return;
       }
+
       console.log('[roadmap] Roadmap loaded successfully:', rm.id, rm.user_id);
       setRoadmap(rm as DBRoadmap);
       setStages((st ?? []) as DBStage[]);
@@ -160,10 +279,10 @@ function RoadmapPageInner() {
     }
 
     try {
-      // Update the first stage to "in_progress"
+      // Update the first stage to "active"
       const { error } = await supabase
         .from('roadmap_stages')
-        .update({ status: 'in_progress' })
+        .update({ status: 'active' })
         .eq('id', firstStage.id);
 
       if (error) {
@@ -173,7 +292,7 @@ function RoadmapPageInner() {
 
       // Update local state
       setStages(prev =>
-        prev.map(s => s.id === firstStage.id ? { ...s, status: 'in_progress' } : s)
+        prev.map(s => s.id === firstStage.id ? { ...s, status: 'active' } : s)
       );
 
       // Open the stage detail modal
@@ -235,8 +354,7 @@ function RoadmapPageInner() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
         <main className="px-5 sm:px-8 pt-20 text-center text-[var(--pw-ink-2)]">Loading your roadmap…</main>
       </div>
     );
@@ -255,8 +373,7 @@ function RoadmapPageInner() {
   const lastStage = stages[stages.length - 1];
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
 
       {/* Anonymous save banner */}
       <AnimatePresence>

@@ -31,7 +31,6 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { PWHeader } from "../pathwise/Header";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -56,7 +55,7 @@ import {
   updateSection,
 } from "../pathwise/courses";
 
-export const Route = createFileRoute("/tutor/courses/$courseId/edit")({
+export const Route = createFileRoute("/_app/tutor/courses/$courseId/edit")({
   head: () => ({ meta: [{ title: "Edit Course — PathWise" }] }),
   component: CourseEditor,
 });
@@ -185,8 +184,7 @@ function CourseEditor() {
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <div className="grid place-items-center py-32 text-[var(--pw-ink-2)]">
           <Loader2 className="size-6 animate-spin" />
         </div>
@@ -223,8 +221,7 @@ function CourseEditor() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-5xl mx-auto px-5 sm:px-8 pb-20">
         <div className="flex items-center justify-between gap-3 mb-4">
           <Link to="/tutor/courses" className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] inline-flex items-center gap-1">

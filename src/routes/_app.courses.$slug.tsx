@@ -21,7 +21,6 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
-import { PWHeader } from "../pathwise/Header";
 import { supabase } from "@/integrations/supabase/client";
 import { CourseRow, LessonRow, SectionRow, getCourseBySlug } from "../pathwise/courses";
 import { Button } from "@/components/ui/button";
@@ -37,7 +36,7 @@ const DEFAULT_FAQ = [
   { q: "Can I message the tutor?", a: "Yes — enrolled students can start a thread directly with their tutor from the dashboard." },
 ];
 
-export const Route = createFileRoute("/courses/$slug")({
+export const Route = createFileRoute("/_app/courses/$slug")({
   head: ({ params }) => ({
     meta: [
       { title: "Course — PathWise" },
@@ -201,16 +200,14 @@ function PublicCoursePage() {
 
   if (course === undefined) {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <div className="text-center py-32 text-[var(--pw-ink-2)]">Loading…</div>
       </div>
     );
   }
   if (!course || course.status !== "published") {
     return (
-      <div className="min-h-screen bg-[var(--pw-bg)]">
-        <PWHeader />
+      <div className="bg-[var(--pw-bg)]">
         <div className="text-center py-32">
           <h1 className="font-display text-2xl">Course not available</h1>
           <p className="text-[var(--pw-ink-2)] mt-2">This course may not be published yet.</p>
@@ -261,8 +258,7 @@ function PublicCoursePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <PWHeader />
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
 
       {/* Hero */}
       <section className="relative overflow-hidden">
