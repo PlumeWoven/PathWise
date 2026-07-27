@@ -1,4 +1,17 @@
+import { ClockIcon, CircleCheckIcon, CircleXIcon } from "lucide-react";
 import { useDVDFloat } from "@/hooks/useDVDFloat";
+
+/**
+ * Shared card shell — same visual language as the feature cards in `Features`
+ * (`rounded-pw bg-pw-surface shadow-pw-raised`), so the floating chips read as
+ * the same material in both themes. Sizes are measured at runtime by
+ * `useDVDFloat`; the `width`/`height` below are only pre-measure fallbacks.
+ */
+const cardClass =
+  "absolute top-0 left-0 inline-flex flex-col rounded-2xl bg-pw-surface px-5 py-3.5 " +
+  "shadow-pw-raised-sm pointer-events-none z-0 will-change-transform";
+
+const iconChipClass = "grid h-7 w-7 place-items-center rounded-xl bg-pw-bg shadow-pw-inset";
 
 export function FloatingCluster() {
   // DVD-style autonomous floating with collision detection
@@ -12,95 +25,62 @@ export function FloatingCluster() {
   ]);
 
   return (
-    <div
-      className="pointer-events-none absolute inset-0 z-0 block"
-      aria-hidden="true"
-    >
+    <div className="pointer-events-none absolute inset-0 z-0 hidden lg:block" aria-hidden="true">
       {/* ═══ FLOATING ELEMENT 1: STAGE 01 ═══ */}
-      <div
-        data-dvd="stage-01"
-        className="absolute top-0 left-0 inline-flex flex-col items-start
-          rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm
-          border border-zinc-200/50 dark:border-zinc-800/50
-          shadow-lg shadow-black/5 dark:shadow-black/20
-          px-5 py-3.5 pointer-events-none z-0"
-      >
-        <span className="text-orange-500 text-[11px] font-bold tracking-widest uppercase">STAGE 01</span>
-        <span className="text-zinc-900 dark:text-white text-sm font-semibold mt-0.5">Foundations</span>
+      <div data-dvd="stage-01" className={`${cardClass} items-start`}>
+        <span className="text-[11px] font-bold uppercase tracking-widest text-pw-accent">
+          Stage 01
+        </span>
+        <span className="mt-0.5 text-sm font-semibold text-pw-ink">Foundations</span>
       </div>
 
       {/* ═══ FLOATING ELEMENT 2: STAGE 02 ═══ */}
-      <div
-        data-dvd="stage-02"
-        className="absolute top-0 left-0 inline-flex flex-col items-start
-          rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm
-          border border-zinc-200/50 dark:border-zinc-800/50
-          shadow-lg shadow-black/5 dark:shadow-black/20
-          px-5 py-3.5 pointer-events-none z-0"
-      >
-        <span className="text-orange-500 text-[11px] font-bold tracking-widest uppercase">STAGE 02</span>
-        <span className="text-zinc-900 dark:text-white text-sm font-semibold mt-0.5">Core Skills</span>
+      <div data-dvd="stage-02" className={`${cardClass} items-start`}>
+        <span className="text-[11px] font-bold uppercase tracking-widest text-pw-accent">
+          Stage 02
+        </span>
+        <span className="mt-0.5 text-sm font-semibold text-pw-ink">Core Skills</span>
       </div>
 
       {/* ═══ FLOATING ELEMENT 3: STAGE 05 ═══ */}
-      <div
-        data-dvd="stage-05"
-        className="absolute top-0 left-0 inline-flex flex-col items-start
-          rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm
-          border border-zinc-200/50 dark:border-zinc-800/50
-          shadow-lg shadow-black/5 dark:shadow-black/20
-          px-5 py-3.5 pointer-events-none z-0"
-      >
-        <span className="text-orange-500 text-[11px] font-bold tracking-widest uppercase">STAGE 05</span>
-        <span className="text-zinc-900 dark:text-white text-sm font-semibold mt-0.5">Your Goal</span>
+      <div data-dvd="stage-05" className={`${cardClass} items-start`}>
+        <span className="text-[11px] font-bold uppercase tracking-widest text-pw-accent">
+          Stage 05
+        </span>
+        <span className="mt-0.5 text-sm font-semibold text-pw-ink">Your Goal</span>
       </div>
 
       {/* ═══ FLOATING ELEMENT 4: 3 min AVG ═══ */}
-      <div
-        data-dvd="stat-3min"
-        className="absolute top-0 left-0 inline-flex flex-col items-center
-          rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm
-          border border-zinc-200/50 dark:border-zinc-800/50
-          shadow-lg shadow-black/5 dark:shadow-black/20
-          px-5 py-3.5 pointer-events-none z-0"
-      >
-        <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-        </svg>
-        <span className="text-orange-500 text-lg font-bold leading-none">3 min</span>
-        <span className="text-zinc-700 dark:text-white text-[11px] font-semibold tracking-wider uppercase mt-0.5">AVG</span>
+      <div data-dvd="stat-3min" className={`${cardClass} items-center`}>
+        <span className={iconChipClass}>
+          <ClockIcon className="h-4 w-4 text-pw-accent" aria-hidden="true" />
+        </span>
+        <span className="mt-2 text-lg font-bold leading-none text-pw-accent">3 min</span>
+        <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-pw-muted">
+          Avg
+        </span>
       </div>
 
       {/* ═══ FLOATING ELEMENT 5: 94% ACCURACY ═══ */}
-      <div
-        data-dvd="stat-94"
-        className="absolute top-0 left-0 inline-flex flex-col items-center
-          rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm
-          border border-zinc-200/50 dark:border-zinc-800/50
-          shadow-lg shadow-black/5 dark:shadow-black/20
-          px-5 py-3.5 pointer-events-none z-0"
-      >
-        <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="10" />
-        </svg>
-        <span className="text-orange-500 text-lg font-bold leading-none">94%</span>
-        <span className="text-zinc-700 dark:text-white text-[11px] font-semibold tracking-wider uppercase mt-0.5">ACCURACY</span>
+      <div data-dvd="stat-94" className={`${cardClass} items-center`}>
+        <span className={iconChipClass}>
+          <CircleCheckIcon className="h-4 w-4 text-pw-accent" aria-hidden="true" />
+        </span>
+        <span className="mt-2 text-lg font-bold leading-none text-pw-accent">94%</span>
+        <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-pw-muted">
+          Accuracy
+        </span>
       </div>
 
       {/* ═══ FLOATING ELEMENT 6: No SIGNUP ═══ */}
-      <div
-        data-dvd="no-signup"
-        className="absolute top-0 left-0 inline-flex flex-col items-center
-          rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm
-          border border-zinc-200/50 dark:border-zinc-800/50
-          shadow-lg shadow-black/5 dark:shadow-black/20
-          px-5 py-3.5 pointer-events-none z-0"
-      >
-        <svg className="w-4 h-4 text-zinc-500 dark:text-zinc-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="10" /><path d="M15 9l-6 6M9 9l6 6" />
-        </svg>
-        <span className="text-orange-500 text-lg font-bold leading-none">No</span>
-        <span className="text-zinc-700 dark:text-white text-[11px] font-semibold tracking-wider uppercase mt-0.5">SIGNUP</span>
+      <div data-dvd="no-signup" className={`${cardClass} items-center`}>
+        <span className={iconChipClass}>
+          <CircleXIcon className="h-4 w-4 text-pw-accent" aria-hidden="true" />
+        </span>
+        <span className="mt-2 text-lg font-bold leading-none text-pw-accent">No</span>
+        <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-pw-muted">
+          Signup
+        </span>
       </div>
     </div>
   );
