@@ -12,7 +12,8 @@ import { RoleGate } from "../pathwise/RoleGate";
 import { getRoadmapWithStages, completeStage, getRoadmapEnrollments, type StageEnrollment } from "../pathwise/api";
 import { requireAuth } from "../lib/authGuard";
 import { supabase } from "@/integrations/supabase/client";
-import { BAND_META, clampBand, LEVEL_TO_BAND, type LevelBand } from "../pathwise/levels";
+import { BAND_META, clampBand, LEVEL_TO_BAND, requiredBandForStage, type LevelBand } from "../pathwise/levels";
+import { MatchedTutorsPanel } from "../pathwise/MatchedTutorsPanel";
 
 interface DBStage {
   id: string;
@@ -67,7 +68,7 @@ function RoadmapPage() {
 
 function RoadmapPageInner() {
   const pw = usePW();
-  const { isLoggedIn, openLogin } = useAuth();
+  const { isLoggedIn, openLogin, user } = useAuth();
   const navigate = useNavigate();
   const search = Route.useSearch();
 
@@ -80,6 +81,10 @@ function RoadmapPageInner() {
   const [showAnonToast, setShowAnonToast] = useState(false);
   // Live enrollments keyed by stage id — drives the course gate on each card.
   const [enrollments, setEnrollments] = useState<Map<string, StageEnrollment>>(new Map());
+  // Band recovered from the linked diagnostic, for roadmaps written before
+  // roadmaps.level_band existed. The migration backfills this column, but the
+  // page shouldn't guess in the meantime.
+  const [diagnosticBand, setDiagnosticBand] = useState<LevelBand | null>(null);
 
   // ─── FIX 3: Resolve roadmap ID from localStorage or database ───────────────────────
   async function resolveRoadmapId(): Promise<string | null> {
@@ -295,6 +300,33 @@ function RoadmapPageInner() {
     };
   }, [roadmap?.id, isLoggedIn]);
 
+  // Recover the placement band from the diagnostic when the roadmap row
+  // predates the level_band column.
+  useEffect(() => {
+    const rm = roadmap as (DBRoadmap & { diagnostic_id?: string | null }) | null;
+    if (!rm || rm.level_band != null || !rm.diagnostic_id) {
+      setDiagnosticBand(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("diagnostic_results")
+        .select("level, level_band")
+        .eq("id", rm.diagnostic_id!)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      const band =
+        data.level_band != null
+          ? clampBand(data.level_band)
+          : (LEVEL_TO_BAND[data.level as Level] ?? null);
+      setDiagnosticBand(band);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [roadmap]);
+
   /**
    * A stage is gated only when it names a required level. Roadmaps created
    * before course matching existed have no requirement and behave as before.
@@ -441,7 +473,7 @@ function RoadmapPageInner() {
   const baseBand: LevelBand =
     roadmap.level_band != null
       ? clampBand(roadmap.level_band)
-      : pw.band ?? (pw.level ? LEVEL_TO_BAND[pw.level] : 3);
+      : (pw.band ?? (pw.level ? LEVEL_TO_BAND[pw.level] : null) ?? diagnosticBand ?? 3);
   const level = BAND_META[baseBand].label as Level;
   const levelMeta = LEVEL_META[level];
   const goalLabel = roadmap.goal && (GOAL_LABELS as any)[roadmap.goal] ? (GOAL_LABELS as any)[roadmap.goal] : "Improve";
@@ -450,6 +482,13 @@ function RoadmapPageInner() {
   const done = stages.filter((s) => s.status === "complete").length;
   const pct = Math.round((done / total) * 100);
   const lastStage = stages[stages.length - 1];
+
+  // The stage the student is on drives which band the tutor panel matches
+  // against — later stages ask for harder courses than the base placement.
+  const activeStage = stages.find((s) => s.status === "active") ?? null;
+  const activeRequiredBand: LevelBand = activeStage?.required_level_band != null
+    ? clampBand(activeStage.required_level_band)
+    : requiredBandForStage(baseBand, activeStage?.stage_number ?? 1);
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
@@ -550,6 +589,19 @@ function RoadmapPageInner() {
                 </ul>
               </div>
             </div>
+
+            {/* ── Matched tutors ──────────────────────────────────────────────
+                Sits under the profile card, outside the roadmap timeline.
+                Populates once the find-tutor quiz has been taken: it
+                intersects that quiz's answers with this roadmap's subject and
+                the band the active stage requires. */}
+            <MatchedTutorsPanel
+              subject={subject}
+              band={baseBand}
+              requiredBand={activeRequiredBand}
+              activeStageTitle={activeStage?.title ?? null}
+              userId={user?.id ?? null}
+            />
           </aside>
 
           {/* RIGHT — roadmap */}
