@@ -19,3 +19,13 @@ supabase/.branches/
 .vercel
 .DS_Store
 graphify-out/
+
+# Ruflo runtime state — config and agent/skill definitions are tracked,
+# but the memory DBs, vector index, daemon state and metrics are per-machine.
+.swarm/
+ruvector.db
+.claude-flow/daemon.pid
+.claude-flow/daemon-state.json
+.claude-flow/metrics/
+.claude-flow/policy/state.json
+.claude/checkpoints/
