@@ -30,9 +30,24 @@ export type EnrollmentStatus = Enums<"enrollment_status">;
 // 1. AUTH
 // ─────────────────────────────────────────────
 
+/**
+ * The signed-in user, or null when nobody is signed in.
+ *
+ * getUser() treats a missing session as an error (AuthSessionMissingError),
+ * but anonymous visitors are a supported state here — the quiz writes
+ * diagnostics and roadmaps with user_id = null and claims them at sign-in. So
+ * "no session" is reported as null rather than thrown; genuine failures
+ * (network, invalid JWT) still throw.
+ */
 export async function getCurrentUser() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return null;
+
     const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
+    if (error) {
+        if (error.name === "AuthSessionMissingError") return null;
+        throw error;
+    }
     return user;
 }
 

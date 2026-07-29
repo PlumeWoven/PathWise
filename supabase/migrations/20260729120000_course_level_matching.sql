@@ -144,6 +144,21 @@ CREATE POLICY "Enrollments: tutor read own courses" ON public.course_enrollments
     )
   );
 
+-- Earlier migrations assume this helper already exists, but it is absent on at
+-- least one deployed database (the remote schema has drifted from the local
+-- migration files). Define it here so this migration stands on its own;
+-- CREATE OR REPLACE is a no-op where it is already present.
+CREATE OR REPLACE FUNCTION public.update_updated_at_column()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 DROP TRIGGER IF EXISTS course_enrollments_updated_at ON public.course_enrollments;
 CREATE TRIGGER course_enrollments_updated_at
   BEFORE UPDATE ON public.course_enrollments
@@ -182,6 +197,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+-- This is a trigger function, not an API. Postgres checks EXECUTE at
+-- CREATE TRIGGER time rather than per-row, so revoking it keeps the gate
+-- working while removing it from the exposed REST surface (it would otherwise
+-- be callable by anon at /rest/v1/rpc/enforce_stage_course_requirement).
+REVOKE ALL ON FUNCTION public.enforce_stage_course_requirement() FROM PUBLIC, anon, authenticated;
 
 DROP TRIGGER IF EXISTS roadmap_stages_course_gate ON public.roadmap_stages;
 CREATE TRIGGER roadmap_stages_course_gate

@@ -195,15 +195,18 @@ function QuizPageInner() {
     savedRef.current = true;
     setBuildingRoadmap(true);
 
-    // 1. Get current user (null = anonymous)
-    let user = await getCurrentUser();
-    let userId = user?.id ?? null;
-    let session = user; // Store session for localStorage check
-
-    // Initialize roadmapId to handle AuthSessionMissingError case
+    // Declared out here so the catch below can still report them, but resolved
+    // inside the try — getCurrentUser() hits the network and must not reject
+    // outside it (that left the AuthSessionMissingError branch unreachable).
+    let user: Awaited<ReturnType<typeof getCurrentUser>> = null;
+    let userId: string | null = null;
     let roadmapId: string | undefined;
 
     try {
+      // 1. Get current user (null = anonymous — a supported state)
+      user = await getCurrentUser();
+      userId = user?.id ?? null;
+
       // 2. Compute results from the adaptive run
       const finalRun = finalRunRef.current;
       const score = finalRun ? correctCount(finalRun) : pw.answers.filter((a) => a.correct).length;
