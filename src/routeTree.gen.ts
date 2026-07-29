@@ -34,6 +34,7 @@ import { Route as AppQuizRouteImport } from './routes/_app.quiz'
 import { Route as AppMatchesRouteImport } from './routes/_app.matches'
 import { Route as AppFindTutorRouteImport } from './routes/_app.find-tutor'
 import { Route as AppDemoRouteImport } from './routes/_app.demo'
+import { Route as AppCourseMatchRouteImport } from './routes/_app.course-match'
 import { Route as AppConfirmEmailRouteImport } from './routes/_app.confirm-email'
 import { Route as TutorCoursesIndexRouteImport } from './routes/tutor.courses.index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard.settings.index'
@@ -174,6 +175,11 @@ const AppDemoRoute = AppDemoRouteImport.update({
   path: '/demo',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCourseMatchRoute = AppCourseMatchRouteImport.update({
+  id: '/course-match',
+  path: '/course-match',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppConfirmEmailRoute = AppConfirmEmailRouteImport.update({
   id: '/confirm-email',
   path: '/confirm-email',
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/confirm-email': typeof AppConfirmEmailRoute
+  '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
   '/matches': typeof AppMatchesRoute
@@ -298,6 +305,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/confirm-email': typeof AppConfirmEmailRoute
+  '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
   '/matches': typeof AppMatchesRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/_app/confirm-email': typeof AppConfirmEmailRoute
+  '/_app/course-match': typeof AppCourseMatchRoute
   '/_app/demo': typeof AppDemoRoute
   '/_app/find-tutor': typeof AppFindTutorRoute
   '/_app/matches': typeof AppMatchesRoute
@@ -384,6 +393,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/confirm-email'
+    | '/course-match'
     | '/demo'
     | '/find-tutor'
     | '/matches'
@@ -422,6 +432,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/confirm-email'
+    | '/course-match'
     | '/demo'
     | '/find-tutor'
     | '/matches'
@@ -463,6 +474,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/_app/confirm-email'
+    | '/_app/course-match'
     | '/_app/demo'
     | '/_app/find-tutor'
     | '/_app/matches'
@@ -687,6 +699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDemoRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/course-match': {
+      id: '/_app/course-match'
+      path: '/course-match'
+      fullPath: '/course-match'
+      preLoaderRoute: typeof AppCourseMatchRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/confirm-email': {
       id: '/_app/confirm-email'
       path: '/confirm-email'
@@ -797,6 +816,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppConfirmEmailRoute: typeof AppConfirmEmailRoute
+  AppCourseMatchRoute: typeof AppCourseMatchRoute
   AppDemoRoute: typeof AppDemoRoute
   AppFindTutorRoute: typeof AppFindTutorRoute
   AppMatchesRoute: typeof AppMatchesRoute
@@ -819,6 +839,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppConfirmEmailRoute: AppConfirmEmailRoute,
+  AppCourseMatchRoute: AppCourseMatchRoute,
   AppDemoRoute: AppDemoRoute,
   AppFindTutorRoute: AppFindTutorRoute,
   AppMatchesRoute: AppMatchesRoute,

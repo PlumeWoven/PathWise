@@ -9,9 +9,10 @@ import { StageDetailModal } from "../pathwise/StageDetailModal";
 import { useAuth } from "../pathwise/auth";
 import { RoleGate } from "../pathwise/RoleGate";
 // ─── api.ts replaces inline supabase calls ───────────────────────────────────
-import { getRoadmapWithStages, completeStage } from "../pathwise/api";
+import { getRoadmapWithStages, completeStage, getRoadmapEnrollments, type StageEnrollment } from "../pathwise/api";
 import { requireAuth } from "../lib/authGuard";
 import { supabase } from "@/integrations/supabase/client";
+import { BAND_META, clampBand, LEVEL_TO_BAND, type LevelBand } from "../pathwise/levels";
 
 interface DBStage {
   id: string;
@@ -21,6 +22,9 @@ interface DBStage {
   skills: string[] | null;
   status: "active" | "locked" | "complete" | string;
   completed_at: string | null;
+  /** Course level this stage demands. Null on roadmaps built before gating. */
+  required_level_id: string | null;
+  required_level_band: number | null;
 }
 
 interface DBRoadmap {
@@ -30,6 +34,8 @@ interface DBRoadmap {
   goal: string | null;
   current_stage: number;
   total_stages: number;
+  level_band: number | null;
+  level_id: string | null;
 }
 
 type RoadmapSearch = { roadmapId?: string };
@@ -72,6 +78,8 @@ function RoadmapPageInner() {
   const [completing, setCompleting] = useState<number | null>(null);
   const [overlay, setOverlay] = useState<{ stageNumber: number; nextTitle: string | null; xp: number } | null>(null);
   const [showAnonToast, setShowAnonToast] = useState(false);
+  // Live enrollments keyed by stage id — drives the course gate on each card.
+  const [enrollments, setEnrollments] = useState<Map<string, StageEnrollment>>(new Map());
 
   // ─── FIX 3: Resolve roadmap ID from localStorage or database ───────────────────────
   async function resolveRoadmapId(): Promise<string | null> {
@@ -260,6 +268,55 @@ function RoadmapPageInner() {
     }
   }
 
+  // ─── Course gate: which stages have their required course finished ────────
+  // fetchRoadmap has several early-return paths, so this hangs off the resolved
+  // roadmap id rather than being threaded through each of them.
+  useEffect(() => {
+    if (!roadmap?.id || !isLoggedIn) {
+      setEnrollments(new Map());
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const rows = await getRoadmapEnrollments(roadmap.id);
+        if (cancelled) return;
+        const byStage = new Map<string, StageEnrollment>();
+        rows.forEach((e) => {
+          if (e.roadmap_stage_id) byStage.set(e.roadmap_stage_id, e);
+        });
+        setEnrollments(byStage);
+      } catch (err) {
+        console.error("[roadmap] enrollments", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [roadmap?.id, isLoggedIn]);
+
+  /**
+   * A stage is gated only when it names a required level. Roadmaps created
+   * before course matching existed have no requirement and behave as before.
+   */
+  function requirementFor(stage: DBStage) {
+    const enrollment = enrollments.get(stage.id) ?? null;
+    const gated = !!stage.required_level_id;
+    return {
+      gated,
+      enrollment,
+      met: !gated || enrollment?.status === "completed",
+    };
+  }
+
+  function goToCourseMatch(stage: DBStage) {
+    if (!roadmap) return;
+    navigate({
+      to: "/course-match",
+      search: { roadmapId: roadmap.id, stage: stage.stage_number },
+    });
+  }
+
   // ─── CHANGED: completeStage from api.ts ──────────────────────────────────
   // Previously 3 separate supabase calls inline.
   // Now one api.ts call that does the same thing: mark complete, unlock next, bump current_stage.
@@ -311,6 +368,16 @@ function RoadmapPageInner() {
     const authenticated = await requireAuth(roadmap.id);
     if (!authenticated) return;
 
+    // ─── Course gate ────────────────────────────────────────────────────────
+    // The stage can't be ticked off until a course matching this student's
+    // level — and taught by one of their matched tutors — has been completed.
+    // Clicking through sends them to the matched course search instead.
+    const requirement = requirementFor(stage);
+    if (!requirement.met) {
+      goToCourseMatch(stage);
+      return;
+    }
+
     setCompleting(stage.stage_number);
     try {
       await completeStage(roadmap.id, stage.stage_number);
@@ -346,7 +413,13 @@ function RoadmapPageInner() {
       setTimeout(() => setOverlay(null), 1500);
     } catch (err: any) {
       console.error("[roadmap] mark complete", err);
-      toast.error(err?.message || "Couldn't mark stage complete.");
+      // The database enforces the same gate, so a stale UI lands here.
+      if (err?.message === "STAGE_COURSE_REQUIRED") {
+        toast.error("Finish a course at this stage's level first.");
+        goToCourseMatch(stage);
+      } else {
+        toast.error(err?.message || "Couldn't mark stage complete.");
+      }
     } finally {
       setCompleting(null);
     }
@@ -363,7 +436,13 @@ function RoadmapPageInner() {
   if (!roadmap) return null;
 
   const subject = (roadmap.subject ?? pw.subject ?? "Mathematics") as Subject;
-  const level = (pw.level ?? "Builder") as Level;
+  // The band is persisted on the roadmap, so the level survives a page reload —
+  // the in-memory store only holds it for the length of the quiz session.
+  const baseBand: LevelBand =
+    roadmap.level_band != null
+      ? clampBand(roadmap.level_band)
+      : pw.band ?? (pw.level ? LEVEL_TO_BAND[pw.level] : 3);
+  const level = BAND_META[baseBand].label as Level;
   const levelMeta = LEVEL_META[level];
   const goalLabel = roadmap.goal && (GOAL_LABELS as any)[roadmap.goal] ? (GOAL_LABELS as any)[roadmap.goal] : "Improve";
 
@@ -485,6 +564,9 @@ function RoadmapPageInner() {
                 const isCompleted = s.status === "complete";
                 const isActive = s.status === "active";
                 const isGoal = i === stages.length - 1;
+                const req = requirementFor(s);
+                const reqBand =
+                  s.required_level_band != null ? clampBand(s.required_level_band) : null;
 
                 let nodeBg = "var(--pw-surface)";
                 let nodeBorder = "var(--pw-border)";
@@ -564,6 +646,27 @@ function RoadmapPageInner() {
                         </div>
                       )}
 
+                      {/* Course requirement — the level this stage unlocks against */}
+                      {reqBand && !isCompleted && (
+                        <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px]">
+                          <span
+                            className="pw-pill text-[11px] px-2.5 py-1 pw-border"
+                            style={{
+                              background: req.met ? "rgba(45,106,79,0.08)" : "var(--pw-surface-2)",
+                              borderColor: req.met ? "var(--pw-accent-2)" : "var(--pw-border)",
+                            }}
+                          >
+                            {req.met ? "✓" : "📘"} Requires a {BAND_META[reqBand].label} course
+                          </span>
+                          {req.enrollment && (
+                            <span className="text-[var(--pw-ink-2)] truncate max-w-[220px]">
+                              {req.enrollment.status === "completed" ? "Completed" : "In progress"}:{" "}
+                              {req.enrollment.course?.title ?? "your course"}
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
                         <div className="text-[12px] text-[var(--pw-ink-2)]">
                           {isCompleted && s.completed_at
@@ -574,6 +677,13 @@ function RoadmapPageInner() {
                           <span
                             role="button"
                             tabIndex={0}
+                            title={
+                              req.met
+                                ? undefined
+                                : req.enrollment
+                                  ? "Finish your course to unlock this stage"
+                                  : "Pick a course at your level to unlock this stage"
+                            }
                             onClick={(e) => {
                               e.stopPropagation();
                               handleMarkComplete(s);
@@ -585,10 +695,21 @@ function RoadmapPageInner() {
                                 handleMarkComplete(s);
                               }
                             }}
-                            className="pw-pill text-[12px] px-3 py-1.5 font-medium transition-colors"
-                            style={{ background: "var(--pw-accent)", color: "#fff", opacity: completing === s.stage_number ? 0.6 : 1 }}
+                            className="pw-pill text-[12px] px-3 py-1.5 font-medium transition-colors cursor-pointer"
+                            style={{
+                              background: req.met ? "var(--pw-accent)" : "var(--pw-surface-2)",
+                              color: req.met ? "#fff" : "var(--pw-ink-2)",
+                              border: req.met ? "none" : "1.5px solid var(--pw-border)",
+                              opacity: completing === s.stage_number ? 0.6 : 1,
+                            }}
                           >
-                            {completing === s.stage_number ? "Saving…" : "✓ Mark Stage Complete"}
+                            {completing === s.stage_number
+                              ? "Saving…"
+                              : req.met
+                                ? "✓ Mark Stage Complete"
+                                : req.enrollment
+                                  ? "📘 Finish your course"
+                                  : "🔒 Choose your course"}
                           </span>
                         )}
                       </div>

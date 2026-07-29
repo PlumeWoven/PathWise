@@ -71,6 +71,83 @@ export type Database = {
           },
         ]
       }
+      course_enrollments: {
+        Row: {
+          completed_at: string | null
+          course_id: string
+          created_at: string
+          enrolled_at: string
+          id: string
+          match_kind: string | null
+          required_level_id: string | null
+          roadmap_id: string | null
+          roadmap_stage_id: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["enrollment_status"]
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id: string
+          created_at?: string
+          enrolled_at?: string
+          id?: string
+          match_kind?: string | null
+          required_level_id?: string | null
+          roadmap_id?: string | null
+          roadmap_stage_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string
+          created_at?: string
+          enrolled_at?: string
+          id?: string
+          match_kind?: string | null
+          required_level_id?: string | null
+          roadmap_id?: string | null
+          roadmap_stage_id?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["enrollment_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_roadmap_id_fkey"
+            columns: ["roadmap_id"]
+            isOneToOne: false
+            referencedRelation: "roadmaps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_roadmap_stage_id_fkey"
+            columns: ["roadmap_stage_id"]
+            isOneToOne: false
+            referencedRelation: "roadmap_stages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_enrollments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_sections: {
         Row: {
           course_id: string
@@ -120,6 +197,8 @@ export type Database = {
           language: string | null
           learning_outcomes: string[] | null
           level: string | null
+          level_band: number | null
+          level_id: string | null
           metadata: Json
           prerequisites: string[] | null
           price: number | null
@@ -154,6 +233,8 @@ export type Database = {
           language?: string | null
           learning_outcomes?: string[] | null
           level?: string | null
+          level_band?: number | null
+          level_id?: string | null
           metadata?: Json
           prerequisites?: string[] | null
           price?: number | null
@@ -188,6 +269,8 @@ export type Database = {
           language?: string | null
           learning_outcomes?: string[] | null
           level?: string | null
+          level_band?: number | null
+          level_id?: string | null
           metadata?: Json
           prerequisites?: string[] | null
           price?: number | null
@@ -222,8 +305,11 @@ export type Database = {
           goal: string
           id: string
           level: string
+          level_band: number | null
+          level_id: string | null
           score: number
           subject: string
+          topic_bands: Json
           user_id: string | null
           wrong_topics: string[] | null
           xp_earned: number
@@ -233,8 +319,11 @@ export type Database = {
           goal: string
           id?: string
           level: string
+          level_band?: number | null
+          level_id?: string | null
           score: number
           subject: string
+          topic_bands?: Json
           user_id?: string | null
           wrong_topics?: string[] | null
           xp_earned: number
@@ -244,8 +333,11 @@ export type Database = {
           goal?: string
           id?: string
           level?: string
+          level_band?: number | null
+          level_id?: string | null
           score?: number
           subject?: string
+          topic_bands?: Json
           user_id?: string | null
           wrong_topics?: string[] | null
           xp_earned?: number
@@ -519,6 +611,8 @@ export type Database = {
         Row: {
           completed_at: string | null
           id: string
+          required_level_band: number | null
+          required_level_id: string | null
           roadmap_id: string
           skills: string[] | null
           stage_number: number
@@ -528,6 +622,8 @@ export type Database = {
         Insert: {
           completed_at?: string | null
           id?: string
+          required_level_band?: number | null
+          required_level_id?: string | null
           roadmap_id: string
           skills?: string[] | null
           stage_number: number
@@ -537,6 +633,8 @@ export type Database = {
         Update: {
           completed_at?: string | null
           id?: string
+          required_level_band?: number | null
+          required_level_id?: string | null
           roadmap_id?: string
           skills?: string[] | null
           stage_number?: number
@@ -560,6 +658,8 @@ export type Database = {
           diagnostic_id: string | null
           goal: string | null
           id: string
+          level_band: number | null
+          level_id: string | null
           subject: string | null
           total_stages: number
           user_id: string | null
@@ -570,6 +670,8 @@ export type Database = {
           diagnostic_id?: string | null
           goal?: string | null
           id?: string
+          level_band?: number | null
+          level_id?: string | null
           subject?: string | null
           total_stages?: number
           user_id?: string | null
@@ -580,6 +682,8 @@ export type Database = {
           diagnostic_id?: string | null
           goal?: string | null
           id?: string
+          level_band?: number | null
+          level_id?: string | null
           subject?: string | null
           total_stages?: number
           user_id?: string | null
@@ -1006,6 +1110,7 @@ export type Database = {
       get_user_role: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
+      enrollment_status: "enrolled" | "in_progress" | "completed" | "dropped"
       session_payment_status:
         | "unpaid"
         | "pending"
@@ -1149,6 +1254,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      enrollment_status: ["enrolled", "in_progress", "completed", "dropped"],
       session_payment_status: [
         "unpaid",
         "pending",

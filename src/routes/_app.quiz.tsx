@@ -8,9 +8,23 @@ import {
   SUBJECTS,
   Subject,
   GoalId,
-  levelFromScore,
-  pickQuizQuestions,
+  QuizQuestion,
 } from "../pathwise/data";
+import {
+  ADAPTIVE_LENGTH,
+  correctCount,
+  createAdaptiveState,
+  currentStreak,
+  earnedXP,
+  finalBand,
+  nextQuestion,
+  placementSummary,
+  recordAnswer,
+  topicBands,
+  weakTopics,
+  type AdaptiveState,
+} from "../pathwise/adaptive-quiz";
+import { BAND_META, BAND_TO_LEVEL, makeLevelId } from "../pathwise/levels";
 import { setState, usePW, resetState } from "../pathwise/store";
 import { generateStages } from "../pathwise/roadmap-gen";
 import { toast } from "sonner";
@@ -52,30 +66,36 @@ function QuizPageInner() {
   const navigate = useNavigate();
   const pw = usePW();
   const [phase, setPhase] = useState<Phase>("subject");
-  const [qIndex, setQIndex] = useState(0);
   const [feedback, setFeedback] = useState<"none" | "correct" | "wrong">("none");
   const [floatXP, setFloatXP] = useState(false);
+  const [xpGain, setXpGain] = useState(0);
   const [loadingText, setLoadingText] = useState("Analyzing your answers...");
   // REMOVED: separate diagnosticId state — now handled inside the unified save function
   const [buildingRoadmap, setBuildingRoadmap] = useState(false);
   const savedRef = useRef(false);
 
+  // ─── Adaptive run state ─────────────────────────────────────────────────────
+  // The estimator lives in adaptive-quiz.ts; this component only serves the
+  // question it hands back and feeds answers into it.
+  const [run, setRun] = useState<AdaptiveState>(() => createAdaptiveState());
+  const [question, setQuestion] = useState<QuizQuestion | null>(null);
+  const finalRunRef = useRef<AdaptiveState | null>(null);
+
   useEffect(() => {
     resetState();
     setPhase("subject");
-    setQIndex(0);
+    setRun(createAdaptiveState());
+    setQuestion(null);
   }, []);
 
-  const questions = useMemo(
-    () => (pw.subject ? pickQuizQuestions(pw.subject, 5) : []),
-    [pw.subject],
-  );
+  const asked = run.answers.length;
+  const answeredIndex = phase === "result" ? ADAPTIVE_LENGTH : asked;
 
   let progress = 0;
   if (phase === "subject") progress = 5;
   else if (phase === "goal") progress = 15;
   else if (phase === "intro") progress = 25;
-  else if (phase === "quiz") progress = 25 + (qIndex / questions.length) * 60;
+  else if (phase === "quiz") progress = 25 + (answeredIndex / ADAPTIVE_LENGTH) * 60;
   else progress = 100;
 
   const pickSubject = (s: Subject) => {
@@ -88,41 +108,62 @@ function QuizPageInner() {
     setTimeout(() => setPhase("intro"), 300);
   };
 
+  const beginQuiz = () => {
+    if (!pw.subject) return;
+    const fresh = createAdaptiveState();
+    setRun(fresh);
+    setQuestion(nextQuestion(pw.subject, fresh));
+    setPhase("quiz");
+  };
+
   const answer = (i: number) => {
-    if (feedback !== "none") return;
-    const q = questions[qIndex];
-    const correct = i === q.correctIndex;
-    const newAnswers = [...pw.answers, { questionId: q.id, selected: i, correct, topic: q.topic }];
-    let xp = pw.totalXP;
-    let streak = pw.streak;
+    if (feedback !== "none" || !question || !pw.subject) return;
+
+    const next = recordAnswer(run, question, i);
+    const correct = i === question.correctIndex;
+    const gained = earnedXP(next) - earnedXP(run);
+
+    setRun(next);
+    setState({
+      answers: next.answers,
+      totalXP: earnedXP(next),
+      streak: currentStreak(next),
+    });
+
     if (correct) {
-      xp += 100;
-      streak += 1;
-      if (streak >= 3) xp += 20;
+      setXpGain(gained);
       setFloatXP(true);
       setTimeout(() => setFloatXP(false), 1200);
-    } else {
-      streak = 0;
     }
-    setState({ answers: newAnswers, totalXP: xp, streak });
+
     setFeedback(correct ? "correct" : "wrong");
     const delay = correct ? 900 : 1700;
     setTimeout(() => {
       setFeedback("none");
-      if (qIndex + 1 >= questions.length) {
-        finish(newAnswers);
+      const following = nextQuestion(pw.subject!, next);
+      if (!following) {
+        finish(next);
       } else {
-        setQIndex(qIndex + 1);
+        setQuestion(following);
       }
     }, delay);
   };
 
-  const finish = (answers: typeof pw.answers) => {
-    const score = answers.filter((a) => a.correct).length;
-    const lvl = levelFromScore(score);
-    setState({ level: lvl });
+  const finish = (state: AdaptiveState) => {
+    const band = finalBand(state);
+    finalRunRef.current = state;
+    setState({
+      level: BAND_TO_LEVEL[band],
+      band,
+      topicBands: topicBands(state),
+      totalXP: earnedXP(state),
+    });
     setPhase("loading");
-    const phrases = ["Analyzing your answers...", "Calculating your level...", "Almost ready..."];
+    const phrases = [
+      "Analyzing your answers...",
+      "Calibrating difficulty...",
+      "Placing you in a level band...",
+    ];
     let i = 0;
     setLoadingText(phrases[0]);
     const t = setInterval(() => {
@@ -149,7 +190,7 @@ function QuizPageInner() {
   // Now "Build My Roadmap" button triggers both writes in sequence.
   async function handleBuildRoadmap() {
     if (buildingRoadmap) return;
-    if (!pw.subject || !pw.level) return;
+    if (!pw.subject || !pw.level || !pw.band) return;
     if (savedRef.current) return;
     savedRef.current = true;
     setBuildingRoadmap(true);
@@ -163,19 +204,24 @@ function QuizPageInner() {
     let roadmapId: string | undefined;
 
     try {
-      // 2. Compute results from store
-      const score = pw.answers.filter((a) => a.correct).length;
-      const wrongTopics = Array.from(
-        new Set(pw.answers.filter((a) => !a.correct).map((a) => a.topic)),
-      );
+      // 2. Compute results from the adaptive run
+      const finalRun = finalRunRef.current;
+      const score = finalRun ? correctCount(finalRun) : pw.answers.filter((a) => a.correct).length;
+      const wrongTopics = finalRun
+        ? weakTopics(finalRun)
+        : Array.from(new Set(pw.answers.filter((a) => !a.correct).map((a) => a.topic)));
 
-      // 3. Save diagnostic → get diagnostic_id
+      // 3. Save diagnostic → get diagnostic_id.
+      //    level_id is what courses are matched against downstream.
       const diagnosticId = await saveDiagnosticResult({
         user_id: userId,
         subject: pw.subject,
         goal: (pw.goal ?? "grades") as GoalId,
         score,
         level: pw.level,
+        level_band: pw.band,
+        level_id: makeLevelId(pw.subject, pw.band),
+        topic_bands: pw.topicBands,
         xp_earned: pw.totalXP,
         wrong_topics: wrongTopics,
       });
@@ -183,13 +229,15 @@ function QuizPageInner() {
       // 4. Generate stages locally (same logic as before)
       const stages = generateStages(pw.subject, pw.level, pw.goal);
 
-      // 5. Save roadmap + all 5 stages → get roadmap_id
+      // 5. Save roadmap + all 5 stages → get roadmap_id.
+      //    createRoadmap stamps each stage with the course level it requires.
       roadmapId = await createRoadmap({
         user_id: userId,
         diagnostic_id: diagnosticId,
         subject: pw.subject,
         goal: (pw.goal ?? "grades") as GoalId,
         stages,
+        level_band: pw.band,
       });
 
       // 6. Persist roadmap_id to localStorage for the roadmap page
@@ -231,8 +279,10 @@ function QuizPageInner() {
         goal: pw.goal,
         score,
         level: pw.level,
+        level_band: pw.band,
+        level_id: pw.subject && pw.band ? makeLevelId(pw.subject, pw.band) : null,
         xp_earned: pw.totalXP,
-        wrong_topics: wrongTopics
+        wrong_topics: finalRunRef.current ? weakTopics(finalRunRef.current) : [],
       });
       console.error("  • Full Error Object:", JSON.stringify(err, null, 2));
       console.error("────────────────────────────────────────────────────────────");
@@ -262,12 +312,8 @@ function QuizPageInner() {
 
   const score = pw.answers.filter((a) => a.correct).length;
   const lvl = pw.level;
-  const wrongTopics = Array.from(new Set(pw.answers.filter((a) => !a.correct).map((a) => a.topic)));
-  const interp = lvl
-    ? wrongTopics.length === 0
-      ? "You answered everything correctly — you're ready to go straight to advanced material."
-      : `You have solid skills overall, but ${wrongTopics.slice(0, 2).join(" and ")} need some work.`
-    : "";
+  const interp = finalRunRef.current ? placementSummary(finalRunRef.current) : "";
+  const topicEntries = Object.entries(pw.topicBands).sort((a, b) => a[1] - b[1]);
 
   return (
     <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)] relative">
@@ -357,21 +403,23 @@ function QuizPageInner() {
                   Level Check: Unlocked
                 </h2>
                 <p className="text-[15px] text-[var(--pw-ink-2)] mt-3">
-                  Answer 5 quick questions. We'll calculate your exact starting point.
+                  {ADAPTIVE_LENGTH} questions that adapt as you go — get one right and the next
+                  gets harder, miss one and it eases off. That's how we place you precisely.
                 </p>
-                <div className="mt-6">
-                  <div className="font-mono-pw text-[12px] text-[var(--pw-ink-2)] mb-2">
-                    XP: 0 / 500
+                <div
+                  className="mt-5 text-[13px] px-4 py-3 rounded-lg text-left"
+                  style={{ background: "var(--pw-surface-2)" }}
+                >
+                  <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+                    Why it matters
                   </div>
-                  <div className="h-2 rounded-full bg-[var(--pw-surface-2)] overflow-hidden">
-                    <div
-                      className="h-full"
-                      style={{ width: "0%", background: "var(--pw-accent)" }}
-                    />
-                  </div>
+                  <p className="mt-1.5 text-[var(--pw-ink-2)]">
+                    Your level decides which of your matched tutors' courses unlock each stage of
+                    your roadmap.
+                  </p>
                 </div>
                 <button
-                  onClick={() => setPhase("quiz")}
+                  onClick={beginQuiz}
                   className="pw-btn-primary mt-7 px-8 py-3.5 text-[15px] font-medium"
                 >
                   Begin →
@@ -380,9 +428,9 @@ function QuizPageInner() {
             </motion.div>
           )}
 
-          {phase === "quiz" && questions.length > 0 && (
+          {phase === "quiz" && question && (
             <motion.div
-              key={`q-${qIndex}`}
+              key={`q-${question.id}`}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
@@ -395,7 +443,7 @@ function QuizPageInner() {
               >
                 <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
                   <span>
-                    Question {qIndex + 1} of {questions.length}
+                    Question {asked + 1} of {ADAPTIVE_LENGTH}
                   </span>
                   <span
                     className="font-mono-pw text-[11px] px-2 py-0.5 pw-pill"
@@ -408,25 +456,33 @@ function QuizPageInner() {
                   <div
                     className="h-full transition-all duration-500"
                     style={{
-                      width: `${((qIndex + 1) / questions.length) * 100}%`,
+                      width: `${((asked + 1) / ADAPTIVE_LENGTH) * 100}%`,
                       background: "var(--pw-accent)",
                     }}
                   />
                 </div>
-                <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mt-5">
-                  {questions[qIndex].topic}
+                <div className="flex items-center gap-2 mt-5">
+                  <span className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+                    {question.topic}
+                  </span>
+                  <span
+                    className="pw-pill text-[10px] px-2 py-0.5 font-mono-pw"
+                    style={{ background: "var(--pw-surface-2)", color: "var(--pw-ink-2)" }}
+                    title={`Tier ${question.difficulty} of 5 — the quiz picked this based on your answers so far`}
+                  >
+                    TIER {question.difficulty}
+                  </span>
                 </div>
-                <h3 className="text-[18px] font-medium mt-2 leading-snug">
-                  {questions[qIndex].question}
-                </h3>
+                <h3 className="text-[18px] font-medium mt-2 leading-snug">{question.question}</h3>
 
                 <div className="mt-5 space-y-3 relative">
-                  {questions[qIndex].options.map((opt, i) => {
+                  {question.options.map((opt, i) => {
+                    const last = run.answers[run.answers.length - 1];
                     const selectedThis =
                       feedback !== "none" &&
-                      pw.answers[pw.answers.length - 1]?.questionId === questions[qIndex].id &&
-                      pw.answers[pw.answers.length - 1]?.selected === i;
-                    const isCorrect = i === questions[qIndex].correctIndex;
+                      last?.questionId === question.id &&
+                      last?.selected === i;
+                    const isCorrect = i === question.correctIndex;
                     let cls = "bg-[var(--pw-surface)] hover:border-[var(--pw-accent)]";
                     if (feedback !== "none" && isCorrect) cls = "border-[var(--pw-accent-2)]";
                     if (feedback === "wrong" && selectedThis) cls = "border-[var(--pw-danger)]";
@@ -448,7 +504,7 @@ function QuizPageInner() {
                             className="absolute right-4 top-1/2 -translate-y-1/2 font-mono-pw text-[13px] animate-float-up"
                             style={{ color: "var(--pw-accent-3)" }}
                           >
-                            +100 XP
+                            +{xpGain} XP
                           </span>
                         )}
                       </button>
@@ -458,15 +514,16 @@ function QuizPageInner() {
 
                 {feedback === "correct" && (
                   <div className="mt-4 text-[13px]" style={{ color: "var(--pw-accent-2)" }}>
-                    ✓ Correct!
+                    ✓ Correct — stepping up the difficulty.
                   </div>
                 )}
                 {feedback === "wrong" && (
                   <div className="mt-4 text-[13px] text-[var(--pw-ink-2)]">
                     Not quite — the answer was{" "}
                     <strong style={{ color: "var(--pw-accent-2)" }}>
-                      {questions[qIndex].options[questions[qIndex].correctIndex]}
+                      {question.options[question.correctIndex]}
                     </strong>
+                    . Easing off for the next one.
                   </div>
                 )}
 
@@ -535,7 +592,7 @@ function QuizPageInner() {
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ type: "spring", stiffness: 180, damping: 16 }}
-              className="max-w-[420px] mx-auto mt-16"
+              className="max-w-[440px] mx-auto mt-16"
             >
               <div
                 className="pw-card p-8 text-center"
@@ -557,25 +614,61 @@ function QuizPageInner() {
                       {lvl}
                     </div>
                     <div className="font-mono-pw text-[12px] mt-2 opacity-90">
-                      {score} / 5 correct
+                      {score} / {ADAPTIVE_LENGTH} correct
                     </div>
                   </div>
                 </div>
+
+                {/* The level id is the key everything downstream matches on. */}
+                {pw.band && pw.subject && (
+                  <div className="mt-4 font-mono-pw text-[11px] text-[var(--pw-ink-2)]">
+                    LEVEL ID ·{" "}
+                    <span style={{ color: "var(--pw-accent)" }}>
+                      {makeLevelId(pw.subject, pw.band)}
+                    </span>
+                  </div>
+                )}
+
                 <div
-                  className="mt-5 font-mono-pw text-[14px]"
+                  className="mt-3 font-mono-pw text-[14px]"
                   style={{ color: "var(--pw-accent)" }}
                 >
                   ✦ {pw.totalXP} XP Earned
                 </div>
-                {pw.answers.some(
-                  (a, i) =>
-                    a.correct && pw.answers.slice(0, i + 1).filter((x) => x.correct).length >= 3,
-                ) && (
-                    <div className="text-[12px] text-[var(--pw-ink-2)] mt-1">
-                      🔥 streak bonus included
-                    </div>
-                  )}
                 <p className="text-[15px] text-[var(--pw-ink-2)] mt-4">{interp}</p>
+
+                {/* Per-topic breakdown — the strands the roadmap will lean on */}
+                {topicEntries.length > 0 && (
+                  <div className="mt-5 text-left">
+                    <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mb-2">
+                      By topic
+                    </div>
+                    <div className="space-y-1.5">
+                      {topicEntries.map(([topic, band]) => (
+                        <div key={topic} className="flex items-center justify-between text-[13px]">
+                          <span className="text-[var(--pw-ink-2)]">{topic}</span>
+                          <span className="flex items-center gap-1.5">
+                            <span className="flex gap-0.5">
+                              {[1, 2, 3, 4, 5].map((n) => (
+                                <span
+                                  key={n}
+                                  className="w-1.5 h-3 rounded-sm"
+                                  style={{
+                                    background:
+                                      n <= band ? "var(--pw-accent)" : "var(--pw-surface-2)",
+                                  }}
+                                />
+                              ))}
+                            </span>
+                            <span className="text-[11px] text-[var(--pw-ink-2)] w-[92px] text-right">
+                              {BAND_META[band].label}
+                            </span>
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {/* Button now calls handleBuildRoadmap — does both saves in one go */}
                 <button
                   onClick={handleBuildRoadmap}

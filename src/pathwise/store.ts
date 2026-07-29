@@ -1,12 +1,23 @@
 import { Subject, GoalId, Level } from "./data";
+import type { LevelBand } from "./levels";
 
 export interface PWState {
   subject: Subject | null;
   goal: GoalId | null;
-  answers: { questionId: string; selected: number; correct: boolean; topic: string }[];
+  answers: {
+    questionId: string;
+    selected: number;
+    correct: boolean;
+    topic: string;
+    difficulty: LevelBand;
+  }[];
   totalXP: number;
   streak: number;
   level: Level | null;
+  /** Canonical placement from the adaptive diagnostic. */
+  band: LevelBand | null;
+  /** Per-topic band estimates, e.g. { Algebra: 4 }. */
+  topicBands: Record<string, LevelBand>;
 }
 
 const initial: PWState = {
@@ -16,6 +27,8 @@ const initial: PWState = {
   totalXP: 0,
   streak: 0,
   level: null,
+  band: null,
+  topicBands: {},
 };
 
 let state: PWState = { ...initial };
@@ -31,7 +44,7 @@ export function setState(patch: Partial<PWState>) {
 }
 
 export function resetState() {
-  state = { ...initial, answers: [] };
+  state = { ...initial, answers: [], topicBands: {} };
   listeners.forEach((l) => l());
 }
 

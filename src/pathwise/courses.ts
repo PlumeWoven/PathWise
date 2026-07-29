@@ -10,6 +10,10 @@ export interface CourseRow {
   category: string | null;
   subcategory_tags: string[] | null;
   difficulty: string | null;
+  /** Roadmap level band 1..5 this course is pitched at. Null = serves all levels. */
+  level_band: number | null;
+  /** `<subject-slug>.L<band>` — what roadmap stages match against. */
+  level_id: string | null;
   language: string | null;
   thumbnail_url: string | null;
   description: string | null;

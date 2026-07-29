@@ -21,8 +21,10 @@ import { supabase } from "@/integrations/supabase/client";
 import type { TablesUpdate, Enums } from "@/integrations/supabase/types";
 import type { Subject, Level, GoalId } from "./data";
 import type { GeneratedStage } from "./roadmap-gen";
+import { makeLevelId, requiredBandForStage, type LevelBand } from "./levels";
 
 type SessionStatus = Enums<"session_status">;
+export type EnrollmentStatus = Enums<"enrollment_status">;
 
 // ─────────────────────────────────────────────
 // 1. AUTH
@@ -80,6 +82,12 @@ export interface SaveDiagnosticInput {
     xp_earned: number;
     wrong_topics: string[];
     user_id?: string | null; // null = anonymous (demo)
+    /** Band 1..5 from the adaptive run — the canonical placement. */
+    level_band: LevelBand;
+    /** `<subject-slug>.L<band>`, the id courses are matched against. */
+    level_id: string;
+    /** Per-topic band estimates, e.g. { Algebra: 4, Geometry: 2 }. */
+    topic_bands?: Record<string, number>;
 }
 
 /**
@@ -96,6 +104,9 @@ export async function saveDiagnosticResult(input: SaveDiagnosticInput): Promise<
             goal: input.goal,
             score: input.score,
             level: input.level,
+            level_band: input.level_band,
+            level_id: input.level_id,
+            topic_bands: input.topic_bands ?? {},
             xp_earned: input.xp_earned,
             wrong_topics: input.wrong_topics,
         })
@@ -136,6 +147,8 @@ export async function createRoadmap(params: {
     subject: Subject;
     goal: GoalId;
     stages: GeneratedStage[];
+    /** Base band from the diagnostic. Each stage requires base + (stage - 1). */
+    level_band: LevelBand;
 }): Promise<string> {
     // 1. Insert the roadmap
     const { data: roadmap, error: roadmapErr } = await supabase
@@ -147,20 +160,28 @@ export async function createRoadmap(params: {
             goal: params.goal,
             current_stage: 1,
             total_stages: params.stages.length,
+            level_band: params.level_band,
+            level_id: makeLevelId(params.subject, params.level_band),
         })
         .select("id")
         .single();
 
     if (roadmapErr) throw roadmapErr;
 
-    // 2. Insert all stages
-    const stageRows = params.stages.map((s) => ({
-        roadmap_id: roadmap.id,
-        stage_number: s.stage_number,
-        title: s.title,
-        skills: s.skills,
-        status: s.status,
-    }));
+    // 2. Insert all stages, each carrying the course level it demands.
+    //    This is what the roadmap gate and the course search read from.
+    const stageRows = params.stages.map((s) => {
+        const band = requiredBandForStage(params.level_band, s.stage_number);
+        return {
+            roadmap_id: roadmap.id,
+            stage_number: s.stage_number,
+            title: s.title,
+            skills: s.skills,
+            status: s.status,
+            required_level_band: band,
+            required_level_id: makeLevelId(params.subject, band),
+        };
+    });
 
     const { error: stagesErr } = await supabase
         .from("roadmap_stages")
@@ -199,6 +220,10 @@ export async function getRoadmapWithStages(userId: string) {
 
 /**
  * Marks a stage as complete and unlocks the next one.
+ *
+ * Throws `STAGE_COURSE_REQUIRED` when the stage demands a course level and no
+ * enrollment for it has been completed — the database enforces this, so the
+ * check holds even if the UI gate is bypassed.
  */
 export async function completeStage(roadmapId: string, stageNumber: number) {
     // Mark current stage complete
@@ -208,7 +233,12 @@ export async function completeStage(roadmapId: string, stageNumber: number) {
         .eq("roadmap_id", roadmapId)
         .eq("stage_number", stageNumber);
 
-    if (completeErr) throw completeErr;
+    if (completeErr) {
+        if (completeErr.message?.includes("STAGE_COURSE_REQUIRED")) {
+            throw new Error("STAGE_COURSE_REQUIRED");
+        }
+        throw completeErr;
+    }
 
     // Unlock next stage
     const { error: unlockErr } = await supabase
@@ -226,6 +256,127 @@ export async function completeStage(roadmapId: string, stageNumber: number) {
         .eq("id", roadmapId);
 
     if (roadmapErr) throw roadmapErr;
+}
+
+// ─────────────────────────────────────────────
+// 4b. COURSE ENROLLMENTS (roadmap stage gate)
+// ─────────────────────────────────────────────
+
+export interface StageEnrollment {
+    id: string;
+    student_id: string;
+    course_id: string;
+    roadmap_id: string | null;
+    roadmap_stage_id: string | null;
+    required_level_id: string | null;
+    match_kind: string | null;
+    status: EnrollmentStatus;
+    enrolled_at: string;
+    started_at: string | null;
+    completed_at: string | null;
+    course?: {
+        id: string;
+        title: string;
+        slug: string | null;
+        thumbnail_url: string | null;
+        estimated_weeks: number | null;
+        level_band: number | null;
+        tutor_id: string;
+    } | null;
+}
+
+const ENROLLMENT_SELECT =
+    "id, student_id, course_id, roadmap_id, roadmap_stage_id, required_level_id, " +
+    "match_kind, status, enrolled_at, started_at, completed_at, " +
+    "course:course_id(id, title, slug, thumbnail_url, estimated_weeks, level_band, tutor_id)";
+
+/**
+ * Every live (non-dropped) enrollment on a roadmap, keyed by stage id.
+ * The roadmap page uses this to decide what each stage's button should do.
+ */
+export async function getRoadmapEnrollments(roadmapId: string): Promise<StageEnrollment[]> {
+    const { data, error } = await supabase
+        .from("course_enrollments")
+        .select(ENROLLMENT_SELECT)
+        .eq("roadmap_id", roadmapId)
+        .neq("status", "dropped")
+        .order("enrolled_at", { ascending: false });
+
+    if (error) throw error;
+    return (data ?? []) as unknown as StageEnrollment[];
+}
+
+export async function getStageEnrollment(stageId: string): Promise<StageEnrollment | null> {
+    const { data, error } = await supabase
+        .from("course_enrollments")
+        .select(ENROLLMENT_SELECT)
+        .eq("roadmap_stage_id", stageId)
+        .neq("status", "dropped")
+        .maybeSingle();
+
+    if (error) throw error;
+    return (data ?? null) as unknown as StageEnrollment | null;
+}
+
+/**
+ * Attaches a course to a roadmap stage. Any course already attached to that
+ * stage is dropped first — one live enrollment per stage, enforced by a
+ * partial unique index.
+ */
+export async function enrollInStageCourse(params: {
+    student_id: string;
+    course_id: string;
+    roadmap_id: string;
+    roadmap_stage_id: string;
+    required_level_id: string | null;
+    match_kind?: string;
+}): Promise<string> {
+    const { error: dropErr } = await supabase
+        .from("course_enrollments")
+        .update({ status: "dropped" })
+        .eq("student_id", params.student_id)
+        .eq("roadmap_stage_id", params.roadmap_stage_id)
+        .neq("status", "dropped");
+
+    if (dropErr) throw dropErr;
+
+    const { data, error } = await supabase
+        .from("course_enrollments")
+        .insert({
+            student_id: params.student_id,
+            course_id: params.course_id,
+            roadmap_id: params.roadmap_id,
+            roadmap_stage_id: params.roadmap_stage_id,
+            required_level_id: params.required_level_id,
+            match_kind: params.match_kind ?? null,
+            status: "in_progress",
+            started_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+
+    if (error) throw error;
+    return data.id;
+}
+
+/** Student confirms they've finished the course — this is what opens the stage. */
+export async function completeEnrollment(enrollmentId: string) {
+    const { error } = await supabase
+        .from("course_enrollments")
+        .update({ status: "completed", completed_at: new Date().toISOString() })
+        .eq("id", enrollmentId);
+
+    if (error) throw error;
+}
+
+/** Releases a stage so the student can pick a different course. */
+export async function dropEnrollment(enrollmentId: string) {
+    const { error } = await supabase
+        .from("course_enrollments")
+        .update({ status: "dropped" })
+        .eq("id", enrollmentId);
+
+    if (error) throw error;
 }
 
 // ─────────────────────────────────────────────

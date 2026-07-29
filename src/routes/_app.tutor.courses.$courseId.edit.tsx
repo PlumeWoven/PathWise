@@ -32,6 +32,12 @@ import {
 import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "../pathwise/auth";
+import {
+  BAND_META,
+  canonicalSubjectFromCourseCategory,
+  makeLevelId,
+  type LevelBand,
+} from "../pathwise/levels";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -468,6 +474,55 @@ function Step1Basic({
               </button>
             );
           })}
+        </div>
+      </Field>
+
+      {/* The band is what the roadmap matches on — a student placed at Spark
+          only sees Spark courses in their "perfect match" tier. */}
+      <Field label="Roadmap level band" hint="Drives roadmap matching">
+        <p className="text-[12px] text-[var(--pw-ink-2)] -mt-0.5 mb-1">
+          Students are placed into these bands by the diagnostic quiz. A stage only unlocks
+          against a course at its band, so this decides who finds your course.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+          {([1, 2, 3, 4, 5] as LevelBand[]).map((b) => {
+            const active = course.level_band === b;
+            const subject = canonicalSubjectFromCourseCategory(course.category);
+            return (
+              <button
+                key={b}
+                onClick={() =>
+                  patch({
+                    level_band: b,
+                    level_id: subject ? makeLevelId(subject, b) : null,
+                  })
+                }
+                className={`px-3 py-2 rounded-md border text-[12px] transition-colors ${active
+                    ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
+                    : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
+                  }`}
+              >
+                <span className="block text-[16px]">{BAND_META[b].emoji}</span>
+                <span className="block mt-0.5">{BAND_META[b].label}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[12px] text-[var(--pw-ink-2)]">
+          <button
+            onClick={() => patch({ level_band: null, level_id: null })}
+            className="underline underline-offset-2 hover:text-[var(--pw-ink)]"
+          >
+            Serves every level
+          </button>
+          {course.level_band != null && (
+            <span className="font-mono-pw">
+              {course.level_id ??
+                (canonicalSubjectFromCourseCategory(course.category)
+                  ? ""
+                  : "Pick a category to generate a level id")}
+            </span>
+          )}
         </div>
       </Field>
 
