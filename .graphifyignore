@@ -38,3 +38,11 @@ supabase/.branches/
 *.ttf
 *.eot
 
+
+# Graphify's own tooling — self-referential noise in the graph it builds.
+# (Other scripts/ files are real project code and stay indexed.)
+scripts/graphify_describe.py
+scripts/graphify-obsidian-export.py
+scripts/graphify-rebuild.sh
+scripts/enrich-graph.py
+scripts/enrich-graph-llm.py
