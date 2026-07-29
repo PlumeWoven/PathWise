@@ -19,6 +19,14 @@ function createSupabaseClient() {
       storage: typeof window !== 'undefined' ? localStorage : undefined,
       persistSession: true,
       autoRefreshToken: true,
+      // PKCE for the Google OAuth handshake: the redirect comes back with a
+      // short-lived ?code= that the client exchanges, instead of implicit
+      // flow's #access_token= sitting in the URL and browser history.
+      flowType: 'pkce',
+      // Auto-exchange that code (and recovery/confirmation codes) on page load.
+      // reset-password and confirm-email both just wait for a session rather
+      // than parsing the URL themselves, so they work unchanged under PKCE.
+      detectSessionInUrl: true,
     }
   });
 }

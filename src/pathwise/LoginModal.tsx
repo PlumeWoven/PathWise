@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
 import { normalizeRole, postAuthDestination } from "./roles";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { signInWithGoogle } from "./oauth";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { toast } from "sonner";
 
@@ -81,78 +81,32 @@ export function LoginModal() {
     navigate({ to: postAuthDestination(r, onboarded) });
   }
 
+  /**
+   * Hands off to Google's account chooser. Everything after the redirect —
+   * code exchange, profile backfill, role assignment, routing — is handled by
+   * routes/auth.callback.tsx, since this modal won't survive the navigation.
+   *
+   * A role is optional here: picking one in sign-up mode pre-assigns it, and
+   * anyone arriving without one gets /auth/choose-role after the redirect.
+   */
   async function handleGoogle() {
     setError("");
-    // In sign-up mode the role picker must be used; in sign-in mode
-    // the role is whatever already exists on the profile.
-    if (mode === "signup" && !role) {
-      setError("Please choose your role first.");
+    setSubmitting(true);
+
+    const { error: oauthError } = await signInWithGoogle({
+      role,
+      // Come back to wherever the user opened the modal from, so signing in
+      // mid-roadmap doesn't dump them on a dashboard.
+      returnPath: window.location.pathname !== "/" ? window.location.pathname : null,
+    });
+
+    if (oauthError) {
+      setError(oauthError.message || "Google sign-in failed");
+      setSubmitting(false);
       return;
     }
-    setSubmitting(true);
-    try {
-      if (role) {
-        // Survive the OAuth redirect so we can apply the picked role
-        // after the browser returns from Google.
-        try {
-          sessionStorage.setItem("pathwise_pending_role", role);
-        } catch {
-          /* ignore storage errors */
-        }
-      }
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-        // Best-effort hint for the provider; the authoritative role write is
-        // the set_profile_role RPC after the redirect (see below).
-        extraParams: role ? { role } : undefined,
-      });
-      if (result.redirected) return; // browser redirecting to Google
-      if (result.error) {
-        setError(result.error.message || "Google sign-in failed");
-        setSubmitting(false);
-        return;
-      }
-      // Tokens received & session set (no redirect happened).
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        // Display name is safe to repair with an UPDATE (the trigger has
-        // already inserted the profile row by the time we get here).
-        const fallbackName =
-          (data.user.user_metadata?.full_name as string) ||
-          (data.user.user_metadata?.name as string) ||
-          data.user.email?.split("@")[0] ||
-          "Learner";
-        await supabase
-          .from("profiles")
-          .update({ display_name: fallbackName, full_name: fallbackName })
-          .eq("id", data.user.id);
-
-        // Apply pending role via the one-shot RPC, which only writes
-        // when the column is currently NULL (so returning users are safe).
-        let pending: Role | null = role;
-        try {
-          const stored = sessionStorage.getItem("pathwise_pending_role") as Role | null;
-          if (stored) pending = stored;
-          sessionStorage.removeItem("pathwise_pending_role");
-        } catch {
-          /* ignore storage errors */
-        }
-        if (pending) {
-          // Cast through any until generated types include the new RPC.
-          const { error: rpcErr } = await (supabase.rpc as any)("set_profile_role", {
-            target_role: pending,
-          });
-          if (rpcErr && !/already set/i.test(rpcErr.message)) {
-            console.warn("[auth] set_profile_role", rpcErr);
-          }
-        }
-        await routeAfterAuth(data.user.id);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed");
-    } finally {
-      setSubmitting(false);
-    }
+    // Success means the browser is already navigating to Google — keep the
+    // button in its pending state rather than flicking it back.
   }
 
   async function handleSignIn(e: FormEvent) {

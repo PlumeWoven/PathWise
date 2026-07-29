@@ -24,6 +24,7 @@ import { Route as DashboardEarningsRouteImport } from './routes/dashboard.earnin
 import { Route as DashboardCoursesRouteImport } from './routes/dashboard.courses'
 import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
 import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
+import { Route as AuthChooseRoleRouteImport } from './routes/auth.choose-role'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
@@ -124,6 +125,11 @@ const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
   id: '/analytics',
   path: '/analytics',
   getParentRoute: () => DashboardRoute,
+} as any)
+const AuthChooseRoleRoute = AuthChooseRoleRouteImport.update({
+  id: '/auth/choose-role',
+  path: '/auth/choose-role',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
@@ -277,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
@@ -359,6 +367,7 @@ export interface FileRoutesById {
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
   '/dashboard/courses': typeof DashboardCoursesRoute
@@ -404,6 +413,7 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/admin/users'
     | '/auth/callback'
+    | '/auth/choose-role'
     | '/dashboard/analytics'
     | '/dashboard/calendar'
     | '/dashboard/courses'
@@ -443,6 +453,7 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/admin/users'
     | '/auth/callback'
+    | '/auth/choose-role'
     | '/dashboard/analytics'
     | '/dashboard/calendar'
     | '/dashboard/courses'
@@ -485,6 +496,7 @@ export interface FileRouteTypes {
     | '/admin/review'
     | '/admin/users'
     | '/auth/callback'
+    | '/auth/choose-role'
     | '/dashboard/analytics'
     | '/dashboard/calendar'
     | '/dashboard/courses'
@@ -518,6 +530,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StyleGuideRoute: typeof StyleGuideRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
+  AuthChooseRoleRoute: typeof AuthChooseRoleRoute
   PathwiseDemoRoute: typeof PathwiseDemoRoute
   TutorCoursesIndexRoute: typeof TutorCoursesIndexRoute
 }
@@ -628,6 +641,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/analytics'
       preLoaderRoute: typeof DashboardAnalyticsRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/auth/choose-role': {
+      id: '/auth/choose-role'
+      path: '/auth/choose-role'
+      fullPath: '/auth/choose-role'
+      preLoaderRoute: typeof AuthChooseRoleRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
       id: '/auth/callback'
@@ -922,6 +942,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StyleGuideRoute: StyleGuideRoute,
   AuthCallbackRoute: AuthCallbackRoute,
+  AuthChooseRoleRoute: AuthChooseRoleRoute,
   PathwiseDemoRoute: PathwiseDemoRoute,
   TutorCoursesIndexRoute: TutorCoursesIndexRoute,
 }
