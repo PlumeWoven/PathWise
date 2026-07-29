@@ -1,3 +1,7 @@
+# ── .graphifyignore ────────────────────────────────────────────────────────
+# Paths that graphify skips during extraction. Reduces node count, edges, and
+# token consumption while keeping the graph focused on hand-written code.
+
 # Vendored agent skills — not PathWise application code.
 # These accounted for ~48% of graph nodes and dominated the largest
 # communities, crowding out src/ in every query result.
@@ -6,3 +10,31 @@ skills/
 
 # Generated router tree — 56 declaration nodes with no hand-written logic.
 src/routeTree.gen.ts
+
+# Build output, caches, and dependencies
+node_modules/
+.freebuff/
+.clawhub/
+
+# Graphify output is not input — never double-index the graph
+graphify-out/
+
+# Supabase CLI temp artifacts
+supabase/.temp/
+supabase/.branches/
+
+# Vercel build artifacts
+.vercel/
+
+# Binary / asset files that don't contain code
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+
