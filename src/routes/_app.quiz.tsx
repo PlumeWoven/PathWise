@@ -155,9 +155,9 @@ function QuizPageInner() {
     setBuildingRoadmap(true);
 
     // 1. Get current user (null = anonymous)
-    let user = await getCurrentUser();
-    let userId = user?.id ?? null;
-    let session = user; // Store session for localStorage check
+    const user = await getCurrentUser();
+    const userId = user?.id ?? null;
+    const session = user; // Store session for localStorage check
 
     // Initialize roadmapId to handle AuthSessionMissingError case
     let roadmapId: string | undefined;

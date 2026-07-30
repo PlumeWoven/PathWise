@@ -93,7 +93,7 @@ function BookPage() {
   useEffect(() => {
     try {
       localStorage.setItem("pathwise_pending_booking", JSON.stringify({ tutorId }));
-    } catch {}
+    } catch { /* ignore */ }
   }, [tutorId]);
 
   useEffect(() => {
@@ -216,7 +216,7 @@ function BookPage() {
         { user_id: user.id, title: recurring && createdIds.length > 1 ? `${createdIds.length} sessions booked` : "Booking confirmed", message: `Your ${type} session${createdIds.length > 1 ? "s" : ""} with ${tutor?.display_name ?? "your tutor"} ${createdIds.length > 1 ? "are" : "is"} set.`, link: `/sessions/${createdIds[0]}`, type: "confirmed" },
         { user_id: tutorId, title: recurring && createdIds.length > 1 ? `${createdIds.length} new bookings` : "New booking", message: `You have ${createdIds.length > 1 ? `${createdIds.length} new ${type} sessions` : `a new ${type} session`} booked.`, link: `/sessions/${createdIds[0]}`, type: "scheduled" },
       ]);
-      try { localStorage.removeItem("pathwise_pending_booking"); } catch {}
+      try { localStorage.removeItem("pathwise_pending_booking"); } catch { /* ignore */ }
       // Refresh the booked ranges so the UI reflects newly taken slots if user goes back.
       setBookedRanges((prev) => [...prev, ...recurrenceInstances.map((s) => ({ start: s, end: new Date(s.getTime() + duration * 60 * 1000) }))]);
       setCreatedSessionId(createdIds[0]);

@@ -1,4 +1,4 @@
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { ArrowRightIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/pathwise/auth";
@@ -23,17 +23,22 @@ const fadeUp: Variants = {
 export function Hero() {
   const { isLoggedIn, role } = useAuth();
   const isTutor = isLoggedIn && role === "tutor";
+  const prefersReduced = useReducedMotion();
+
+  // Skip framer-motion animation entirely when user prefers reduced motion.
+  const animationProps = prefersReduced
+    ? { initial: "visible" as const, animate: "visible" as const }
+    : { initial: "hidden" as const, animate: "visible" as const };
 
   return (
-    <section data-floating-container className="relative h-screen w-full overflow-hidden bg-pw-bg">
+    <section data-floating-container className="relative h-screen w-full overflow-hidden bg-pw-bg flex flex-col items-center justify-center">
       <FloatingCluster />
 
       <div data-hero-content className="relative z-20 mx-auto max-w-2xl text-center">
         <motion.h1
           custom={0}
           variants={fadeUp}
-          initial="hidden"
-          animate="visible"
+          {...animationProps}
           className="font-display text-[2.75rem] font-bold leading-[1.1] tracking-wide text-pw-ink sm:text-6xl"
         >
           Find exactly where you stand.
@@ -42,8 +47,7 @@ export function Hero() {
         <motion.p
           custom={1}
           variants={fadeUp}
-          initial="hidden"
-          animate="visible"
+          {...animationProps}
           className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-pw-muted sm:text-lg"
         >
           A 3-minute quiz reveals your level, builds your roadmap, and finds the right tutor. No
@@ -53,8 +57,7 @@ export function Hero() {
         <motion.div
           custom={2}
           variants={fadeUp}
-          initial="hidden"
-          animate="visible"
+          {...animationProps}
           className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-semibold tracking-wide text-pw-muted"
         >
           <span>3 min avg</span>
@@ -67,8 +70,7 @@ export function Hero() {
         <motion.div
           custom={3}
           variants={fadeUp}
-          initial="hidden"
-          animate="visible"
+          {...animationProps}
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           {isTutor ? (
@@ -112,3 +114,4 @@ export function Hero() {
     </section>
   );
 }
+Hero.displayName = "Hero";

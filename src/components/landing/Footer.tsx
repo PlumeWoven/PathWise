@@ -48,14 +48,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div
-          className="mt-12 h-px w-full rounded-full"
-          style={{
-            boxShadow:
-              "inset 0 1px 2px var(--pw-shadow-dark), inset 0 -1px 1px var(--pw-shadow-light)",
-          }}
-          aria-hidden="true"
-        />
+        <div className="pw-divider h-px mt-12" aria-hidden="true" />
 
         <div className="mt-6 flex flex-col items-center justify-between gap-3 text-sm text-pw-muted sm:flex-row">
           <span>© {new Date().getFullYear()} PathWise. All rights reserved.</span>
@@ -72,3 +65,4 @@ export function Footer() {
     </footer>
   );
 }
+Footer.displayName = "Footer";

@@ -1,4 +1,4 @@
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { ClipboardCheckIcon, RouteIcon, UsersIcon, LineChartIcon } from "lucide-react";
 
 const features = [
@@ -41,6 +41,7 @@ const cardVariants: Variants = {
 };
 
 export function Features() {
+  const prefersReduced = useReducedMotion();
   return (
     <section className="w-full bg-pw-bg px-5 py-24 sm:px-8">
       <div className="mx-auto max-w-6xl">
@@ -61,8 +62,8 @@ export function Features() {
                 key={feature.title}
                 custom={i}
                 variants={cardVariants}
-                initial="hidden"
-                whileInView="visible"
+                initial={prefersReduced ? "visible" : "hidden"}
+                whileInView={prefersReduced ? undefined : "visible"}
                 viewport={{
                   once: true,
                   amount: 0.3,
@@ -70,9 +71,10 @@ export function Features() {
                 whileHover={{
                   scale: 1.02,
                 }}
-                className="rounded-pw bg-pw-surface p-7 shadow-pw-raised transition-shadow"
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="rounded-pw bg-pw-surface p-7 shadow-pw-raised"
               >
-                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-pw-bg shadow-pw-inset">
+                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-pw-surface-2 shadow-pw-inset">
                   <Icon className="h-6 w-6 text-pw-accent" aria-hidden="true" />
                 </span>
                 <h3 className="mt-6 text-lg font-semibold tracking-wide text-pw-ink">
@@ -87,3 +89,4 @@ export function Features() {
     </section>
   );
 }
+Features.displayName = "Features";

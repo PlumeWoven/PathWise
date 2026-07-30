@@ -63,13 +63,13 @@ async function fetchProfile(userId: string): Promise<Profile | null> {
   }
   if (!data) return null;
   return {
-    id: (data as any).id,
-    role: normalizeRole((data as any).role),
-    display_name: (data as any).display_name ?? null,
-    avatar_url: (data as any).avatar_url ?? null,
-    full_name: (data as any).full_name ?? null,
-    verification_status: ((data as any).verification_status as VerificationStatus) ?? "unverified",
-    onboarding_completed: !!(data as any).onboarding_completed,
+    id: data.id,
+    role: normalizeRole(data.role),
+    display_name: data.display_name ?? null,
+    avatar_url: data.avatar_url ?? null,
+    full_name: data.full_name ?? null,
+    verification_status: (data.verification_status as VerificationStatus) ?? "unverified",
+    onboarding_completed: !!data.onboarding_completed,
   };
 }
 
@@ -97,6 +97,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Listen for open-login-modal event (dispatched by requireAuth when user needs to sign in)
+    const handleOpenLoginModal = () => {
+      setLoginOpen(true);
+    };
+    window.addEventListener('open-login-modal', handleOpenLoginModal);
+
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
       if (newSession?.user) {
@@ -152,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
     return () => {
+      window.removeEventListener('open-login-modal', handleOpenLoginModal);
       sub.subscription.unsubscribe();
     };
   }, []);
@@ -194,8 +201,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       setConfirmationSent(true);
       toast.success("Confirmation email resent! Check your inbox.");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to resend confirmation");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to resend confirmation");
       throw err;
     }
   };

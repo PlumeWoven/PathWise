@@ -246,15 +246,16 @@ function RoadmapPageInner() {
       setRoadmap(rm as DBRoadmap);
       setStages((st ?? []) as DBStage[]);
       console.log('[roadmap] Stages loaded:', (st ?? []).length);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { message?: string; code?: string; hint?: string; details?: unknown };
       console.error("[roadmap] fetch error", err);
       console.error("[roadmap] Error details:", {
-        message: err?.message,
-        code: err?.code,
-        hint: err?.hint,
-        details: err?.details
+        message: e?.message,
+        code: e?.code,
+        hint: e?.hint,
+        details: e?.details
       });
-      toast.error(err?.message || "Couldn't load your roadmap.");
+      toast.error(e?.message || "Couldn't load your roadmap.");
     } finally {
       setLoading(false);
     }
@@ -344,9 +345,10 @@ function RoadmapPageInner() {
         xp: 100,
       });
       setTimeout(() => setOverlay(null), 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { message?: string };
       console.error("[roadmap] mark complete", err);
-      toast.error(err?.message || "Couldn't mark stage complete.");
+      toast.error(e?.message || "Couldn't mark stage complete.");
     } finally {
       setCompleting(null);
     }
@@ -365,7 +367,7 @@ function RoadmapPageInner() {
   const subject = (roadmap.subject ?? pw.subject ?? "Mathematics") as Subject;
   const level = (pw.level ?? "Builder") as Level;
   const levelMeta = LEVEL_META[level];
-  const goalLabel = roadmap.goal && (GOAL_LABELS as any)[roadmap.goal] ? (GOAL_LABELS as any)[roadmap.goal] : "Improve";
+  const goalLabel = roadmap.goal && (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal] ? (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal] : "Improve";
 
   const total = stages.length || 5;
   const done = stages.filter((s) => s.status === "complete").length;

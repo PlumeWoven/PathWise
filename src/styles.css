@@ -17,7 +17,9 @@ html:not(.dark) body {
   color: #2a2a28 !important;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   min-height: 100%;
 }
 
@@ -81,6 +83,14 @@ html, body, #root {
   --shadow-pw-raised-sm: 5px 5px 10px var(--pw-shadow-dark), -5px -5px 10px var(--pw-shadow-light);
   --shadow-pw-raised-lg: 8px 8px 16px var(--pw-shadow-dark), -8px -8px 16px var(--pw-shadow-light);
   --shadow-pw-inset: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
+}
+
+/* ── Neomorphic radius utility ──
+   Tailwind v4 needs @utility for custom border-radius classes.
+   Without this, every component using `rounded-pw` silently falls back to
+   the default border-radius — breaking the entire neomorphic design language. */
+@utility rounded-pw {
+  border-radius: var(--radius-pw);
 }
 
 :root {
@@ -461,11 +471,13 @@ html, body, #root {
   background-color: transparent;
   transition: box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
 }
+
 .pw-nav-item:hover {
   color: var(--pw-ink);
   background-color: var(--pw-surface);
   box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
 }
+
 .pw-nav-item.is-active {
   color: var(--pw-accent);
   background-color: var(--pw-surface);
@@ -485,9 +497,11 @@ html, body, #root {
   box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
   transition: box-shadow 0.3s ease;
 }
+
 .pw-input::placeholder {
   color: var(--pw-muted);
 }
+
 .pw-input:focus {
   box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light), 0 0 0 2px var(--pw-accent);
 }
@@ -508,6 +522,7 @@ html, body, #root {
   background-color: var(--pw-surface);
   box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
 }
+
 .pw-badge-accent {
   color: var(--pw-accent);
 }
@@ -546,6 +561,7 @@ html, body, #root {
   box-shadow: inset 2px 2px 4px var(--pw-shadow-dark), inset -2px -2px 4px var(--pw-shadow-light);
   overflow: hidden;
 }
+
 .pw-progress > .pw-progress-fill {
   display: block;
   height: 100%;
@@ -560,6 +576,7 @@ html, body, #root {
    unchanged; bare usages + the style guide get the full neomorphic look.
    ===================================================================== */
 @layer components {
+
   /* CARD — default interior padding (override with p-* utilities). */
   .pw-card {
     padding: 28px;
@@ -588,10 +605,12 @@ html, body, #root {
     background-color: transparent;
     transition: box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
   }
+
   .pw-pill:hover {
     background-color: var(--pw-surface);
     box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
   }
+
   .pw-pill.is-active {
     color: var(--pw-accent);
     background-color: var(--pw-surface);
@@ -625,6 +644,7 @@ html, body, #root {
   }
 
   @keyframes pw-bounce-chev {
+
     0%,
     100% {
       transform: translateY(0);
@@ -660,6 +680,7 @@ html, body, #root {
   }
 
   @keyframes pw-flash-green {
+
     0%,
     100% {
       border-color: var(--pw-border);
@@ -676,6 +697,7 @@ html, body, #root {
   }
 
   @keyframes pw-flash-red {
+
     0%,
     100% {
       border-color: var(--pw-border);
@@ -692,6 +714,7 @@ html, body, #root {
   }
 
   @keyframes pw-float-1 {
+
     0%,
     100% {
       transform: translateY(0) rotate(0deg);
@@ -703,6 +726,7 @@ html, body, #root {
   }
 
   @keyframes pw-float-2 {
+
     0%,
     100% {
       transform: translateY(0) rotate(0deg);
@@ -714,6 +738,7 @@ html, body, #root {
   }
 
   @keyframes pw-float-3 {
+
     0%,
     100% {
       transform: translateY(0) rotate(0deg);
@@ -735,10 +760,28 @@ html, body, #root {
   .animate-pw-float-3 {
     animation: pw-float-3 3.5s ease-in-out infinite;
   }
+
+  /* Wrapper for idle CSS float animation (outer layer) */
+  .animate-pw-float-wrapper {
+    animation: pw-float-wrapper 6s ease-in-out infinite;
+  }
+
+  @keyframes pw-float-wrapper {
+
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+      transform: translateY(-8px) rotate(0.3deg);
+    }
+  }
 }
 
 /* ----- Reduced motion ----- */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -762,6 +805,7 @@ html.vt-to-light::view-transition-new(root) {
   z-index: 1;
   animation: vt-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+
 html.vt-to-light::view-transition-old(root) {
   z-index: 0;
 }
@@ -772,6 +816,7 @@ html.vt-to-dark::view-transition-old(root) {
   z-index: 1;
   animation: vt-reveal 560ms cubic-bezier(0.4, 0, 0.2, 1) reverse forwards;
 }
+
 html.vt-to-dark::view-transition-new(root) {
   z-index: 0;
 }
@@ -780,12 +825,14 @@ html.vt-to-dark::view-transition-new(root) {
   from {
     clip-path: circle(0px at var(--vt-x, 50%) var(--vt-y, 50%));
   }
+
   to {
     clip-path: circle(var(--vt-r, 150%) at var(--vt-x, 50%) var(--vt-y, 50%));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   html.vt-to-light::view-transition-new(root),
   html.vt-to-dark::view-transition-old(root) {
     animation: none;

@@ -89,7 +89,7 @@ function DemoBar({ setView, onExitClick }: { setView: (v: "tutor" | "student") =
   const { view, remaining, warning, expired, shareLink } = useDemo();
   const tone = expired ? "var(--pw-danger)" : warning ? "#b45309" : "var(--pw-accent)";
   const bg = expired
-    ? "color-mix(in oklab, var(--pw-danger) 12%, transparent)"
+    ? "rgba(224, 90, 90, 0.12)"
     : warning
     ? "#fff7ed"
     : "var(--pw-accent-soft)";
@@ -99,7 +99,7 @@ function DemoBar({ setView, onExitClick }: { setView: (v: "tutor" | "student") =
       <div className="px-5 sm:px-8 pt-14 lg:pt-4">
         <div className="max-w-7xl mx-auto pw-card px-4 py-3 flex flex-wrap items-center gap-3 justify-between" style={{ background: bg, borderColor: tone }}>
           <div className="flex items-center gap-2 text-[12px]">
-            <span className="px-2 py-0.5 rounded-full font-mono-pw uppercase tracking-wider" style={{ background: "color-mix(in oklab, var(--pw-danger) 18%, transparent)", color: tone }}>Demo expired</span>
+            <span className="px-2 py-0.5 rounded-full font-mono-pw uppercase tracking-wider" style={{ background: "rgba(224, 90, 90, 0.18)", color: tone }}>Demo expired</span>
             <span className="text-[var(--pw-ink-2)]">Sign up to keep exploring with your own data.</span>
           </div>
           <button onClick={onExitClick} className="pw-btn-primary text-[12px] px-3 py-1.5">Sign up to continue →</button>
@@ -112,7 +112,14 @@ function DemoBar({ setView, onExitClick }: { setView: (v: "tutor" | "student") =
     <div className="px-5 sm:px-8 pt-14 lg:pt-4">
       <div className="max-w-7xl mx-auto pw-card px-4 py-3 flex flex-wrap items-center gap-3 justify-between" style={{ background: bg, borderColor: warning ? tone : undefined }}>
         <div className="flex items-center gap-2 text-[12px] min-w-0">
-          <span className="px-2 py-0.5 rounded-full font-mono-pw uppercase tracking-wider shrink-0" style={{ background: `color-mix(in oklab, ${tone} 15%, transparent)`, color: tone }}>Demo</span>
+          <span
+            className={`px-2 py-0.5 rounded-full font-mono-pw uppercase tracking-wider shrink-0 ${
+              expired ? "bg-[var(--pw-danger)]/15" : warning ? "bg-[#b45309]/15" : "bg-[var(--pw-accent)]/15"
+            }`}
+            style={{ color: tone }}
+          >
+            Demo
+          </span>
           <span className="text-[var(--pw-ink-2)] truncate">
             <span className="hidden sm:inline">Sample data · </span>expires in <span className="font-mono-pw" style={{ color: tone }}>{remaining}</span>
           </span>

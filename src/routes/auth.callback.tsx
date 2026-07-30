@@ -12,10 +12,10 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
     console.log('[claim] Starting claim process for user:', userId);
     // Check URL params first, then localStorage
     const params = new URLSearchParams(window.location.search);
-    const claimId = params.get('claim') || localStorage.getItem('pendingRoadmapId');
+    const claimId = params.get('claim') || localStorage.getItem('pathwise_roadmap_id');
 
     console.log('[claim] Claim ID from URL:', params.get('claim'));
-    console.log('[claim] Claim ID from localStorage:', localStorage.getItem('pendingRoadmapId'));
+    console.log('[claim] Claim ID from localStorage:', localStorage.getItem('pathwise_roadmap_id'));
 
     if (!claimId) {
         console.log('[claim] No claim ID found, skipping');
@@ -35,7 +35,7 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
 
         if (roadmapError) {
             console.error('[claim] Failed to claim roadmap:', roadmapError);
-            localStorage.removeItem('pendingRoadmapId');
+            localStorage.removeItem('pathwise_roadmap_id');
             return;
         }
 
@@ -60,7 +60,7 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
         }
 
         // 3. Clean up
-        localStorage.removeItem('pendingRoadmapId');
+        localStorage.removeItem('pathwise_roadmap_id');
         console.log('[claim] Claim process completed successfully');
     } catch (err) {
         console.error('[claim] Error claiming roadmap:', err);
@@ -80,31 +80,40 @@ function AuthCallback() {
                 if (error) throw error;
                 if (user) {
                     // Claim any pending anonymous roadmap
-                    const claimId = params.get('claim') || localStorage.getItem('pendingRoadmapId');
+                    const claimId = params.get('claim') || localStorage.getItem('pathwise_roadmap_id');
+                    const redirectUrl = params.get('redirect') || '/';
+
                     if (claimId) {
                         await claimPendingRoadmap(claimId);
                     }
 
                     toast.success('Signed in successfully!');
-                    // Redirect to the role-correct destination (tutor/both/
-                    // student/unknown + onboarding state) via the single helper.
-                    const { data: profile } = await supabase
-                        .from('profiles')
-                        .select('role, onboarding_completed')
-                        .eq('id', user.id)
-                        .maybeSingle();
-                    navigate({
-                        to: postAuthDestination(
-                            normalizeRole(profile?.role),
-                            profile?.onboarding_completed,
-                        ),
-                    });
+
+                    // If there's a redirect URL, go there, otherwise go to post-auth destination
+                    if (redirectUrl && redirectUrl !== '/') {
+                        navigate({ to: redirectUrl });
+                    } else {
+                        // Redirect to the role-correct destination (tutor/both/
+                        // student/unknown + onboarding state) via the single helper.
+                        const { data: profile } = await supabase
+                            .from('profiles')
+                            .select('role, onboarding_completed')
+                            .eq('id', user.id)
+                            .maybeSingle();
+                        navigate({
+                            to: postAuthDestination(
+                                normalizeRole(profile?.role),
+                                profile?.onboarding_completed,
+                            ),
+                        });
+                    }
                 } else {
                     toast.error('No user found');
                     navigate({ to: '/' });
                 }
-            } catch (err: any) {
-                toast.error(err.message || 'Authentication failed');
+            } catch (err: unknown) {
+                const e = err as { message?: string };
+                toast.error(e?.message || 'Authentication failed');
                 navigate({ to: '/' });
             }
         };

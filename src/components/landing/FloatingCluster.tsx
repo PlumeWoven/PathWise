@@ -11,7 +11,7 @@ const cardClass =
   "absolute top-0 left-0 inline-flex flex-col rounded-2xl bg-pw-surface px-5 py-3.5 " +
   "shadow-pw-raised-sm pointer-events-none z-0 will-change-transform";
 
-const iconChipClass = "grid h-7 w-7 place-items-center rounded-xl bg-pw-bg shadow-pw-inset";
+const iconChipClass = "grid h-7 w-7 place-items-center rounded-xl bg-pw-surface-2 shadow-pw-inset";
 
 export function FloatingCluster() {
   // DVD-style autonomous floating with collision detection

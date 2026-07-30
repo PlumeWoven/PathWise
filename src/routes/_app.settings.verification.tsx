@@ -353,9 +353,10 @@ function UploadModal({
         setStep("verified");
         onSubmitted(data as RequestRow);
       }, 2200);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message ?? "Upload failed. Please try again.");
+      const e = err as { message?: string };
+      toast.error(e?.message ?? "Upload failed. Please try again.");
       setSubmitting(false);
     }
   }

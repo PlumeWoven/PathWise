@@ -78,9 +78,10 @@ function AdminUsers() {
 
             // Redirect to magic link
             window.location.href = magicLink;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Impersonation error:', err);
-            toast.error(err.message || 'Impersonation failed');
+            const e = err as { message?: string };
+            toast.error(e?.message || 'Impersonation failed');
             setImpersonating(null);
         }
     };

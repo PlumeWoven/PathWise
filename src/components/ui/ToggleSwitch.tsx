@@ -27,7 +27,7 @@ export function ToggleSwitch({ checked, onChange, ariaLabel, id }: ToggleSwitchP
           transform: checked ? "translateX(24px)" : "translateX(0px)",
           backgroundImage: checked
             ? "radial-gradient(circle at 32% 30%, #f3a275, var(--pw-accent) 70%)"
-            : "radial-gradient(circle at 32% 30%, var(--pw-surface), color-mix(in srgb, var(--pw-surface) 80%, #000) 110%)",
+            : "radial-gradient(circle at 32% 30%, var(--pw-surface), rgba(0, 0, 0, 0.2) 110%)",
           boxShadow: checked
             ? "3px 3px 6px var(--pw-shadow-dark), -2px -2px 5px rgba(255,255,255,0.35), inset 1px 1px 2px rgba(255,255,255,0.5)"
             : "3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light)",

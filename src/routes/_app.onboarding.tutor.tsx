@@ -96,7 +96,7 @@ function loadLocal(): Partial<WizardState> {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; }
 }
 function saveLocal(s: WizardState) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { }
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* ignore */ }
 }
 
 function TutorWizard() {
@@ -126,31 +126,31 @@ function TutorWizard() {
         // Prefer local if step is in progress, else DB
         const merged: WizardState = {
           ...prev,
-          full_name: prev.full_name || (data as any)?.full_name || "",
-          headline: prev.headline || (data as any)?.headline || "",
-          bio: prev.bio || (data as any)?.bio || "",
-          years_experience: prev.years_experience || ((data as any)?.years_experience?.toString() ?? ""),
-          education_level: prev.education_level || (data as any)?.education_level || "",
-          institution: prev.institution || (data as any)?.institution || "",
-          avatar_url: prev.avatar_url || (data as any)?.avatar_url || null,
-          specializations: prev.specializations.length ? prev.specializations : ((data as any)?.specializations ?? []),
-          superpowers: prev.superpowers.length ? prev.superpowers : ((data as any)?.superpowers ?? []),
-          proficiency: Object.keys(prev.proficiency).length ? prev.proficiency : ((data as any)?.subject_proficiency ?? {}),
-          video_intro_url: prev.video_intro_url || (data as any)?.video_intro_url || null,
-          video_thumbnail_url: prev.video_thumbnail_url || (data as any)?.video_thumbnail_url || null,
-          timezone: prev.timezone || (data as any)?.timezone || prev.timezone,
-          instant_bookings: typeof local.instant_bookings === "boolean" ? prev.instant_bookings : !!(data as any)?.instant_bookings,
-          buffer_minutes: prev.buffer_minutes ?? (data as any)?.buffer_minutes ?? 15,
-          hourly_rate: prev.hourly_rate || ((data as any)?.hourly_rate?.toString() ?? ""),
-          first_session_free: typeof local.first_session_free === "boolean" ? prev.first_session_free : !!(data as any)?.first_session_free,
-          free_discovery_call: typeof local.free_discovery_call === "boolean" ? prev.free_discovery_call : !!(data as any)?.free_discovery_call,
-          step: prev.step !== 1 ? prev.step : ((data as any)?.onboarding_step ?? 1),
+          full_name: prev.full_name || data?.full_name || "",
+          headline: prev.headline || data?.headline || "",
+          bio: prev.bio || data?.bio || "",
+          years_experience: prev.years_experience || (data?.years_experience?.toString() ?? ""),
+          education_level: prev.education_level || data?.education_level || "",
+          institution: prev.institution || data?.institution || "",
+          avatar_url: prev.avatar_url || data?.avatar_url || null,
+          specializations: prev.specializations.length ? prev.specializations : (data?.specializations ?? []),
+          superpowers: prev.superpowers.length ? prev.superpowers : (data?.superpowers ?? []),
+          proficiency: Object.keys(prev.proficiency).length ? prev.proficiency : ((data?.subject_proficiency ?? {}) as Record<string, number>),
+          video_intro_url: prev.video_intro_url || data?.video_intro_url || null,
+          video_thumbnail_url: prev.video_thumbnail_url || data?.video_thumbnail_url || null,
+          timezone: prev.timezone || data?.timezone || prev.timezone,
+          instant_bookings: typeof local.instant_bookings === "boolean" ? prev.instant_bookings : !!data?.instant_bookings,
+          buffer_minutes: prev.buffer_minutes ?? data?.buffer_minutes ?? 15,
+          hourly_rate: prev.hourly_rate || (data?.hourly_rate?.toString() ?? ""),
+          first_session_free: typeof local.first_session_free === "boolean" ? prev.first_session_free : !!data?.first_session_free,
+          free_discovery_call: typeof local.free_discovery_call === "boolean" ? prev.free_discovery_call : !!data?.free_discovery_call,
+          step: prev.step !== 1 ? prev.step : (data?.onboarding_step ?? 1),
         };
         if (avail?.length && !prev.availability.length) {
-          merged.availability = avail.map((a: any) => ({ day: a.day_of_week, hour: a.start_hour }));
+          merged.availability = avail.map((a) => ({ day: a.day_of_week, hour: a.start_hour }));
         }
         if (pkgs?.length) {
-          merged.packages = pkgs.map((p: any) => ({ sessions: p.sessions, discount_percent: Number(p.discount_percent), enabled: p.enabled }));
+          merged.packages = pkgs.map((p) => ({ sessions: p.sessions, discount_percent: Number(p.discount_percent), enabled: p.enabled }));
         }
         return merged;
       });
@@ -161,7 +161,7 @@ function TutorWizard() {
   // Load subjects
   useEffect(() => {
     supabase.from("subjects").select("id, name, category").order("name").then(({ data }) => {
-      if (data) setSubjects(data as any);
+      if (data) setSubjects(data as Subject[]);
     });
   }, []);
 
@@ -183,7 +183,7 @@ function TutorWizard() {
         .select("subject_specialties")
         .eq("id", profile.id)
         .maybeSingle();
-      const names: string[] = ((data as any)?.subject_specialties ?? []) as string[];
+      const names: string[] = ((data?.subject_specialties ?? []) as string[]);
       if (!names.length) return;
       const ids = subjects.filter((s) => names.includes(s.name)).map((s) => s.id);
       if (ids.length) setState((p) => ({ ...p, subject_ids: ids }));
@@ -280,7 +280,7 @@ function TutorWizard() {
     }
     confetti({ particleCount: 140, spread: 80, origin: { y: 0.65 } });
     setTimeout(() => confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 } }), 250);
-    try { localStorage.removeItem(STORAGE_KEY); } catch { }
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
     await refreshProfile();
     toast.success("Profile published! 🎉");
     setTimeout(() => navigate({ to: "/dashboard" }), 1200);

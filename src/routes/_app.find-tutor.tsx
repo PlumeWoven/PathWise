@@ -77,14 +77,14 @@ function FindTutorPageInner() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setAnswers(JSON.parse(raw));
-    } catch {}
+    } catch { /* ignore */ }
   }, []);
 
   // Persist on every change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
-    } catch {}
+    } catch { /* ignore */ }
   }, [answers]);
 
   const totalQ = 8;

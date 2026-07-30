@@ -12,7 +12,10 @@ export function PWHeader() {
   const { isDark } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
-  const [scrolled, setScrolled] = useState(false);
+  // Lazy state init: check scroll position on first render (safe-guarded for SSR)
+  const [scrolled, setScrolled] = useState(() =>
+    typeof window !== "undefined" && window.pageYOffset > 10
+  );
 
   const [impersonating, setImpersonating] = useState(false);
   const [impersonatingName, setImpersonatingName] = useState('');
@@ -40,7 +43,6 @@ export function PWHeader() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.pageYOffset > 10);
-    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -85,11 +87,9 @@ export function PWHeader() {
       )}
 
       <header
-        className="sticky top-0 z-40 w-full px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-3 transition-all duration-200 backdrop-blur-md"
-        style={{
-          background: scrolled ? "color-mix(in oklab, var(--pw-bg) 95%, transparent)" : "color-mix(in oklab, var(--pw-bg) 70%, transparent)",
-          borderBottom: scrolled ? "1px solid var(--pw-border)" : "1px solid transparent",
-        }}
+        className={`sticky top-0 z-40 w-full px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-3 transition-all duration-200 backdrop-blur-md ${
+          scrolled ? "bg-pw-bg/95 border-b border-[var(--pw-border)]" : "bg-pw-bg/70 border-b border-transparent"
+        }`}
       >
         <div className="flex items-center gap-3">
           <Link to="/" className="font-display italic text-[24px] leading-none text-[var(--pw-ink)]">

@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+/** Evenly-spaced tick positions (0%–100%) for the neomorphic slider channel. */
+const TICKS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
 interface WaveSliderProps {
   value: number;
@@ -27,8 +28,8 @@ export function WaveSlider({
   ariaLabel = "Slider",
 }: WaveSliderProps) {
   const pct = max === min ? 0 : ((value - min) / (max - min)) * 100;
-  // Evenly spaced tick marks carved into the channel, echoing the reference.
-  const ticks = useMemo(() => Array.from({ length: 11 }, (_, i) => (i / 10) * 100), []);
+  // Evenly spaced tick marks — module-level constant, no hook needed.
+  const ticks = TICKS;
   return (
     <div className="relative h-12 w-full select-none">
       {/* Deep indented channel */}
@@ -69,7 +70,7 @@ export function WaveSlider({
           left: `${pct}%`,
           backgroundImage: "radial-gradient(circle at 32% 28%, #f6ad84, var(--pw-accent) 68%)",
           boxShadow:
-            "4px 4px 8px var(--pw-shadow-dark), -2px -2px 6px rgba(255,255,255,0.4), inset 1px 1px 2px rgba(255,255,255,0.55), 0 0 8px color-mix(in srgb, var(--pw-accent) 55%, transparent)",
+            "4px 4px 8px var(--pw-shadow-dark), -2px -2px 6px rgba(255,255,255,0.4), inset 1px 1px 2px rgba(255,255,255,0.55), 0 0 8px rgba(224, 122, 74, 0.55)",
         }}
         aria-hidden="true"
       />

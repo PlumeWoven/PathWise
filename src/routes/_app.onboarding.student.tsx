@@ -27,8 +27,7 @@ function StudentOnboarding() {
     setSubmitting(true);
     try {
       await updateProfile(profile.id, {
-        grade_level: grade === "" ? null : Number(grade),
-        learning_goal: goal || null,
+        grade: grade === "" ? null : Number(grade),
         onboarding_completed: true,
       });
     } catch (err) {
