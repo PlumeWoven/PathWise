@@ -25,7 +25,7 @@ const BUFFER_OPTIONS = [0, 15, 30, 60];
 
 type CellState = "free" | "available" | "blocked" | "booked";
 
-function AvailabilityPage() {
+export function AvailabilityPage() {
   const { user, isLoggedIn } = useAuth();
   const { isDark } = useDarkMode();
   const navigate = useNavigate();
@@ -327,6 +327,3 @@ function Legend({ color, label, border }: { color: string; label: string; border
     </div>
   );
 }
-
-// ===== NAMED EXPORT FOR DASHBOARD REUSE =====
-export const TutorAvailabilityPage = AvailabilityPage;
