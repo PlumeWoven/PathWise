@@ -19,3 +19,7 @@ supabase/.branches/
 .vercel
 .DS_Store
 graphify-out/
+
+# Obsidian workspace config (repo opened as a vault)
+.obsidian/
+*.base

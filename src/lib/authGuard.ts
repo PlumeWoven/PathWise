@@ -1,26 +1,29 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from '@/integrations/supabase/client';
 
 /**
- * If user is not authenticated, store the roadmap ID and redirect to sign-in.
- * Returns true if authenticated (proceed with action), false if redirecting.
+ * Check if user is authenticated. If not, store the roadmap ID and open login modal.
+ * Returns true if authenticated, false if modal was opened.
+ *
+ * IMPORTANT: This function uses supabase.auth.getSession() directly,
+ * NOT the useAuth() hook. Hooks cannot be called outside React components.
  */
 export async function requireAuth(roadmapId?: string): Promise<boolean> {
+    // Get session directly from Supabase — NOT from a React hook
     const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
 
-    if (session) return true;
+    // User is authenticated — proceed with the action
+    if (userId) return true;
 
-    // Store the roadmap ID to claim after sign-in
+    // User is not authenticated — store roadmap ID for later claim
     if (roadmapId) {
-        console.log('[authGuard] Storing roadmap ID for claim:', roadmapId);
-        localStorage.setItem('pendingRoadmapId', roadmapId);
+        localStorage.setItem('pathwise_roadmap_id', roadmapId);
+        console.log('[authGuard] Stored roadmap ID for claim:', roadmapId);
     }
 
-    // Redirect to sign-in with return URL and claim ID
-    const returnUrl = roadmapId
-        ? `/roadmap/${roadmapId}`
-        : window.location.pathname;
+    // Open the login modal — same as clicking "Sign Up" in the header
+    console.log('[authGuard] Opening login modal for roadmap:', roadmapId);
+    window.dispatchEvent(new CustomEvent('open-login-modal'));
 
-    console.log('[authGuard] Redirecting to sign-in for roadmap:', roadmapId);
-    window.location.href = `/sign-in?redirect=${encodeURIComponent(returnUrl)}&claim=${roadmapId || ''}`;
     return false;
 }

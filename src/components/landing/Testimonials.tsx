@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion, type Variants } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon, QuoteIcon } from "lucide-react";
 
 interface Testimonial {
@@ -45,19 +45,45 @@ const variants: Variants = {
 };
 
 export function Testimonials() {
+  const prefersReduced = useReducedMotion();
   const [[index, direction], setState] = useState<[number, number]>([0, 0]);
+  const pausedRef = useRef(false);
+  const pauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const resumeAutoAdvance = useCallback(() => {
+    if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    pauseTimeoutRef.current = setTimeout(() => {
+      pausedRef.current = false;
+    }, 10000);
+  }, []);
 
   const paginate = useCallback((dir: number) => {
     setState(([prev]) => {
       const next = (prev + dir + testimonials.length) % testimonials.length;
       return [next, dir];
     });
-  }, []);
+    pausedRef.current = true;
+    resumeAutoAdvance();
+  }, [resumeAutoAdvance]);
+
+  const goTo = useCallback((i: number, dir: number) => {
+    setState([i, dir]);
+    pausedRef.current = true;
+    resumeAutoAdvance();
+  }, [resumeAutoAdvance]);
 
   useEffect(() => {
-    const id = setInterval(() => paginate(1), 6000);
+    const id = setInterval(() => {
+      if (!pausedRef.current) paginate(1);
+    }, 6000);
     return () => clearInterval(id);
   }, [paginate]);
+
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) clearTimeout(pauseTimeoutRef.current);
+    };
+  }, []);
 
   const active = testimonials[index];
 
@@ -71,19 +97,19 @@ export function Testimonials() {
           Calmer learning, real results
         </h2>
 
-        <div className="relative mt-12">
+        <div className="relative mt-12" role="region" aria-roledescription="carousel" aria-label="Student testimonials">
           <div className="rounded-pw bg-pw-surface p-8 shadow-pw-raised sm:p-12">
             <QuoteIcon className="mx-auto h-8 w-8 text-pw-accent/70" aria-hidden="true" />
 
-            <div className="relative mt-6 min-h-[150px] sm:min-h-[120px]">
+            <div className="relative mt-6 min-h-[150px] sm:min-h-[120px]" aria-live="polite" aria-atomic="true">
               <AnimatePresence mode="wait" custom={direction}>
                 <motion.blockquote
                   key={index}
                   custom={direction}
                   variants={variants}
-                  initial="enter"
+                  initial={prefersReduced ? "center" : "enter"}
                   animate="center"
-                  exit="exit"
+                  exit={prefersReduced ? undefined : "exit"}
                   transition={{
                     duration: 0.4,
                     ease: "easeInOut",
@@ -127,10 +153,10 @@ export function Testimonials() {
                 <button
                   key={t.name}
                   type="button"
-                  onClick={() => setState([i, i > index ? 1 : -1])}
+                  onClick={() => goTo(i, i > index ? 1 : -1)}
                   aria-label={`Go to testimonial ${i + 1}`}
                   aria-current={i === index}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${i === index ? "w-7 bg-pw-accent" : "w-2.5 bg-pw-muted/40"}`}
+                  className={`h-3 rounded-full transition-all duration-300 ${i === index ? "w-7 bg-pw-accent" : "w-3 bg-pw-muted/40"}`}
                 />
               ))}
             </div>
@@ -159,3 +185,4 @@ export function Testimonials() {
     </section>
   );
 }
+Testimonials.displayName = "Testimonials";

@@ -259,15 +259,16 @@ function RoadmapPageInner() {
       setRoadmap(rm as DBRoadmap);
       setStages((st ?? []) as DBStage[]);
       console.log('[roadmap] Stages loaded:', (st ?? []).length);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { message?: string; code?: string; hint?: string; details?: unknown };
       console.error("[roadmap] fetch error", err);
       console.error("[roadmap] Error details:", {
-        message: err?.message,
-        code: err?.code,
-        hint: err?.hint,
-        details: err?.details
+        message: e?.message,
+        code: e?.code,
+        hint: e?.hint,
+        details: e?.details
       });
-      toast.error(err?.message || "Couldn't load your roadmap.");
+      toast.error(e?.message || "Couldn't load your roadmap.");
     } finally {
       setLoading(false);
     }
@@ -443,14 +444,15 @@ function RoadmapPageInner() {
         xp: 100,
       });
       setTimeout(() => setOverlay(null), 1500);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const e = err as { message?: string };
       console.error("[roadmap] mark complete", err);
       // The database enforces the same gate, so a stale UI lands here.
-      if (err?.message === "STAGE_COURSE_REQUIRED") {
+      if (e?.message === "STAGE_COURSE_REQUIRED") {
         toast.error("Finish a course at this stage's level first.");
         goToCourseMatch(stage);
       } else {
-        toast.error(err?.message || "Couldn't mark stage complete.");
+        toast.error(e?.message || "Couldn't mark stage complete.");
       }
     } finally {
       setCompleting(null);
@@ -476,7 +478,7 @@ function RoadmapPageInner() {
       : (pw.band ?? (pw.level ? LEVEL_TO_BAND[pw.level] : null) ?? diagnosticBand ?? 3);
   const level = BAND_META[baseBand].label as Level;
   const levelMeta = LEVEL_META[level];
-  const goalLabel = roadmap.goal && (GOAL_LABELS as any)[roadmap.goal] ? (GOAL_LABELS as any)[roadmap.goal] : "Improve";
+  const goalLabel = roadmap.goal && (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal] ? (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal] : "Improve";
 
   const total = stages.length || 5;
   const done = stages.filter((s) => s.status === "complete").length;

@@ -75,7 +75,7 @@ interface ReviewRow {
 }
 
 function PublicCoursePage() {
-  const { slug } = useParams({ from: "/courses/$slug" });
+  const { slug } = useParams({ from: "/_app/courses/$slug" });
   const [course, setCourse] = useState<CourseRow | null | undefined>(undefined);
   const [sections, setSections] = useState<SectionRow[]>([]);
   const [lessons, setLessons] = useState<LessonRow[]>([]);

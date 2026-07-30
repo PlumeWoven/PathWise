@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Plus, Edit, Eye, Trash2 } from "lucide-react";
+import { Plus, Edit, Eye, Trash2, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -9,6 +9,10 @@ export function TutorCoursesPage() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  // Detect if rendered outside the dashboard layout (i.e. via the bare /tutor/courses/ route)
+  // The dashboard layout wraps this page at /dashboard/courses.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isBareRoute = !pathname.startsWith("/dashboard/");
 
   useEffect(() => {
     if (!user?.id) return;
@@ -43,6 +47,17 @@ export function TutorCoursesPage() {
 
   return (
     <div>
+      {isBareRoute && (
+        <div className="mb-4 flex items-center gap-2">
+          <Link
+            to="/dashboard/courses"
+            className="inline-flex items-center gap-1.5 text-[13px] text-[var(--pw-accent)] hover:underline"
+          >
+            <LayoutDashboard className="size-3.5" />
+            Back to Dashboard
+          </Link>
+        </div>
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-display text-2xl">My Courses</h1>
         <Link to="/tutor/courses/new" className="pw-btn-primary flex items-center gap-1">

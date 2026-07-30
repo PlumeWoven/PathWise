@@ -79,7 +79,7 @@ const LANGUAGES = ["English", "Romanian", "Russian", "Spanish", "French", "Germa
 const AUDIENCES = ["Students", "Professionals", "Hobbyists", "Career Changers"];
 
 function CourseEditor() {
-  const { courseId } = useParams({ from: "/tutor/courses/$courseId/edit" });
+  const { courseId } = useParams({ from: "/_app/tutor/courses/$courseId/edit" });
   const { supabaseUser, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -132,8 +132,8 @@ function CourseEditor() {
         }
         setSections(full.sections);
         setLessons(full.lessons);
-      } catch (e: any) {
-        toast.error(e.message ?? "Failed to load");
+      } catch (e: unknown) {
+        toast.error(e instanceof Error ? e.message : "Failed to load");
       }
     })();
     (supabase as any).from("subjects").select("*").then(({ data }: any) => setSubjects(data ?? []));
@@ -173,8 +173,8 @@ function CourseEditor() {
       setSavedAt(Date.now());
       setDirty(false);
       dirtyRef.current = false;
-    } catch (e: any) {
-      toast.error(e.message ?? "Save failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Save failed");
     } finally {
       setSaving(false);
     }
@@ -215,9 +215,9 @@ function CourseEditor() {
       patchCourse({ status: "under_review" });
       toast.success("Submitted for review");
       console.log(`[CourseEditor] Successfully updated course ${course.id} status to under_review`);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[CourseEditor] Failed to submit for review:", e);
-      toast.error(e.message ?? "Submission failed. Please try again.");
+      toast.error(e instanceof Error ? e.message : "Submission failed. Please try again.");
     }
   };
 
@@ -230,7 +230,7 @@ function CourseEditor() {
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-5xl mx-auto px-5 sm:px-8 pb-20">
         <div className="flex items-center justify-between gap-3 mb-4">
-          <Link to="/tutor/courses" className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] inline-flex items-center gap-1">
+          <Link to="/dashboard/courses" className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] inline-flex items-center gap-1">
             <ArrowLeft className="size-3.5" /> All courses
           </Link>
           <div className="text-[12px] text-[var(--pw-ink-2)] flex items-center gap-2">
@@ -359,8 +359,8 @@ function Step1Basic({
       const { data } = supabase.storage.from("course-assets").getPublicUrl(path);
       patch({ thumbnail_url: data.publicUrl });
       toast.success("Thumbnail uploaded");
-    } catch (e: any) {
-      toast.error(e.message ?? "Upload failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -582,8 +582,8 @@ function Step2Content({
     try {
       const sec = await addSection(course.id, sections.length);
       setSections((s) => [...s, sec]);
-    } catch (e: any) {
-      toast.error(e.message ?? "Add section failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Add section failed");
     }
   };
 
@@ -626,8 +626,8 @@ function Step2Content({
                   try {
                     const l = await addLesson(course.id, sec.id, lessonsInSec.length);
                     setLessons((arr) => [...arr, l]);
-                  } catch (e: any) {
-                    toast.error(e.message);
+                  } catch (e: unknown) {
+                    toast.error(e instanceof Error ? e.message : "Add lesson failed");
                   }
                 }}
                 onLessonUpdate={(id, patch) => {
@@ -767,8 +767,8 @@ function LessonCard({
       const { data } = supabase.storage.from("course-assets").getPublicUrl(path);
       onUpdate({ video_url: data.publicUrl });
       toast.success("Video uploaded");
-    } catch (e: any) {
-      toast.error(e.message ?? "Upload failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -842,7 +842,7 @@ function LessonCard({
               <div key={i} className="flex gap-1.5 mb-1.5">
                 <select
                   value={r.type}
-                  onChange={(e) => updateResource(i, { type: e.target.value as any })}
+                  onChange={(e) => updateResource(i, { type: e.target.value as LessonResource["type"] })}
                   className="h-8 rounded border border-[var(--pw-border)] bg-transparent text-[12px] px-2"
                 >
                   <option value="link">Link</option>

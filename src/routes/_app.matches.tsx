@@ -158,7 +158,7 @@ function MatchesPage() {
         // Reviews → per-tutor avg
         const rmap = new Map<string, { avg: number; count: number }>();
         const tmp = new Map<string, { sum: number; n: number }>();
-        (reviewsRes.data ?? []).forEach((r: any) => {
+        (reviewsRes.data ?? []).forEach((r) => {
           if (!r.tutor_id || r.rating == null) return;
           const cur = tmp.get(r.tutor_id) ?? { sum: 0, n: 0 };
           cur.sum += Number(r.rating); cur.n += 1;
@@ -168,11 +168,11 @@ function MatchesPage() {
         setReviewsByTutor(rmap);
 
         const avail = new Set<string>();
-        (availRes.data ?? []).forEach((a: any) => a.user_id && avail.add(a.user_id));
+        (availRes.data ?? []).forEach((a) => a.user_id && avail.add(a.user_id));
         setAvailabilityByTutor(avail);
 
         const pkg = new Map<string, number>();
-        (packagesRes.data ?? []).forEach((p: any) => {
+        (packagesRes.data ?? []).forEach((p) => {
           if (!p.enabled) return;
           const cur = pkg.get(p.user_id) ?? 0;
           pkg.set(p.user_id, Math.max(cur, Number(p.discount_percent ?? 0)));
@@ -180,7 +180,7 @@ function MatchesPage() {
         setPackagesByTutor(pkg);
 
         const cmap = new Map<string, { title: string; thumbnail_url: string | null }>();
-        (coursesRes.data ?? []).forEach((c: any) => {
+        (coursesRes.data ?? []).forEach((c) => {
           if (!c.tutor_id) return;
           if (!cmap.has(c.tutor_id)) cmap.set(c.tutor_id, { title: c.title, thumbnail_url: c.thumbnail_url });
         });
@@ -408,7 +408,7 @@ function FilterSidebar({
   search, update, onClear,
 }: {
   search: ReturnType<typeof Route.useSearch>;
-  update: (p: any) => void;
+  update: (p: Partial<ReturnType<typeof Route.useSearch>>) => void;
   onClear: () => void;
 }) {
   return (

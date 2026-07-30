@@ -41,7 +41,7 @@ function save(state: ProgressState) {
   }
 }
 
-let state: ProgressState = load();
+const state: ProgressState = load();
 const listeners = new Set<() => void>();
 
 function emit() {

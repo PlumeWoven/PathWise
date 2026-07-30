@@ -77,9 +77,10 @@ function ConfirmEmailPage() {
                     setStatus('error');
                     setErrorMessage('Email confirmation failed. Please try again.');
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
                 setStatus('error');
-                setErrorMessage(err.message || 'Confirmation failed');
+                const e = err as { message?: string };
+                setErrorMessage(e?.message || 'Confirmation failed');
             }
         };
 
@@ -96,8 +97,9 @@ function ConfirmEmailPage() {
             });
             if (error) throw error;
             toast.success('Confirmation email resent!');
-        } catch (err: any) {
-            toast.error(err.message || 'Failed to resend');
+        } catch (err: unknown) {
+            const e = err as { message?: string };
+            toast.error(e?.message || 'Failed to resend');
         }
     };
 

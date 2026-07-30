@@ -1,0 +1,27 @@
+{
+  "_README": "Hand-written node descriptions. Applied by scripts/graphify_describe.py after every `graphify extract`, so they survive rebuilds. Keys may be a graphify node id, a \"path::Symbol\" pair, or a bare source path (= that file's module-level node). Everything not listed here falls back to a harvested doc comment, then to a graph-aware synthesis. Add entries as you learn the codebase — this file is the durable memory.",
+
+  "src/pathwise/api.ts": "Single source of truth for every Supabase call in PathWise. Route files import from here and never call `supabase` directly, so auth handling and error shapes stay consistent. Covers profiles, onboarding, diagnostics, roadmaps and tutor lookup.",
+  "src/pathwise/auth.tsx": "Auth context provider. Owns the Supabase session, the loaded `Profile`, the current `Role`, and the login-modal trigger. `useAuth()` is the app-wide accessor; `AuthProvider` is mounted once in `__root.tsx`.",
+  "src/pathwise/roles.ts": "Single source of truth for role semantics, post-auth routing, and authorization. Deliberately dependency-free (no React, no Supabase) so it can be unit-tested in isolation. Roles are student | tutor | both, persisted on public.profiles.role.",
+  "src/pathwise/courses.ts": "Course domain model and CRUD. Defines the course/section/lesson row types and the tutor-facing operations: list, create draft, load full course, publish, submit for review.",
+  "src/pathwise/matching.ts": "Tutor-matching engine. Scores tutors against a student's stated preferences across budget, availability, and learning style, and exposes the composite `computeMatch` plus the colour ramp used to render match strength.",
+  "src/pathwise/sessions.ts": "Tutoring-session lifecycle. Defines the status state machine (scheduled → confirmed → in_progress → completed), the legal transitions via `canTransition`, and `transitionSession` which persists a move and its side effects.",
+  "src/pathwise/scheduling.ts": "Timezone and recurrence utilities for booking. Detects the viewer's timezone, formats times in a target zone, flags DST shifts across a weekly grid, and expands recurrence rules into concrete slots.",
+  "src/pathwise/progress.ts": "Student progress tracking. Persists per-stage roadmap completion and logged tutoring sessions, and derives the aggregate progress state a learner sees on their roadmap.",
+  "src/pathwise/store.ts": "Lightweight global store for the quiz/roadmap flow. Holds subject, goal, answers, XP and streak with a subscribe/`usePW` hook, avoiding a full state-management dependency.",
+  "src/pathwise/data.ts": "Static catalogue data: subjects, levels, goals and the quiz question bank, plus `pickQuizQuestions` for sampling a diagnostic. No network access — this is seed content, not user data.",
+
+  "src/integrations/supabase/client.ts": "Supabase browser client singleton, plus the admin client and auth helpers. Imported by 21 modules; the most connected infrastructure node in the graph.",
+  "src/lib/authGuard.ts": "Imperative auth check for use outside React components. Calls `supabase.auth.getSession()` directly (hooks are unavailable in this context), stashes the pending roadmap id, and dispatches the open-login-modal event.",
+  "src/lib/utils.ts": "Shared helpers, principally `cn()` — the clsx + tailwind-merge class combiner used by every UI primitive.",
+
+  "src/routes/_app.tsx": "Pathless layout route. Owns the page shell (min-h-screen + background) and the sticky PWHeader for all `_app.*` routes, replacing the header that 22 route files each rendered individually. Contributes no URL segment. Carries no guard logic by design — that lives in dashboard.tsx and RoleGate.tsx.",
+  "src/routes/__root.tsx": "Root route. Provides the HTML document shell, head/meta tags, the pre-hydration theme bootstrap script that prevents a light-theme flash, and mounts DarkModeProvider, AuthProvider, LoginModal and the toaster.",
+  "src/routes/dashboard.tsx": "Tutor dashboard layout route. Guards on an authenticated tutor-side role, renders the header and sidebar shell, and gates children behind RequireOnboarding.",
+  "src/routes/admin.tsx": "Admin layout route. Renders the admin sidebar and header for every `/admin/*` child and restricts access to admin roles.",
+  "src/pathwise/RoleGate.tsx": "Restricts a subtree to specific roles. Anonymous users are allowed only when `allowAnonymous` is set, otherwise the login modal opens; a logged-in user with a disallowed role sees a role-switch screen. Renders no header — its consumers all sit under the _app layout.",
+  "src/pathwise/Header.tsx": "The global site header (PWHeader): brand, primary nav, notification bell, theme toggle and the auth/account menu. Sticky, so it occupies layout space rather than overlaying content.",
+  "src/pathwise/DarkMode.tsx": "Dark-mode context. Keeps the `dark` class on <html> in sync with state and persists the choice to localStorage under `pw-theme`, paired with the bootstrap script in __root.tsx.",
+  "src/pathwise/LoginModal.tsx": "Global sign-in / sign-up modal. Mounted once at the root and opened imperatively via the auth context or the `open-login-modal` event, so any code path can prompt for auth."
+}
