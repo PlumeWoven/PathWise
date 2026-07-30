@@ -329,4 +329,4 @@ function Legend({ color, label, border }: { color: string; label: string; border
 }
 
 // ===== NAMED EXPORT FOR DASHBOARD REUSE =====
-export { AvailabilityPage as TutorAvailabilityPage };
+export const TutorAvailabilityPage = AvailabilityPage;
