@@ -509,7 +509,7 @@ function QuickActionsBar() {
     return (
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2">
             <Link to="/onboarding/tutor" className="pw-btn-outline text-[13px] px-3 py-2 text-center">Update availability</Link>
-            <Link to="/tutor/courses/new" className="pw-btn-outline text-[13px] px-3 py-2 text-center">Create new course</Link>
+            <Link to="/dashboard/courses/new" className="pw-btn-outline text-[13px] px-3 py-2 text-center">Create new course</Link>
             <button onClick={() => toast.info("Withdrawal flow coming soon")} className="pw-btn-outline text-[13px] px-3 py-2">Withdraw earnings</button>
             <button onClick={shareLink} className="pw-btn-outline text-[13px] px-3 py-2">Share profile link</button>
         </div>

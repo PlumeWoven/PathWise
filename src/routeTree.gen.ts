@@ -33,14 +33,17 @@ import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
 import { Route as AppResetPasswordRouteImport } from './routes/_app.reset-password'
 import { Route as AppQuizRouteImport } from './routes/_app.quiz'
 import { Route as AppMatchesRouteImport } from './routes/_app.matches'
+import { Route as AppLibraryRouteImport } from './routes/_app.library'
 import { Route as AppFindTutorRouteImport } from './routes/_app.find-tutor'
 import { Route as AppDemoRouteImport } from './routes/_app.demo'
 import { Route as AppCourseMatchRouteImport } from './routes/_app.course-match'
 import { Route as AppConfirmEmailRouteImport } from './routes/_app.confirm-email'
 import { Route as TutorCoursesIndexRouteImport } from './routes/tutor.courses.index'
 import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard.settings.index'
+import { Route as DashboardCoursesIndexRouteImport } from './routes/dashboard.courses.index'
 import { Route as AppSessionsIndexRouteImport } from './routes/_app.sessions.index'
 import { Route as DashboardSettingsVerificationRouteImport } from './routes/dashboard.settings.verification'
+import { Route as DashboardCoursesNewRouteImport } from './routes/dashboard.courses.new'
 import { Route as AppTutorTutorIdRouteImport } from './routes/_app.tutor.$tutorId'
 import { Route as AppSettingsVerificationRouteImport } from './routes/_app.settings.verification'
 import { Route as AppSessionsIdRouteImport } from './routes/_app.sessions.$id'
@@ -48,6 +51,7 @@ import { Route as AppOnboardingTutorRouteImport } from './routes/_app.onboarding
 import { Route as AppOnboardingStudentRouteImport } from './routes/_app.onboarding.student'
 import { Route as AppCoursesSlugRouteImport } from './routes/_app.courses.$slug'
 import { Route as AppBookTutorIdRouteImport } from './routes/_app.book.$tutorId'
+import { Route as DashboardCoursesCourseIdEditRouteImport } from './routes/dashboard.courses.$courseId.edit'
 import { Route as AppTutorSettingsAvailabilityRouteImport } from './routes/_app.tutor.settings.availability'
 import { Route as AppTutorCoursesNewRouteImport } from './routes/_app.tutor.courses.new'
 import { Route as AppTutorCoursesCourseIdEditRouteImport } from './routes/_app.tutor.courses.$courseId.edit'
@@ -171,6 +175,11 @@ const AppMatchesRoute = AppMatchesRouteImport.update({
   path: '/matches',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLibraryRoute = AppLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFindTutorRoute = AppFindTutorRouteImport.update({
   id: '/find-tutor',
   path: '/find-tutor',
@@ -201,6 +210,11 @@ const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardSettingsRoute,
 } as any)
+const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardCoursesRoute,
+} as any)
 const AppSessionsIndexRoute = AppSessionsIndexRouteImport.update({
   id: '/sessions/',
   path: '/sessions/',
@@ -212,6 +226,11 @@ const DashboardSettingsVerificationRoute =
     path: '/verification',
     getParentRoute: () => DashboardSettingsRoute,
   } as any)
+const DashboardCoursesNewRoute = DashboardCoursesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => DashboardCoursesRoute,
+} as any)
 const AppTutorTutorIdRoute = AppTutorTutorIdRouteImport.update({
   id: '/tutor/$tutorId',
   path: '/tutor/$tutorId',
@@ -247,6 +266,12 @@ const AppBookTutorIdRoute = AppBookTutorIdRouteImport.update({
   path: '/book/$tutorId',
   getParentRoute: () => AppRoute,
 } as any)
+const DashboardCoursesCourseIdEditRoute =
+  DashboardCoursesCourseIdEditRouteImport.update({
+    id: '/$courseId/edit',
+    path: '/$courseId/edit',
+    getParentRoute: () => DashboardCoursesRoute,
+  } as any)
 const AppTutorSettingsAvailabilityRoute =
   AppTutorSettingsAvailabilityRouteImport.update({
     id: '/tutor/settings/availability',
@@ -275,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
+  '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
@@ -286,7 +312,7 @@ export interface FileRoutesByFullPath {
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/courses': typeof DashboardCoursesRouteWithChildren
   '/dashboard/earnings': typeof DashboardEarningsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
@@ -300,12 +326,15 @@ export interface FileRoutesByFullPath {
   '/sessions/$id': typeof AppSessionsIdRoute
   '/settings/verification': typeof AppSettingsVerificationRoute
   '/tutor/$tutorId': typeof AppTutorTutorIdRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/sessions/': typeof AppSessionsIndexRoute
+  '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/tutor/courses/': typeof TutorCoursesIndexRoute
   '/tutor/courses/new': typeof AppTutorCoursesNewRoute
   '/tutor/settings/availability': typeof AppTutorSettingsAvailabilityRoute
+  '/dashboard/courses/$courseId/edit': typeof DashboardCoursesCourseIdEditRoute
   '/tutor/courses/$courseId/edit': typeof AppTutorCoursesCourseIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -315,6 +344,7 @@ export interface FileRoutesByTo {
   '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
+  '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
@@ -326,7 +356,6 @@ export interface FileRoutesByTo {
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/earnings': typeof DashboardEarningsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/pathwise/demo': typeof PathwiseDemoRoute
@@ -340,12 +369,15 @@ export interface FileRoutesByTo {
   '/sessions/$id': typeof AppSessionsIdRoute
   '/settings/verification': typeof AppSettingsVerificationRoute
   '/tutor/$tutorId': typeof AppTutorTutorIdRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/sessions': typeof AppSessionsIndexRoute
+  '/dashboard/courses': typeof DashboardCoursesIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/tutor/courses': typeof TutorCoursesIndexRoute
   '/tutor/courses/new': typeof AppTutorCoursesNewRoute
   '/tutor/settings/availability': typeof AppTutorSettingsAvailabilityRoute
+  '/dashboard/courses/$courseId/edit': typeof DashboardCoursesCourseIdEditRoute
   '/tutor/courses/$courseId/edit': typeof AppTutorCoursesCourseIdEditRoute
 }
 export interface FileRoutesById {
@@ -359,6 +391,7 @@ export interface FileRoutesById {
   '/_app/course-match': typeof AppCourseMatchRoute
   '/_app/demo': typeof AppDemoRoute
   '/_app/find-tutor': typeof AppFindTutorRoute
+  '/_app/library': typeof AppLibraryRoute
   '/_app/matches': typeof AppMatchesRoute
   '/_app/quiz': typeof AppQuizRoute
   '/_app/reset-password': typeof AppResetPasswordRoute
@@ -370,7 +403,7 @@ export interface FileRoutesById {
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/courses': typeof DashboardCoursesRouteWithChildren
   '/dashboard/earnings': typeof DashboardEarningsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
@@ -385,12 +418,15 @@ export interface FileRoutesById {
   '/_app/sessions/$id': typeof AppSessionsIdRoute
   '/_app/settings/verification': typeof AppSettingsVerificationRoute
   '/_app/tutor/$tutorId': typeof AppTutorTutorIdRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/_app/sessions/': typeof AppSessionsIndexRoute
+  '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/tutor/courses/': typeof TutorCoursesIndexRoute
   '/_app/tutor/courses/new': typeof AppTutorCoursesNewRoute
   '/_app/tutor/settings/availability': typeof AppTutorSettingsAvailabilityRoute
+  '/dashboard/courses/$courseId/edit': typeof DashboardCoursesCourseIdEditRoute
   '/_app/tutor/courses/$courseId/edit': typeof AppTutorCoursesCourseIdEditRoute
 }
 export interface FileRouteTypes {
@@ -405,6 +441,7 @@ export interface FileRouteTypes {
     | '/course-match'
     | '/demo'
     | '/find-tutor'
+    | '/library'
     | '/matches'
     | '/quiz'
     | '/reset-password'
@@ -430,12 +467,15 @@ export interface FileRouteTypes {
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/dashboard/courses/new'
     | '/dashboard/settings/verification'
     | '/sessions/'
+    | '/dashboard/courses/'
     | '/dashboard/settings/'
     | '/tutor/courses/'
     | '/tutor/courses/new'
     | '/tutor/settings/availability'
+    | '/dashboard/courses/$courseId/edit'
     | '/tutor/courses/$courseId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -445,6 +485,7 @@ export interface FileRouteTypes {
     | '/course-match'
     | '/demo'
     | '/find-tutor'
+    | '/library'
     | '/matches'
     | '/quiz'
     | '/reset-password'
@@ -456,7 +497,6 @@ export interface FileRouteTypes {
     | '/auth/choose-role'
     | '/dashboard/analytics'
     | '/dashboard/calendar'
-    | '/dashboard/courses'
     | '/dashboard/earnings'
     | '/dashboard/messages'
     | '/pathwise/demo'
@@ -470,12 +510,15 @@ export interface FileRouteTypes {
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/dashboard/courses/new'
     | '/dashboard/settings/verification'
     | '/sessions'
+    | '/dashboard/courses'
     | '/dashboard/settings'
     | '/tutor/courses'
     | '/tutor/courses/new'
     | '/tutor/settings/availability'
+    | '/dashboard/courses/$courseId/edit'
     | '/tutor/courses/$courseId/edit'
   id:
     | '__root__'
@@ -488,6 +531,7 @@ export interface FileRouteTypes {
     | '/_app/course-match'
     | '/_app/demo'
     | '/_app/find-tutor'
+    | '/_app/library'
     | '/_app/matches'
     | '/_app/quiz'
     | '/_app/reset-password'
@@ -514,12 +558,15 @@ export interface FileRouteTypes {
     | '/_app/sessions/$id'
     | '/_app/settings/verification'
     | '/_app/tutor/$tutorId'
+    | '/dashboard/courses/new'
     | '/dashboard/settings/verification'
     | '/_app/sessions/'
+    | '/dashboard/courses/'
     | '/dashboard/settings/'
     | '/tutor/courses/'
     | '/_app/tutor/courses/new'
     | '/_app/tutor/settings/availability'
+    | '/dashboard/courses/$courseId/edit'
     | '/_app/tutor/courses/$courseId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -705,6 +752,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMatchesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/library': {
+      id: '/_app/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AppLibraryRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/find-tutor': {
       id: '/_app/find-tutor'
       path: '/find-tutor'
@@ -747,6 +801,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsIndexRouteImport
       parentRoute: typeof DashboardSettingsRoute
     }
+    '/dashboard/courses/': {
+      id: '/dashboard/courses/'
+      path: '/'
+      fullPath: '/dashboard/courses/'
+      preLoaderRoute: typeof DashboardCoursesIndexRouteImport
+      parentRoute: typeof DashboardCoursesRoute
+    }
     '/_app/sessions/': {
       id: '/_app/sessions/'
       path: '/sessions'
@@ -760,6 +821,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/settings/verification'
       preLoaderRoute: typeof DashboardSettingsVerificationRouteImport
       parentRoute: typeof DashboardSettingsRoute
+    }
+    '/dashboard/courses/new': {
+      id: '/dashboard/courses/new'
+      path: '/new'
+      fullPath: '/dashboard/courses/new'
+      preLoaderRoute: typeof DashboardCoursesNewRouteImport
+      parentRoute: typeof DashboardCoursesRoute
     }
     '/_app/tutor/$tutorId': {
       id: '/_app/tutor/$tutorId'
@@ -810,6 +878,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBookTutorIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/dashboard/courses/$courseId/edit': {
+      id: '/dashboard/courses/$courseId/edit'
+      path: '/$courseId/edit'
+      fullPath: '/dashboard/courses/$courseId/edit'
+      preLoaderRoute: typeof DashboardCoursesCourseIdEditRouteImport
+      parentRoute: typeof DashboardCoursesRoute
+    }
     '/_app/tutor/settings/availability': {
       id: '/_app/tutor/settings/availability'
       path: '/tutor/settings/availability'
@@ -839,6 +914,7 @@ interface AppRouteChildren {
   AppCourseMatchRoute: typeof AppCourseMatchRoute
   AppDemoRoute: typeof AppDemoRoute
   AppFindTutorRoute: typeof AppFindTutorRoute
+  AppLibraryRoute: typeof AppLibraryRoute
   AppMatchesRoute: typeof AppMatchesRoute
   AppQuizRoute: typeof AppQuizRoute
   AppResetPasswordRoute: typeof AppResetPasswordRoute
@@ -862,6 +938,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCourseMatchRoute: AppCourseMatchRoute,
   AppDemoRoute: AppDemoRoute,
   AppFindTutorRoute: AppFindTutorRoute,
+  AppLibraryRoute: AppLibraryRoute,
   AppMatchesRoute: AppMatchesRoute,
   AppQuizRoute: AppQuizRoute,
   AppResetPasswordRoute: AppResetPasswordRoute,
@@ -898,6 +975,21 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface DashboardCoursesRouteChildren {
+  DashboardCoursesNewRoute: typeof DashboardCoursesNewRoute
+  DashboardCoursesIndexRoute: typeof DashboardCoursesIndexRoute
+  DashboardCoursesCourseIdEditRoute: typeof DashboardCoursesCourseIdEditRoute
+}
+
+const DashboardCoursesRouteChildren: DashboardCoursesRouteChildren = {
+  DashboardCoursesNewRoute: DashboardCoursesNewRoute,
+  DashboardCoursesIndexRoute: DashboardCoursesIndexRoute,
+  DashboardCoursesCourseIdEditRoute: DashboardCoursesCourseIdEditRoute,
+}
+
+const DashboardCoursesRouteWithChildren =
+  DashboardCoursesRoute._addFileChildren(DashboardCoursesRouteChildren)
+
 interface DashboardSettingsRouteChildren {
   DashboardSettingsVerificationRoute: typeof DashboardSettingsVerificationRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
@@ -914,7 +1006,7 @@ const DashboardSettingsRouteWithChildren =
 interface DashboardRouteChildren {
   DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
-  DashboardCoursesRoute: typeof DashboardCoursesRoute
+  DashboardCoursesRoute: typeof DashboardCoursesRouteWithChildren
   DashboardEarningsRoute: typeof DashboardEarningsRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
   DashboardSettingsRoute: typeof DashboardSettingsRouteWithChildren
@@ -924,7 +1016,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAnalyticsRoute: DashboardAnalyticsRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
-  DashboardCoursesRoute: DashboardCoursesRoute,
+  DashboardCoursesRoute: DashboardCoursesRouteWithChildren,
   DashboardEarningsRoute: DashboardEarningsRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
   DashboardSettingsRoute: DashboardSettingsRouteWithChildren,

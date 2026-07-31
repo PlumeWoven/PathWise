@@ -350,46 +350,36 @@ function RoadmapPageInner() {
     });
   }
 
-  // ─── CHANGED: completeStage from api.ts ──────────────────────────────────
-  // Previously 3 separate supabase calls inline.
-  // Now one api.ts call that does the same thing: mark complete, unlock next, bump current_stage.
-  async function handleStartHere() {
+  /**
+   * "Start here" sends the student into the course library, scoped to the band
+   * this stage requires.
+   *
+   * It used to look up the already-active stage, write status:'active' back over
+   * itself, and open the session-log modal — so the first thing a student saw
+   * was a form asking them to log a session for a course they hadn't picked yet.
+   * Every stage names a required level band, so the useful first step is the
+   * shelf of courses that satisfy it.
+   */
+  async function handleStartHere(stage: DBStage) {
     if (!roadmap) return;
 
-    // Require authentication
     const authenticated = await requireAuth(roadmap.id);
     if (!authenticated) return; // Will redirect to sign-in
 
-    // Find the first stage that hasn't been started
-    const firstStage = stages.find(s => s.status === 'active');
+    // The stage's own requirement, falling back to where the student placed for
+    // roadmaps created before course matching existed.
+    const band =
+      stage.required_level_band != null ? clampBand(stage.required_level_band) : baseBand;
 
-    if (!firstStage) {
-      console.log('All stages already started');
-      return;
-    }
-
-    try {
-      // Update the first stage to "active"
-      const { error } = await supabase
-        .from('roadmap_stages')
-        .update({ status: 'active' })
-        .eq('id', firstStage.id);
-
-      if (error) {
-        console.error('Failed to start stage:', error);
-        return;
-      }
-
-      // Update local state
-      setStages(prev =>
-        prev.map(s => s.id === firstStage.id ? { ...s, status: 'active' } : s)
-      );
-
-      // Open the stage detail modal
-      setOpenStage(firstStage.stage_number);
-    } catch (err) {
-      console.error('Start here error:', err);
-    }
+    navigate({
+      to: "/library",
+      search: {
+        subject,
+        band,
+        roadmapId: roadmap.id,
+        stage: stage.stage_number,
+      },
+    });
   }
 
   async function handleMarkComplete(stage: DBStage) {
@@ -676,7 +666,12 @@ function RoadmapPageInner() {
                         )}
                         {isActive && (
                           <button
-                            onClick={handleStartHere}
+                            onClick={(e) => {
+                              // The whole card is a button that opens the stage
+                              // modal; this one has its own destination.
+                              e.stopPropagation();
+                              handleStartHere(s);
+                            }}
                             className="pw-pill text-[11px] px-2.5 py-1 text-white whitespace-nowrap"
                             style={{ background: "var(--pw-accent)" }}
                           >

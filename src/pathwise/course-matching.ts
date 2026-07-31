@@ -318,3 +318,90 @@ export function groupByKind(matches: CourseMatch[]): Record<MatchKind, CourseMat
     exact_other: matches.filter((m) => m.kind === "exact_other"),
   };
 }
+
+// ─────────────────────────────────────────────
+// Course library
+// ─────────────────────────────────────────────
+
+/** One catalogue entry: a published course plus how it relates to this student. */
+export interface LibraryCourse extends CourseCandidate {
+  band: LevelBand | null;
+  tutorName: string | null;
+  tutorAvatar: string | null;
+  /** True when the course's tutor is in this student's matched set. */
+  fromMatchedTutor: boolean;
+  tutorScore: number | null;
+}
+
+export interface LibraryResult {
+  courses: LibraryCourse[];
+  matchedTutorCount: number;
+  missingLearningProfile: boolean;
+}
+
+/**
+ * Every published course for a subject, annotated with its level band and
+ * whether it comes from one of the student's matched tutors.
+ *
+ * This is the catalogue behind /library. It deliberately does NOT filter by
+ * band or stage: the library's job is to show the whole shelf so a student can
+ * see what sits above and below them. Narrowing to a single stage's
+ * requirement is what fetchStageCourseMatches() is for.
+ */
+export async function fetchLibraryCourses(params: {
+  userId: string | null;
+  subject: Subject;
+}): Promise<LibraryResult> {
+  const { userId, subject } = params;
+
+  const [matched, coursesRes] = await Promise.all([
+    getMatchedTutors(userId, subject),
+    supabase.from("courses").select(COURSE_SELECT).eq("status", "published").limit(500),
+  ]);
+  if (coursesRes.error) throw coursesRes.error;
+
+  const tutorById = new Map(matched.tutors.map((t) => [t.id, t]));
+  // `as unknown as` because COURSE_SELECT is a runtime string the typed client
+  // can't narrow — same cast fetchStageCourseMatches uses above.
+  const allCourses = (coursesRes.data ?? []) as unknown as CourseCandidate[];
+  const subjectCourses = allCourses.filter((c) => courseMatchesSubject(c, subject));
+
+  const courses: LibraryCourse[] = subjectCourses.map((course) => {
+    const tutor = course.tutor_id ? tutorById.get(course.tutor_id) : undefined;
+    return {
+      ...course,
+      band: courseBand(course),
+      tutorName: tutor?.display_name ?? null,
+      tutorAvatar: tutor?.avatar_url ?? null,
+      fromMatchedTutor: !!tutor,
+      tutorScore: course.tutor_id ? (matched.scores.get(course.tutor_id) ?? null) : null,
+    };
+  });
+
+  // Matched tutors first, then better-scoring tutors, then title for stability.
+  courses.sort((a, b) => {
+    if (a.fromMatchedTutor !== b.fromMatchedTutor) return a.fromMatchedTutor ? -1 : 1;
+    if ((b.tutorScore ?? 0) !== (a.tutorScore ?? 0)) return (b.tutorScore ?? 0) - (a.tutorScore ?? 0);
+    return (a.title ?? "").localeCompare(b.title ?? "");
+  });
+
+  return {
+    courses,
+    matchedTutorCount: matched.tutors.length,
+    missingLearningProfile: matched.missingProfile,
+  };
+}
+
+/** Buckets the catalogue by band. Band-less ("All Levels") courses go under `open`. */
+export function groupByBand(
+  courses: LibraryCourse[],
+): { open: LibraryCourse[] } & Record<LevelBand, LibraryCourse[]> {
+  return {
+    1: courses.filter((c) => c.band === 1),
+    2: courses.filter((c) => c.band === 2),
+    3: courses.filter((c) => c.band === 3),
+    4: courses.filter((c) => c.band === 4),
+    5: courses.filter((c) => c.band === 5),
+    open: courses.filter((c) => c.band === null),
+  };
+}

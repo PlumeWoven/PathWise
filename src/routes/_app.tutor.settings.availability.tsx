@@ -31,7 +31,10 @@ export function AvailabilityPage() {
   const navigate = useNavigate();
 
   const [grid, setGrid] = useState<Record<string, CellState>>({});
-  const [tz, setTz] = useState(detectTimezone());
+  // "UTC" until mounted — see the note in _app.book.$tutorId.tsx; seeding from
+  // detectTimezone() renders the server's zone into the <select> and mismatches.
+  const [tz, setTz] = useState("UTC");
+  useEffect(() => setTz(detectTimezone()), []);
   const [bookedSlots, setBookedSlots] = useState<Set<string>>(new Set());
   const [bufferMinutes, setBufferMinutes] = useState(15);
   const [minAdvanceHours, setMinAdvanceHours] = useState(24);

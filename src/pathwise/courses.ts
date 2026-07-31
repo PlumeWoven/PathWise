@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { draftSlug } from "./slug";
 
 export type CourseStatus = "draft" | "published" | "under_review" | "archived";
 
@@ -78,6 +79,10 @@ export async function createDraft(tutorId: string): Promise<string> {
     .insert({
       tutor_id: tutorId,
       title: "Untitled course",
+      // Supplied client-side on purpose: every draft shares the same title, and the
+      // DB trigger derives the slug from the title without de-duplicating, so letting
+      // it generate one makes each insert collide on the UNIQUE slug (see slug.ts).
+      slug: draftSlug(),
       status: "draft",
       currency: "MDL",
     })

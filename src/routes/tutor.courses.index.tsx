@@ -60,14 +60,14 @@ export function TutorCoursesPage() {
       )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="font-display text-2xl">My Courses</h1>
-        <Link to="/tutor/courses/new" className="pw-btn-primary flex items-center gap-1">
+        <Link to="/dashboard/courses/new" className="pw-btn-primary flex items-center gap-1">
           <Plus className="size-4" /> New Course
         </Link>
       </div>
       {courses.length === 0 ? (
         <div className="pw-card p-12 text-center text-[var(--pw-ink-2)]">
           You haven't created any courses yet.
-          <Link to="/tutor/courses/new" className="block mt-2 text-[var(--pw-accent)] underline">Create your first course</Link>
+          <Link to="/dashboard/courses/new" className="block mt-2 text-[var(--pw-accent)] underline">Create your first course</Link>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -83,7 +83,7 @@ export function TutorCoursesPage() {
                   {course.status}
                 </span>
                 <div className="flex gap-2">
-                  <Link to="/tutor/courses/$courseId/edit" params={{ courseId: course.id }} className="p-1 hover:bg-[var(--pw-surface-2)] rounded">
+                  <Link to="/dashboard/courses/$courseId/edit" params={{ courseId: course.id }} className="p-1 hover:bg-[var(--pw-surface-2)] rounded">
                     <Edit className="size-4" />
                   </Link>
                   <Link to="/courses/$slug" params={{ slug: course.slug || course.id }} className="p-1 hover:bg-[var(--pw-surface-2)] rounded">

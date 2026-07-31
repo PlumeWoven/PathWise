@@ -937,30 +937,48 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-corrected against the live database (project tarnqywokrildahzhmjv)
+      // on 2026-08-01. The generated shape declared user_id/sessions/enabled,
+      // but the live table has tutor_id/session_count/is_active — so every query
+      // against it returned HTTP 400 while TypeScript reported no problem.
+      // The whole file needs regenerating against the live project; this table
+      // is corrected now because code depends on it today.
       tutor_packages: {
         Row: {
-          created_at: string
-          discount_percent: number
-          enabled: boolean
+          created_at: string | null
+          description: string | null
+          discount_percent: number | null
           id: string
-          sessions: number
-          user_id: string
+          is_active: boolean | null
+          name: string | null
+          price: number | null
+          session_count: number | null
+          tutor_id: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
-          discount_percent?: number
-          enabled?: boolean
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
           id?: string
-          sessions: number
-          user_id: string
+          is_active?: boolean | null
+          name?: string | null
+          price?: number | null
+          session_count?: number | null
+          tutor_id?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
-          discount_percent?: number
-          enabled?: boolean
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
           id?: string
-          sessions?: number
-          user_id?: string
+          is_active?: boolean | null
+          name?: string | null
+          price?: number | null
+          session_count?: number | null
+          tutor_id?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

@@ -2,20 +2,19 @@ import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
 import { isAdmin } from "./roles";
-import { useDarkMode } from "./DarkMode";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
-  const { isDark } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
-  // Lazy state init: check scroll position on first render (safe-guarded for SSR)
-  const [scrolled, setScrolled] = useState(() =>
-    typeof window !== "undefined" && window.pageYOffset > 10
-  );
+  // Starts false so the first render matches the server. Reading pageYOffset here
+  // instead would mismatch on hydration: browsers restore scroll position before
+  // React runs, so a deep link or mid-page refresh renders `true` on the client
+  // against the server's `false`. The real position is adopted on mount below.
+  const [scrolled, setScrolled] = useState(false);
 
   const [impersonating, setImpersonating] = useState(false);
   const [impersonatingName, setImpersonatingName] = useState('');
@@ -43,6 +42,7 @@ export function PWHeader() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.pageYOffset > 10);
+    onScroll(); // pick up a scroll position the browser restored before hydration
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);

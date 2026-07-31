@@ -96,7 +96,10 @@ const themeBootstrapScript = `
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the bootstrap script below adds `class="dark"` to
+    // <html> before React hydrates, so this element legitimately differs from the
+    // server HTML. The flag covers this element's own attributes only, not children.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />

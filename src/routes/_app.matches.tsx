@@ -123,7 +123,7 @@ function MatchesPage() {
             tutorQuery,
             supabase.from("reviews").select("tutor_id, rating"),
             supabase.from("tutor_availability").select("user_id"),
-            supabase.from("tutor_packages").select("user_id, discount_percent, enabled"),
+            supabase.from("tutor_packages").select("tutor_id, discount_percent, is_active"),
             supabase.from("courses").select("tutor_id, title, thumbnail_url, status").eq("status", "published"),
           ]);
         } else {
@@ -173,9 +173,11 @@ function MatchesPage() {
 
         const pkg = new Map<string, number>();
         (packagesRes.data ?? []).forEach((p) => {
-          if (!p.enabled) return;
-          const cur = pkg.get(p.user_id) ?? 0;
-          pkg.set(p.user_id, Math.max(cur, Number(p.discount_percent ?? 0)));
+          // tutor_id is nullable on this table, so a row without one can't be
+          // attributed to a tutor and is skipped rather than keyed under "null".
+          if (!p.is_active || !p.tutor_id) return;
+          const cur = pkg.get(p.tutor_id) ?? 0;
+          pkg.set(p.tutor_id, Math.max(cur, Number(p.discount_percent ?? 0)));
         });
         setPackagesByTutor(pkg);
 

@@ -10,6 +10,7 @@ import {
   Upload, Video as VideoIcon, X, Plus, Clock, DollarSign, Eye,
 } from "lucide-react";
 import { AvailabilityGrid, type CellState } from "@/pathwise/AvailabilityGrid";
+import { detectTimezone } from "@/pathwise/scheduling";
 
 export const Route = createFileRoute("/_app/onboarding/tutor")({
   head: () => ({ meta: [{ title: "Tutor onboarding — PathWise" }] }),
@@ -79,7 +80,9 @@ const DEFAULT_STATE: WizardState = {
   video_intro_url: null,
   video_thumbnail_url: null,
   availability: [],
-  timezone: typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC",
+  // Stable placeholder so SSR and the first client render agree; the real zone is
+  // detected on mount in TutorWizard (see the restore effect).
+  timezone: "UTC",
   instant_bookings: false,
   buffer_minutes: 15,
   hourly_rate: "",
@@ -102,10 +105,21 @@ function saveLocal(s: WizardState) {
 function TutorWizard() {
   const { loading, isLoggedIn, profile, refreshProfile, openLogin } = useAuth();
   const navigate = useNavigate();
-  const [state, setState] = useState<WizardState>(() => ({ ...DEFAULT_STATE, ...loadLocal() }));
+  // Seeded from the constant only: loadLocal() reads localStorage, which is empty
+  // on the server, so restoring during render would mismatch on hydration. The
+  // saved draft and the detected timezone are both adopted on mount below.
+  const [state, setState] = useState<WizardState>(DEFAULT_STATE);
+  const [restored, setRestored] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+
+  // Restore the in-progress draft, and detect the real timezone. A saved timezone
+  // wins over the detected one because the tutor may have chosen it deliberately.
+  useEffect(() => {
+    setState((prev) => ({ ...prev, timezone: detectTimezone(), ...loadLocal() }));
+    setRestored(true);
+  }, []);
 
   // Hydrate from DB once
   useEffect(() => {
@@ -119,7 +133,7 @@ function TutorWizard() {
         .maybeSingle();
       const [{ data: avail }, { data: pkgs }] = await Promise.all([
         supabase.from("tutor_availability").select("day_of_week, start_hour").eq("user_id", profile.id),
-        supabase.from("tutor_packages").select("sessions, discount_percent, enabled").eq("user_id", profile.id),
+        supabase.from("tutor_packages").select("session_count, discount_percent, is_active").eq("tutor_id", profile.id),
       ]);
       setState((prev) => {
         const local = loadLocal();
@@ -150,7 +164,13 @@ function TutorWizard() {
           merged.availability = avail.map((a) => ({ day: a.day_of_week, hour: a.start_hour }));
         }
         if (pkgs?.length) {
-          merged.packages = pkgs.map((p) => ({ sessions: p.sessions, discount_percent: Number(p.discount_percent), enabled: p.enabled }));
+          // A package with no session_count can't be priced or displayed, so drop
+          // it rather than coercing it to 0 sessions.
+          merged.packages = pkgs.flatMap((p) =>
+            p.session_count == null
+              ? []
+              : [{ sessions: p.session_count, discount_percent: Number(p.discount_percent ?? 0), enabled: p.is_active ?? false }],
+          );
         }
         return merged;
       });
@@ -165,8 +185,12 @@ function TutorWizard() {
     });
   }, []);
 
-  // Persist to localStorage on every change
-  useEffect(() => { saveLocal(state); }, [state]);
+  // Persist to localStorage on every change — but not before the restore above has
+  // landed, or the first pass would overwrite the saved draft with DEFAULT_STATE.
+  useEffect(() => {
+    if (!restored) return;
+    saveLocal(state);
+  }, [state, restored]);
 
   // Auth gate
   useEffect(() => {
@@ -237,14 +261,14 @@ function TutorWizard() {
         );
       }
       // Replace packages
-      await supabase.from("tutor_packages").delete().eq("user_id", profile.id);
+      await supabase.from("tutor_packages").delete().eq("tutor_id", profile.id);
       if (state.packages.length) {
         await supabase.from("tutor_packages").insert(
           state.packages.map((p) => ({
-            user_id: profile.id,
-            sessions: p.sessions,
+            tutor_id: profile.id,
+            session_count: p.sessions,
             discount_percent: p.discount_percent,
-            enabled: p.enabled,
+            is_active: p.enabled,
           })),
         );
       }

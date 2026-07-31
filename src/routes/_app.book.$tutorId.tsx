@@ -80,7 +80,11 @@ function BookPage() {
   const [type, setType] = useState<SessionType>("trial");
   const [slot, setSlot] = useState<Date | null>(null);
   const [pickedDay, setPickedDay] = useState<Date | undefined>(undefined);
-  const [tz, setTz] = useState<string>(detectTimezone());
+  // "UTC" until mounted: detectTimezone() resolves to the deploy region on the
+  // server (UTC on Vercel) and the visitor's zone on the client, and it renders
+  // into a <select> — so seeding it directly mismatches on hydration.
+  const [tz, setTz] = useState<string>("UTC");
+  useEffect(() => setTz(detectTimezone()), []);
   const [submitting, setSubmitting] = useState(false);
   const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
   const [recurring, setRecurring] = useState(false);
@@ -120,10 +124,10 @@ function BookPage() {
         .map((s) => ({ start: new Date(s.scheduled_start), end: new Date(s.scheduled_end) })));
       const { data: p } = await supabase
         .from("tutor_packages")
-        .select("sessions, discount_percent")
-        .eq("user_id", tutorId)
-        .eq("enabled", true)
-        .order("sessions", { ascending: true })
+        .select("sessions:session_count, discount_percent")
+        .eq("tutor_id", tutorId)
+        .eq("is_active", true)
+        .order("session_count", { ascending: true })
         .limit(1)
         .maybeSingle();
       if (p) setPkg(p as any);
