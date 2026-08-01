@@ -212,7 +212,18 @@ function SessionDetail() {
             <button onClick={handleComplete} className="pw-btn-outline px-4 py-2 text-sm">Mark completed</button>
           )}
           {canReschedule && (
-            <button onClick={() => navigate({ to: "/book/$tutorId", params: { tutorId: session.tutor_id ?? "" } })} className="pw-btn-outline px-4 py-2 text-sm">
+            <button
+              onClick={() =>
+                navigate({
+                  to: "/book/$tutorId",
+                  params: { tutorId: session.tutor_id ?? "" },
+                  // Without this the booking page has no idea it's replacing
+                  // anything and simply creates a second session.
+                  search: { reschedule: session.id },
+                })
+              }
+              className="pw-btn-outline px-4 py-2 text-sm"
+            >
               Reschedule
             </button>
           )}

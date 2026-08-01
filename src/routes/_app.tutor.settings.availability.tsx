@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { useAuth } from "../pathwise/auth";
-import { useDarkMode } from "../pathwise/DarkMode";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES, detectTimezone } from "../pathwise/scheduling";
 import { Globe, Clock, Copy, Save, AlertTriangle } from "lucide-react";
@@ -27,7 +26,6 @@ type CellState = "free" | "available" | "blocked" | "booked";
 
 export function AvailabilityPage() {
   const { user, isLoggedIn } = useAuth();
-  const { isDark } = useDarkMode();
   const navigate = useNavigate();
 
   const [grid, setGrid] = useState<Record<string, CellState>>({});
@@ -255,10 +253,14 @@ export function AvailabilityPage() {
         </div>
 
         <div className="mt-4 flex items-center gap-4 flex-wrap">
-          <Legend color="#10B981" label="Available" />
-          <Legend color="#9CA3AF" label="Blocked / time off" />
-          <Legend color="#3B82F6" label="Booked" />
-          <Legend color="white" label="Free" border={isDark} />
+          {/* These must stay in lockstep with the cell colours in HourRow below.
+              They were hardcoded hex that no longer matched: booked cells render
+              with --pw-accent (orange) while the swatch claimed #3B82F6 (blue), so
+              a booked slot looked like an unexplained colour. */}
+          <Legend color="var(--pw-accent-2)" label="Available" />
+          <Legend color="var(--pw-ink-2)" label="Blocked / time off" />
+          <Legend color="var(--pw-accent)" label="Booked" />
+          <Legend color="var(--pw-input-bg)" label="Free" border />
           <button onClick={copyMondayToAll} className="pw-btn-outline px-3 py-1.5 text-[12px] flex items-center gap-1.5 ml-auto">
             <Copy className="w-3 h-3" /> Copy Monday to all days
           </button>

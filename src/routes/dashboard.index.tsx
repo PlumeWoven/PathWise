@@ -16,10 +16,18 @@ export const Route = createFileRoute("/dashboard/")({
 
 // ---------- Types ----------
 interface EarningRow { id: string; amount: number; earned_at: string; }
+// Mirrors public.sessions. There is no `scheduled_at` and no `subject` column —
+// selecting those made the whole query 400, which PostgREST reports as
+// { data: null, error } rather than throwing, so the dashboard silently showed
+// zero sessions instead of surfacing the failure.
 interface SessionRow {
-    id: string; scheduled_at: string | null; student_id: string | null;
-    subject: string | null; session_type: string | null; meeting_url: string | null;
+    id: string; scheduled_start: string | null; scheduled_end: string | null;
+    student_id: string | null; session_type: string | null; meeting_url: string | null;
+    status_v2: string | null;
 }
+
+/** Statuses that still occupy a slot — cancelled/no-show sessions aren't "upcoming". */
+const LIVE_SESSION_STATUSES = ["scheduled", "confirmed", "reminder_sent", "in_progress"];
 interface ReviewRow { id: string; rating: number | null; body: string | null; created_at: string; student_id: string | null; }
 interface LeadRow { stage: string; }
 interface ProfileLite { id: string; display_name: string | null; avatar_url: string | null; }
@@ -52,8 +60,9 @@ function DashboardHome() {
                 const [earnRes, sessRes, revRes, leadRes, relRes, profRes, availRes] = await Promise.all([
                     supabase.from("tutor_earnings").select("id, amount, earned_at")
                         .eq("tutor_id", tutorId).gte("earned_at", new Date(sinceMs).toISOString()),
-                    supabase.from("sessions").select("id, scheduled_at, student_id, subject, session_type, meeting_url")
-                        .eq("tutor_id", tutorId).order("scheduled_at", { ascending: true }),
+                    supabase.from("sessions")
+                        .select("id, scheduled_start, scheduled_end, student_id, session_type, meeting_url, status_v2")
+                        .eq("tutor_id", tutorId).order("scheduled_start", { ascending: true }),
                     supabase.from("reviews").select("id, rating, body, created_at, student_id")
                         .eq("tutor_id", tutorId).order("created_at", { ascending: false }).limit(10),
                     supabase.from("lead_events").select("stage").eq("tutor_id", tutorId),
@@ -74,6 +83,20 @@ function DashboardHome() {
                     : { data: [] as ProfileLite[], error: null };
 
                 if (cancelled) return;
+
+                // PostgREST returns { data: null, error } instead of throwing, so a
+                // bad column name silently renders an empty dashboard. Log every
+                // failure by name — this is exactly how the scheduled_at/subject
+                // mismatch went unnoticed.
+                for (const [name, res] of [
+                    ["tutor_earnings", earnRes], ["sessions", sessRes], ["reviews", revRes],
+                    ["lead_events", leadRes], ["tutor_students", relRes], ["profiles", profRes],
+                    ["tutor_availability", availRes],
+                ] as const) {
+                    if (res.error) console.error(`[dashboard] ${name} query failed:`, res.error);
+                }
+                if (sessRes.error) toast.error("Couldn't load your sessions.");
+
                 setEarnings(((earnRes.data ?? []) as any[]).map((e) => ({ ...e, amount: Number(e.amount) })));
                 setSessions(sessRes.data ?? []);
                 setReviews(revRes.data ?? []);
@@ -109,8 +132,8 @@ function DashboardHome() {
     }).reduce((s, e) => s + e.amount, 0);
     const earningsChange = pctChange(earningsMTD, earningsLastMonth);
 
-    const sessionsThisMonth = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) >= mtdStart);
-    const sessionsLastMonth = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) >= lastMonthStart && new Date(s.scheduled_at!) < mtdStart);
+    const sessionsThisMonth = sessions.filter(s => s.scheduled_start && new Date(s.scheduled_start) >= mtdStart);
+    const sessionsLastMonth = sessions.filter(s => s.scheduled_start && new Date(s.scheduled_start) >= lastMonthStart && new Date(s.scheduled_start!) < mtdStart);
     const sessionsChange = pctChange(sessionsThisMonth.length, sessionsLastMonth.length);
 
     const totalStudents = students.length;
@@ -120,7 +143,12 @@ function DashboardHome() {
         ? Number((reviews.reduce((s, r) => s + (r.rating ?? 0), 0) / reviews.length).toFixed(1))
         : 0;
 
-    const upcoming = sessions.filter(s => s.scheduled_at && new Date(s.scheduled_at) > now).slice(0, 5);
+    // Cancelled and no-show sessions are still rows on the table; they must not
+    // appear under "Next up".
+    const upcoming = sessions
+        .filter(s => s.scheduled_start && new Date(s.scheduled_start) > now)
+        .filter(s => !s.status_v2 || LIVE_SESSION_STATUSES.includes(s.status_v2))
+        .slice(0, 5);
     const studentMap = new Map(students.map(s => [s.id, s] as const));
 
     const completeness = useMemo(() => computeCompleteness(tutorProfile, availabilityCount), [tutorProfile, availabilityCount]);
@@ -139,7 +167,11 @@ function DashboardHome() {
                 <UnverifiedBanner />
             </div>
 
-            {!dataLoading && earnings.length === 0 && sessions.length === 0 && reviews.length === 0 && (
+            {/* Only when the profile is already complete — an unverified or
+                half-finished profile already shows UnverifiedBanner above, and
+                stacking two onboarding prompts pushed the actual dashboard below
+                the fold. */}
+            {!dataLoading && completeness.score === 100 && earnings.length === 0 && sessions.length === 0 && reviews.length === 0 && (
                 <div className="mt-5 pw-card p-5 flex flex-wrap items-center gap-4" style={{ background: "var(--pw-accent-soft)" }}>
                     <div className="text-3xl">✨</div>
                     <div className="flex-1 min-w-[220px]">
@@ -164,8 +196,11 @@ function DashboardHome() {
                 <MetricCard label="Avg Rating" value={avgRating ? `${avgRating}★` : "—"} change={null} skeleton={dataLoading} />
             </div>
 
-            {/* Main grid */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Main grid. `[&>div>*]:h-full` makes each card fill its grid cell —
+                without it a short card (an empty "Next up") leaves a ragged gap
+                beside a tall one (the lead funnel), which is what made this look
+                lopsided. */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch [&>div>*]:h-full">
                 <div className="md:col-span-2 lg:col-span-2"><EarningsChart earnings={earnings} /></div>
                 <div><ProfileCompleteness data={completeness} /></div>
 
@@ -330,14 +365,15 @@ function UpcomingSessions({ sessions, studentMap }: { sessions: SessionRow[]; st
                 ) : sessions.map(s => {
                     const stu = s.student_id ? studentMap.get(s.student_id) : null;
                     const name = stu?.display_name ?? "Student";
-                    const when = s.scheduled_at ? new Date(s.scheduled_at) : null;
+                    const when = s.scheduled_start ? new Date(s.scheduled_start) : null;
                     return (
                         <div key={s.id} className="flex flex-wrap gap-3 items-center pw-border rounded-lg p-3">
                             <Avatar name={name} url={stu?.avatar_url} />
                             <div className="flex-1 min-w-0">
                                 <div className="text-[14px] font-medium truncate">{name}</div>
                                 <div className="text-[12px] text-[var(--pw-ink-2)] truncate">
-                                    {s.subject ?? "Tutoring"} · {s.session_type ?? "1on1"}
+                                    {s.session_type ?? "1on1"}
+                                    {s.status_v2 ? ` · ${s.status_v2.replace(/_/g, " ")}` : ""}
                                 </div>
                                 {when && (
                                     <div className="text-[11px] text-[var(--pw-ink-2)] mt-0.5">
@@ -348,7 +384,13 @@ function UpcomingSessions({ sessions, studentMap }: { sessions: SessionRow[]; st
                             <div className="flex gap-1.5">
                                 <button className="pw-btn-primary text-[12px] px-3 py-1.5" onClick={() => toast.info("Joining session…")}>Join</button>
                                 <button className="pw-btn-outline text-[12px] px-3 py-1.5" onClick={() => toast.info("Messaging coming soon")}>Message</button>
-                                <button className="pw-btn-outline text-[12px] px-3 py-1.5" onClick={() => toast.info("Reschedule coming soon")}>Reschedule</button>
+                                <Link
+                                    to="/sessions/$id"
+                                    params={{ id: s.id }}
+                                    className="pw-btn-outline text-[12px] px-3 py-1.5"
+                                >
+                                    Reschedule
+                                </Link>
                             </div>
                         </div>
                     );

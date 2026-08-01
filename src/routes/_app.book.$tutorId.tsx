@@ -10,6 +10,7 @@ import {
   googleCalendarUrl,
   makeICS,
   type SessionType,
+  type SessionStatus,
 } from "../pathwise/sessions";
 import {
   buildAvailableSlots,
@@ -24,11 +25,20 @@ import {
   COMMON_TIMEZONES,
   type Frequency,
 } from "../pathwise/scheduling";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { Calendar as CalendarIcon, AlertTriangle, Repeat } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { addDays } from "date-fns";
 
+const searchSchema = z.object({
+  // Set when this booking replaces an existing session. The original is cancelled
+  // only after the replacement is created — see handleConfirmAndPay.
+  reschedule: fallback(z.string().optional(), undefined),
+});
+
 export const Route = createFileRoute("/_app/book/$tutorId")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: "Book a session — PathWise" },
@@ -69,6 +79,7 @@ const STEPS = ["Type", "Time", "Timezone", "Summary", "Pay"] as const;
 
 function BookPage() {
   const { tutorId } = Route.useParams();
+  const { reschedule: rescheduleId } = Route.useSearch();
   const navigate = useNavigate();
   const { user, openLogin } = useAuth();
 
@@ -88,6 +99,12 @@ function BookPage() {
   const [submitting, setSubmitting] = useState(false);
   const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
   const [recurring, setRecurring] = useState(false);
+
+  // A reschedule moves one existing session. Leaving recurrence on would create a
+  // whole series while cancelling only the single original.
+  useEffect(() => {
+    if (rescheduleId) setRecurring(false);
+  }, [rescheduleId]);
   const [frequency, setFrequency] = useState<Frequency>("weekly");
   const [endMode, setEndMode] = useState<"count" | "date" | "ongoing">("count");
   const [recCount, setRecCount] = useState(4);
@@ -183,6 +200,30 @@ function BookPage() {
     if (!slot) return;
     setSubmitting(true);
     const groupId = recurring && recurrenceInstances.length > 1 ? crypto.randomUUID() : null;
+
+    // ── Rescheduling: release the old slot before claiming the new one ──
+    // book_session raises SLOT_TAKEN for any overlapping non-cancelled session,
+    // and the session being moved is itself one of those. Booking first would
+    // therefore reject the most ordinary reschedule of all — nudging a session
+    // half an hour — with "someone else just booked this". So the original is
+    // cancelled first and restored below if the new booking doesn't land.
+    let restoreStatus: SessionStatus | null = null;
+    if (rescheduleId) {
+      const { data: original } = await supabase
+        .from("sessions").select("status_v2").eq("id", rescheduleId).maybeSingle();
+      restoreStatus = (original as { status_v2?: SessionStatus } | null)?.status_v2 ?? "scheduled";
+
+      const { error: releaseErr } = await supabase
+        .from("sessions")
+        .update({ status_v2: "cancelled", cancellation_reason: "Rescheduled", cancelled_by: user.id })
+        .eq("id", rescheduleId);
+      if (releaseErr) {
+        setSubmitting(false);
+        toast.error("Couldn't release your original session. Nothing was changed.");
+        return;
+      }
+    }
+
     try {
       const createdIds: string[] = [];
       for (let i = 0; i < recurrenceInstances.length; i++) {
@@ -216,6 +257,17 @@ function BookPage() {
           changed_by: user.id,
         });
       }
+
+      // The replacement landed, so the release above is now permanent.
+      if (rescheduleId) {
+        restoreStatus = null;
+        await supabase.from("session_state_history").insert({
+          session_id: rescheduleId,
+          from_status: null,
+          to_status: "cancelled",
+          changed_by: user.id,
+        });
+      }
       await supabase.from("notifications").insert([
         { user_id: user.id, title: recurring && createdIds.length > 1 ? `${createdIds.length} sessions booked` : "Booking confirmed", message: `Your ${type} session${createdIds.length > 1 ? "s" : ""} with ${tutor?.display_name ?? "your tutor"} ${createdIds.length > 1 ? "are" : "is"} set.`, link: `/sessions/${createdIds[0]}`, type: "confirmed" },
         { user_id: tutorId, title: recurring && createdIds.length > 1 ? `${createdIds.length} new bookings` : "New booking", message: `You have ${createdIds.length > 1 ? `${createdIds.length} new ${type} sessions` : `a new ${type} session`} booked.`, link: `/sessions/${createdIds[0]}`, type: "scheduled" },
@@ -225,6 +277,19 @@ function BookPage() {
       setBookedRanges((prev) => [...prev, ...recurrenceInstances.map((s) => ({ start: s, end: new Date(s.getTime() + duration * 60 * 1000) }))]);
       setCreatedSessionId(createdIds[0]);
     } catch (err) {
+      // Put the original session back — the new time didn't take, so the student
+      // must not be left with nothing.
+      if (rescheduleId && restoreStatus) {
+        const { error: restoreErr } = await supabase
+          .from("sessions")
+          .update({ status_v2: restoreStatus, cancellation_reason: null, cancelled_by: null })
+          .eq("id", rescheduleId);
+        if (restoreErr) {
+          toast.error("Your new time failed and we couldn't restore the original booking. Please check My sessions.");
+        } else {
+          toast.info("Your original session is unchanged.");
+        }
+      }
       toast.error(err instanceof Error ? err.message : "Could not complete booking");
       // Refresh availability after a slot collision
       const { data: booked } = await supabase
@@ -264,7 +329,14 @@ function BookPage() {
             className="pw-card p-7 text-center"
           >
             <div className="text-5xl mb-3">🎉</div>
-            <h1 className="font-display text-2xl">You're booked!</h1>
+            <h1 className="font-display text-2xl">
+              {rescheduleId ? "You're moved!" : "You're booked!"}
+            </h1>
+            {rescheduleId && (
+              <p className="text-sm text-[var(--pw-ink-2)] mt-1">
+                Your previous session has been cancelled.
+              </p>
+            )}
             <p className="text-sm text-[var(--pw-ink-2)] mt-1">
               {start.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short", timeZone: tz })} ({tz})
             </p>
@@ -425,8 +497,9 @@ function BookPage() {
                       )}
                     </div>
 
-                    {/* Recurring */}
-                    <div className="pw-card p-4 md:col-span-2">
+                    {/* Recurring — hidden when rescheduling, since we're moving one
+                        existing session, not creating a series. */}
+                    <div className="pw-card p-4 md:col-span-2" hidden={!!rescheduleId}>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" checked={recurring} onChange={(e) => setRecurring(e.target.checked)} />
                         <Repeat className="w-4 h-4" />
