@@ -4,7 +4,7 @@
 //     componentTagger (dev-only), VITE_* env injection, @ path alias, React/TanStack dedupe,
 //     error logger plugins, and sandbox detection (port/host/strictPort).
 // You can pass additional config via defineConfig({ vite: { ... } }) if needed.
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { loadEnv, type Plugin, type ViteDevServer } from "vite";
@@ -22,7 +22,7 @@ function resolveEnvDir(root: string): string | undefined {
   if (existsSync(resolve(root, ".env"))) return undefined;
 
   const gitPath = resolve(root, ".git");
-  if (!existsSync(gitPath) || !readFileSync(gitPath, "utf8").startsWith("gitdir:")) {
+  if (!existsSync(gitPath) || !statSync(gitPath).isFile() || !readFileSync(gitPath, "utf8").startsWith("gitdir:")) {
     return undefined;
   }
 

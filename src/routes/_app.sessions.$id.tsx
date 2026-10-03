@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_app/sessions/$id")({
   head: () => ({ meta: [{ title: "Session — PathWise" }] }),
   component: SessionDetail,
   errorComponent: ({ error }) => (
-    <div className="p-6">Couldn't load session: {error.message}</div>
+    <div className="p-6">Couldn't load session: {(error as Error).message}</div>
   ),
   notFoundComponent: () => <div className="p-6">Session not found.</div>,
 });

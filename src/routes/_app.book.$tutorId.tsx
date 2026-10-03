@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_app/book/$tutorId")({
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="pw-card p-6 max-w-md text-center">
         <h1 className="font-display text-xl">Booking unavailable</h1>
-        <p className="text-sm text-[var(--pw-ink-2)] mt-2">{error.message}</p>
+        <p className="text-sm text-[var(--pw-ink-2)] mt-2">{(error as Error).message}</p>
         <Link to="/matches" className="pw-btn-outline mt-4 inline-block px-4 py-2 text-sm">Back to matches</Link>
       </div>
     </div>
