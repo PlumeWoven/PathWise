@@ -1,10 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DemoBanner } from "../pathwise/DemoBanner";
-import { Hero } from "@/components/landing/Hero";
-import { Features } from "@/components/landing/Features";
-import { Testimonials } from "@/components/landing/Testimonials";
+import { useState } from "react";
+import { MotionConfig } from "framer-motion";
+import { PortalHero } from "@/components/landing/PortalHero";
+import { Statement } from "@/components/landing/Statement";
+import { StepDeck } from "@/components/landing/StepDeck";
+import { StageRoster } from "@/components/landing/StageRoster";
+import { Voices } from "@/components/landing/Voices";
 import { Footer } from "@/components/landing/Footer";
-import { FloatingCluster } from "@/components/landing/FloatingCluster";
+import { JourneyLine } from "@/components/landing/JourneyLine";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -55,13 +59,22 @@ export const Route = createFileRoute("/_app/")({
 });
 
 function LandingPage() {
+  // The footer wordmark lights up once the journey line reaches it.
+  const [arrived, setArrived] = useState(false);
   return (
-    <div className="bg-pw-bg text-pw-ink">
-      <Hero />
-      <Features />
-      <Testimonials />
-      <Footer />
+    // Landing is always dark (QED design language), independent of the app theme toggle.
+    <MotionConfig reducedMotion="user">
+      <div className="relative bg-qed-ground font-sora text-qed-ink">
+        <PortalHero />
+        <Statement />
+        <StepDeck />
+        <StageRoster />
+        <Voices />
+        <Footer lit={arrived} />
+        <JourneyLine onArrive={setArrived} />
+      </div>
+      {/* Outside the dark wrapper: the banner follows the app theme and inherits pw-ink, not qed-ink. */}
       <DemoBanner />
-    </div>
+    </MotionConfig>
   );
 }

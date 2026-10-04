@@ -224,7 +224,7 @@ function AuthCallback() {
                         />
                     </svg>
                 </div>
-                <p className="mt-5 text-[14px] text-[var(--pw-ink-2)]" role="status" aria-live="polite">
+                <p className="mt-5 text-[0.875rem] text-[var(--pw-ink-2)]" role="status" aria-live="polite">
                     {message}
                 </p>
             </div>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light only" />
+    <meta name="supported-color-schemes" content="light" />
+    <title>Reset your password — PathWise</title>
+    <!-- Syne/Sora load in Apple Mail, iOS and most webmail; others fall back to Helvetica/Arial. -->
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  </head>
+  <!-- PathWise light theme (QED): paper #ede7dc, surface #f6f2ea, ink #0a0c0e, ink-2 #4a5257,
+       amber fill #e8913c, text-safe amber #8a4a0a, hairline #d6d0c6. Square corners, no shadows. -->
+  <body style="margin:0;padding:0;background:#ede7dc;">
+    <div style="display:none;max-height:0;overflow:hidden;">Reset your PathWise password.</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ede7dc;">
+      <tr>
+        <td align="center" style="padding:32px 12px;">
+          <table role="presentation" align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;">
+            <tr>
+              <td style="padding:0 0 24px 0;font-family:'Syne','Helvetica Neue',Arial,sans-serif;font-size:18px;font-weight:700;letter-spacing:-0.02em;text-transform:uppercase;color:#0a0c0e;">
+                PathWise<span style="color:#e8913c;">.</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#f6f2ea;border:1px solid #d6d0c6;padding:32px 24px;">
+                <p style="margin:0 0 16px 0;font-family:'Sora','Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:#8a4a0a;">Password reset</p>
+                <h1 style="margin:0 0 20px 0;font-family:'Syne','Helvetica Neue',Arial,sans-serif;font-size:26px;line-height:1.05;font-weight:800;letter-spacing:-0.025em;text-transform:uppercase;color:#0a0c0e;">Reset your<br />password.</h1>
+                <p style="margin:0 0 32px 0;font-family:'Sora','Helvetica Neue',Arial,sans-serif;font-size:15px;line-height:1.65;color:#4a5257;">We got a request to reset the password for <strong style="color:#0a0c0e;">{{ .Email }}</strong>. The link below is valid for one hour.</p>
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="background:#0a0c0e;">
+                      <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:16px 32px;font-family:'Sora','Helvetica Neue',Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:#ede7dc;text-decoration:none;">Choose a new password &rarr;</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:32px 0 0 0;padding-top:20px;border-top:1px solid #d6d0c6;font-family:'Sora','Helvetica Neue',Arial,sans-serif;font-size:12px;line-height:1.6;color:#4a5257;">
+                  Button not working? Paste this link into your browser:<br />
+                  <a href="{{ .ConfirmationURL }}" style="color:#8a4a0a;word-break:break-all;">{{ .ConfirmationURL }}</a>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 4px 0 4px;font-family:'Sora','Helvetica Neue',Arial,sans-serif;font-size:11px;line-height:1.6;letter-spacing:0.15em;text-transform:uppercase;color:#4a5257;">
+                Didn't ask for this? Your password stays the same — ignore this email.<br />Learn deliberately &middot; PathWise
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

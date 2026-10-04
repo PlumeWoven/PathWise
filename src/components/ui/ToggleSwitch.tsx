@@ -6,9 +6,9 @@ interface ToggleSwitchProps {
 }
 
 /**
- * Neomorphic pill toggle switch (on / off), modelled on the soft-UI reference:
- * an inset pill track with a raised 3D ball thumb that turns accent-orange and
- * slides right when on. Use this for every boolean on/off control.
+ * QED pill toggle switch (on / off): a hairline pill track with a flat thumb that
+ * slides right when on. On = flat amber track with a ground-coloured thumb; off =
+ * surface-2 track with an ink thumb. Use this for every boolean on/off control.
  */
 export function ToggleSwitch({ checked, onChange, ariaLabel, id }: ToggleSwitchProps) {
   return (
@@ -19,19 +19,17 @@ export function ToggleSwitch({ checked, onChange, ariaLabel, id }: ToggleSwitchP
       aria-checked={checked}
       aria-label={ariaLabel}
       onClick={() => onChange(!checked)}
-      className="pw-well relative inline-flex h-8 w-14 shrink-0 items-center !rounded-full px-1 transition-colors"
+      className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border px-1 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pw-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pw-bg)] ${
+        checked
+          ? "border-pw-accent-fill bg-pw-accent-fill"
+          : "border-[var(--pw-border)] bg-[var(--pw-surface-2)]"
+      }`}
     >
       <span
-        className="h-6 w-6 rounded-full transition-all duration-300 ease-out"
-        style={{
-          transform: checked ? "translateX(24px)" : "translateX(0px)",
-          backgroundImage: checked
-            ? "radial-gradient(circle at 32% 30%, #f3a275, var(--pw-accent) 70%)"
-            : "radial-gradient(circle at 32% 30%, var(--pw-surface), rgba(0, 0, 0, 0.2) 110%)",
-          boxShadow: checked
-            ? "3px 3px 6px var(--pw-shadow-dark), -2px -2px 5px rgba(255,255,255,0.35), inset 1px 1px 2px rgba(255,255,255,0.5)"
-            : "3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light)",
-        }}
+        className={`h-6 w-6 rounded-full transition-all duration-300 ease-out ${
+          checked ? "bg-pw-on-accent" : "bg-[var(--pw-ink)]"
+        }`}
+        style={{ transform: checked ? "translateX(22px)" : "translateX(0px)" }}
       />
     </button>
   );

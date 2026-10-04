@@ -23,9 +23,12 @@ export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () =>
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-[rgba(10,12,14,0.7)] backdrop-blur-sm"
+      onClick={onClose}
+    >
       <div
-        className="pw-card max-w-md w-full p-7 relative"
+        className="pw-card max-w-md w-full p-7 relative shadow-pw-float"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -34,11 +37,18 @@ export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () =>
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-3 right-3 w-8 h-8 rounded-full hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"
-        >×</button>
-        <div className="font-mono-pw text-[10px] uppercase tracking-wider text-[var(--pw-accent)]">Ready for the real thing?</div>
-        <h2 id="exit-demo-title" className="mt-1 font-display text-[26px] leading-tight">Start your own journey</h2>
-        <p className="mt-2 text-[13px] text-[var(--pw-ink-2)]">
+          className="absolute top-3 right-3 w-8 h-8 hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors"
+        >
+          ×
+        </button>
+        <div className="label-caps text-pw-accent">Ready for the real thing?</div>
+        <h2
+          id="exit-demo-title"
+          className="mt-1 font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none"
+        >
+          Start your own journey
+        </h2>
+        <p className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
           Create your free account to keep your courses, students and earnings — for real this time.
         </p>
         <form onSubmit={submit} className="mt-5 space-y-3">
@@ -48,16 +58,22 @@ export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () =>
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             autoFocus
-            className="w-full px-4 py-3 rounded-lg border border-[var(--pw-border)] bg-[var(--pw-surface)] text-[14px] focus:outline-none focus:border-[var(--pw-accent)]"
+            className="pw-input text-[0.875rem]"
           />
-          <button type="submit" className="pw-btn-primary w-full px-5 py-3 text-[14px] font-medium">
+          <button type="submit" className="pw-btn-primary w-full px-5 py-3">
             Create my free account →
           </button>
-          <button type="button" onClick={onClose} className="block w-full text-center text-[12px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] py-1">
+          <button
+            type="button"
+            onClick={onClose}
+            className="label-caps block w-full text-center text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors py-1"
+          >
             Keep exploring the demo
           </button>
         </form>
-        <p className="mt-3 text-[11px] text-[var(--pw-ink-2)] text-center">No credit card · Cancel anytime</p>
+        <p className="mt-3 text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
+          No credit card · Cancel anytime
+        </p>
       </div>
     </div>
   );

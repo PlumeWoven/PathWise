@@ -59,55 +59,53 @@ function ResetPasswordPage() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 py-12 max-w-md mx-auto">
-        <h1 className="font-display text-[32px] leading-tight">Set a new password</h1>
-        <p className="mt-2 text-[14px] text-[var(--pw-ink-2)]">
+        <h1 className="font-display text-[2rem] uppercase tracking-[-0.025em] leading-none">
+          Set a new password
+        </h1>
+        <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
           Choose a new password for your PathWise account.
         </p>
 
         {!ready ? (
-          <div className="mt-8 text-[14px] text-[var(--pw-ink-2)]">
+          <div className="mt-8 text-[0.875rem] text-[var(--pw-ink-2)]">
             Verifying your reset link...
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 space-y-3">
             <div>
-              <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-                New password
-              </label>
+              <label className="label-caps text-[var(--pw-ink-2)]">New password</label>
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+                className="pw-input mt-1 text-[0.875rem]"
               />
             </div>
             <div>
-              <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-                Confirm password
-              </label>
+              <label className="label-caps text-[var(--pw-ink-2)]">Confirm password</label>
               <input
                 type="password"
                 required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+                className="pw-input mt-1 text-[0.875rem]"
               />
             </div>
             {error && (
-              <div className="text-[12px]" style={{ color: "var(--pw-danger)" }}>
+              <div className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
                 {error}
               </div>
             )}
             {info && (
-              <div className="text-[12px]" style={{ color: "var(--pw-accent-2)" }}>
+              <div className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
                 {info}
               </div>
             )}
             <button
               type="submit"
               disabled={submitting}
-              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 text-[15px] font-medium disabled:opacity-50"
+              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 disabled:opacity-50"
             >
               {submitting ? "Updating..." : "Update password"}
             </button>

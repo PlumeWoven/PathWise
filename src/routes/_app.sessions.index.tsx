@@ -31,7 +31,7 @@ function SessionsList() {
   const { user, loading: authLoading } = useAuth();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<typeof FILTERS[number]["id"]>("upcoming");
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]["id"]>("upcoming");
 
   useEffect(() => {
     if (!user) return;
@@ -43,13 +43,22 @@ function SessionsList() {
         .or(`student_id.eq.${user.id},tutor_id.eq.${user.id}`)
         .order("scheduled_start", { ascending: false });
       const list = (data ?? []) as unknown as Row[];
-      const otherIds = Array.from(new Set(list.map((r) => (r.student_id === user.id ? r.tutor_id : r.student_id)).filter(Boolean) as string[]));
+      const otherIds = Array.from(
+        new Set(
+          list
+            .map((r) => (r.student_id === user.id ? r.tutor_id : r.student_id))
+            .filter(Boolean) as string[],
+        ),
+      );
       if (otherIds.length) {
-        const { data: profs } = await supabase.from("profiles").select("id, display_name").in("id", otherIds);
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, display_name")
+          .in("id", otherIds);
         const map = new Map((profs ?? []).map((p: any) => [p.id, p.display_name as string | null]));
         list.forEach((r) => {
           const oid = r.student_id === user.id ? r.tutor_id : r.student_id;
-          r.other_name = oid ? map.get(oid) ?? null : null;
+          r.other_name = oid ? (map.get(oid) ?? null) : null;
         });
       }
       setRows(list);
@@ -78,17 +87,13 @@ function SessionsList() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
-        <h1 className="font-display text-2xl">My sessions</h1>
+        <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">My sessions</h1>
         <div className="mt-3 flex gap-2">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
-              className="pw-pill text-[12px] px-3 py-1.5"
-              style={{
-                background: filter === f.id ? "var(--pw-accent)" : "var(--pw-surface-2)",
-                color: filter === f.id ? "white" : "var(--pw-ink)",
-              }}
+              className={`pw-pill px-3 py-1.5 ${filter === f.id ? "is-active" : ""}`}
             >
               {f.label}
             </button>
@@ -99,10 +104,13 @@ function SessionsList() {
           <div className="mt-6 text-sm text-[var(--pw-ink-2)]">Loading…</div>
         ) : filtered.length === 0 ? (
           <div className="mt-6 pw-card p-6 text-center text-sm text-[var(--pw-ink-2)]">
-            Nothing here yet. <Link to="/matches" className="text-[var(--pw-accent)] underline">Find a tutor →</Link>
+            Nothing here yet.{" "}
+            <Link to="/matches" className="text-[var(--pw-accent)] underline">
+              Find a tutor →
+            </Link>
           </div>
         ) : (
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 border-y border-[var(--pw-border)] divide-y divide-[var(--pw-border)]">
             {filtered.map((r) => {
               const meta = STATUS_META[r.status_v2];
               return (
@@ -110,17 +118,29 @@ function SessionsList() {
                   key={r.id}
                   to="/sessions/$id"
                   params={{ id: r.id }}
-                  className="pw-card p-4 flex items-center justify-between hover:border-[var(--pw-accent)] transition-colors"
+                  className="group py-4 flex items-center justify-between"
                 >
                   <div>
-                    <div className="font-display text-[15px]">{r.other_name ?? "Session"}</div>
-                    <div className="text-[12px] text-[var(--pw-ink-2)]">
-                      {r.scheduled_start ? new Date(r.scheduled_start).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }) : "—"}
+                    <div className="font-display text-[0.9375rem] transition-colors group-hover:text-pw-accent">
+                      {r.other_name ?? "Session"}
+                    </div>
+                    <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
+                      {r.scheduled_start
+                        ? new Date(r.scheduled_start).toLocaleString(undefined, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })
+                        : "—"}
                       {" · "}
                       {r.session_type ?? "session"}
                     </div>
                   </div>
-                  <span className="pw-pill text-[11px] px-2.5 py-0.5" style={{ background: meta.bg, color: meta.fg }}>{meta.label}</span>
+                  <span
+                    className="pw-pill px-2.5 py-0.5"
+                    style={{ background: meta.bg, color: meta.fg }}
+                  >
+                    {meta.label}
+                  </span>
                 </Link>
               );
             })}

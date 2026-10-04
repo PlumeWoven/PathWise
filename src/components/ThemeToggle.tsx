@@ -19,12 +19,8 @@ export function ThemeToggle() {
   const toggle = () => {
     const next = isDark ? "light" : "dark";
     const root = document.documentElement;
-    const startViewTransition = (document as any).startViewTransition?.bind(
-      document
-    );
-    const reduceMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
+    const startViewTransition = (document as any).startViewTransition?.bind(document);
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // No View Transitions support (or reduced motion) — just flip instantly.
     if (!startViewTransition || reduceMotion) {
@@ -73,21 +69,20 @@ export function ThemeToggle() {
           : "Turn the lights off (switch to dark mode)"
       }
       aria-pressed={!isDark}
-      className="relative grid h-9 w-9 place-items-center rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      className="relative grid h-9 w-9 place-items-center border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       style={{
         borderColor: "var(--pw-border)",
         backgroundColor: "var(--pw-surface)",
-        color: isDark ? "var(--pw-accent)" : "#f59e0b",
+        color: "var(--pw-accent)",
       }}
     >
-      {/* soft glow that swells while in light mode */}
+      {/* amber ring that fades in while in light mode */}
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-full transition-opacity duration-500"
+        className="pointer-events-none absolute inset-0 transition-opacity duration-500"
         style={{
           opacity: isDark ? 0 : 1,
-          boxShadow:
-            "0 0 0 2px rgba(245,158,11,0.15), 0 0 22px 4px rgba(245,158,11,0.45)",
+          boxShadow: "0 0 0 1px var(--pw-accent-fill)",
         }}
       />
 
@@ -111,16 +106,12 @@ export function ThemeToggle() {
           }}
           transition={{
             type: "spring",
-            stiffness: 320,
-            damping: 22,
+            stiffness: 260,
+            damping: 26,
           }}
           className="grid place-items-center"
         >
-          {isDark ? (
-            <MoonIcon className="h-4 w-4" />
-          ) : (
-            <SunIcon className="h-4 w-4" />
-          )}
+          {isDark ? <MoonIcon className="h-4 w-4" /> : <SunIcon className="h-4 w-4" />}
         </motion.span>
       </AnimatePresence>
     </button>

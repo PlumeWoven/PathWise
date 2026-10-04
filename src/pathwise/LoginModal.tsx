@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { signInWithGoogle } from "./oauth";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { toast } from "sonner";
+import { Icon, type IconName } from "@/components/Icon";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -166,6 +167,14 @@ export function LoginModal() {
       setError(err.message);
       return;
     }
+    // Supabase hides whether an email is taken: for an existing account it returns no error and a
+    // user with zero identities — and sends no email. Say so instead of "check your inbox".
+    if (data.user && data.user.identities?.length === 0) {
+      const friendly = "An account with this email already exists. Please sign in instead.";
+      setError(friendly);
+      toast.error(friendly);
+      return;
+    }
     if (data.user) {
       // Names are safe to repair with an UPDATE (the trigger has already
       // inserted the profile row from user_metadata at signUp time).
@@ -222,28 +231,30 @@ export function LoginModal() {
     <>
       <div
         className="fixed inset-0 z-50 flex items-center justify-center px-4"
-        style={{ background: "rgba(26,26,26,0.45)", backdropFilter: "blur(6px)" }}
+        style={{ background: "rgba(10,12,14,0.7)", backdropFilter: "blur(6px)" }}
         onClick={handleClose}
       >
         <div
-          className="pw-card w-full max-w-[520px] p-7 relative"
+          className="pw-card w-full max-w-[32.5rem] p-7 relative shadow-pw-float"
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={handleClose}
             aria-label="Close"
-            className="absolute right-4 top-4 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-xl leading-none"
+            className="absolute right-4 top-4 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors text-xl leading-none"
           >
             ×
           </button>
 
-          <h2 className="font-display text-[28px] leading-tight">{title}</h2>
-          <p className="mt-1 text-[14px] text-[var(--pw-ink-2)]">{subtitle}</p>
+          <h2 className="font-display font-bold uppercase tracking-[-0.025em] text-[1.75rem] leading-none">
+            {title}
+          </h2>
+          <p className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">{subtitle}</p>
 
           {mode === "signup" && (
             <div className="mt-6 grid grid-cols-3 gap-3">
               <RoleCard
-                emoji="🎓"
+                icon="student"
                 label="Student"
                 sub="Get a roadmap & tutor"
                 selected={role === "student"}
@@ -253,7 +264,7 @@ export function LoginModal() {
                 }}
               />
               <RoleCard
-                emoji="👨‍🏫"
+                icon="tutor"
                 label="Tutor"
                 sub="Teach & earn"
                 selected={role === "tutor"}
@@ -263,7 +274,7 @@ export function LoginModal() {
                 }}
               />
               <RoleCard
-                emoji="🔁"
+                icon="switchRole"
                 label="Both"
                 sub="Learn and teach"
                 selected={role === "both"}
@@ -283,7 +294,7 @@ export function LoginModal() {
               <SubmitButton submitting={submitting} label="Sign In →" />
               <OrDivider />
               <GoogleButton onClick={handleGoogle} submitting={submitting} />
-              <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
+              <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
                 <button
                   type="button"
                   onClick={() => {
@@ -324,11 +335,11 @@ export function LoginModal() {
               <OrDivider />
               <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
               {!role && (
-                <p className="text-[11px] text-[var(--pw-ink-2)] text-center">
+                <p className="text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
                   Pick a role above to enable Google sign-up.
                 </p>
               )}
-              <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
+              <div className="label-caps text-[var(--pw-ink-2)] text-center">
                 Already have an account?{" "}
                 <button
                   type="button"
@@ -351,12 +362,12 @@ export function LoginModal() {
               <Field label="Email" type="email" value={email} onChange={setEmail} />
               {error && <ErrorLine msg={error} />}
               {info && (
-                <div className="text-[12px]" style={{ color: "var(--pw-accent-2)" }}>
+                <div className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
                   {info}
                 </div>
               )}
               <SubmitButton submitting={submitting} label="Send reset link →" />
-              <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
+              <div className="label-caps text-[var(--pw-ink-2)] text-center">
                 <button
                   type="button"
                   onClick={() => {
@@ -389,13 +400,13 @@ export function LoginModal() {
 // ---------- Helper Components ----------
 
 function RoleCard({
-  emoji,
+  icon,
   label,
   sub,
   selected,
   onClick,
 }: {
-  emoji: string;
+  icon: IconName;
   label: string;
   sub: string;
   selected: boolean;
@@ -411,9 +422,11 @@ function RoleCard({
         background: selected ? "var(--pw-accent-soft)" : "var(--pw-surface)",
       }}
     >
-      <div className="text-2xl">{emoji}</div>
-      <div className="font-display text-[16px] mt-1.5">{label}</div>
-      <div className="text-[12px] text-[var(--pw-ink-2)] mt-0.5">{sub}</div>
+      <Icon name={icon} className="h-6 w-6" />
+      <div className="font-display font-bold uppercase tracking-[-0.025em] text-[1rem] mt-1.5">
+        {label}
+      </div>
+      <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{sub}</div>
     </button>
   );
 }
@@ -431,15 +444,13 @@ function Field({
 }) {
   return (
     <div>
-      <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-        {label}
-      </label>
+      <label className="label-caps text-[var(--pw-ink-2)]">{label}</label>
       <input
         type={type}
         required
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+        className="pw-input mt-1 text-[0.875rem]"
       />
     </div>
   );
@@ -447,7 +458,7 @@ function Field({
 
 function ErrorLine({ msg }: { msg: string }) {
   return (
-    <div className="text-[12px]" style={{ color: "var(--pw-danger)" }}>
+    <div className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
       {msg}
     </div>
   );
@@ -466,7 +477,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={submitting || disabled}
-      className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 text-[15px] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {submitting ? "Please wait..." : label}
     </button>
@@ -477,9 +488,7 @@ function OrDivider() {
   return (
     <div className="flex items-center gap-3 py-1">
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
-      <span className="text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] font-mono-pw">
-        or
-      </span>
+      <span className="label-caps text-[var(--pw-ink-2)]">or</span>
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
     </div>
   );
@@ -499,7 +508,7 @@ function GoogleButton({
       type="button"
       onClick={onClick}
       disabled={submitting || disabled}
-      className="w-full inline-flex justify-center items-center gap-2 pw-border rounded-md px-6 py-3 text-[14px] font-medium bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="pw-btn-secondary w-full px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden>
         <path

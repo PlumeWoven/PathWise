@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const handleOpenLoginModal = () => {
       setLoginOpen(true);
     };
-    window.addEventListener('open-login-modal', handleOpenLoginModal);
+    window.addEventListener("open-login-modal", handleOpenLoginModal);
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
@@ -137,7 +137,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Check for existing session with error handling
-    supabase.auth.getSession()
+    supabase.auth
+      .getSession()
       .then(({ data: { session: existing } }) => {
         setSession(existing);
         if (existing?.user) {
@@ -158,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
     return () => {
-      window.removeEventListener('open-login-modal', handleOpenLoginModal);
+      window.removeEventListener("open-login-modal", handleOpenLoginModal);
       sub.subscription.unsubscribe();
     };
   }, []);
@@ -179,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     updateConfirmationState(null);
 
-    // 🧹 Clear all impersonation state on sign‑out
+    // Clear all impersonation state on sign‑out
     localStorage.removeItem("impersonating");
     localStorage.removeItem("impersonating_user_name");
     localStorage.removeItem("admin_user_id");
@@ -212,12 +213,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user: AuthUser | null =
     supabaseUser && profile
       ? {
-        id: supabaseUser.id,
-        email: supabaseUser.email ?? "",
-        name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
-        role: profile.role,
-        app_metadata: supabaseUser.app_metadata,
-      }
+          id: supabaseUser.id,
+          email: supabaseUser.email ?? "",
+          name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
+          role: profile.role,
+          app_metadata: supabaseUser.app_metadata,
+        }
       : null;
 
   return (

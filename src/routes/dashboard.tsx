@@ -30,7 +30,9 @@ function DashboardLayout() {
     return (
       <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
         <PWHeader />
-        <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[14px] text-[var(--pw-ink-2)]">Loading…</main>
+        <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
+          Loading…
+        </main>
       </div>
     );
   }

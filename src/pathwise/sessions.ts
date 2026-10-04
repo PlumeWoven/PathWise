@@ -16,15 +16,15 @@ export type SessionPaymentStatus = "unpaid" | "pending" | "paid" | "refunded" | 
 export type SessionType = "trial" | "standard" | "package";
 
 export const STATUS_META: Record<SessionStatus, { label: string; bg: string; fg: string; description: string }> = {
-  scheduled:        { label: "Scheduled",        bg: "#FEF3C7", fg: "#92400E", description: "Awaiting tutor confirmation" },
-  confirmed:        { label: "Confirmed",        bg: "#DBEAFE", fg: "#1E40AF", description: "Locked in your calendars" },
-  reminder_sent:    { label: "Reminder sent",    bg: "#E0E7FF", fg: "#3730A3", description: "We pinged both of you" },
-  in_progress:      { label: "In progress",      bg: "#DCFCE7", fg: "#166534", description: "Session is live now" },
-  completed:        { label: "Completed",        bg: "#E5E7EB", fg: "#374151", description: "Session ended" },
-  awaiting_review:  { label: "Awaiting review",  bg: "#FEF3C7", fg: "#92400E", description: "Leave feedback within 48h" },
-  closed:           { label: "Closed",           bg: "#F3F4F6", fg: "#4B5563", description: "All wrapped up" },
-  cancelled:        { label: "Cancelled",        bg: "#FEE2E2", fg: "#991B1B", description: "This session was cancelled" },
-  disputed:         { label: "Disputed",         bg: "#FFE4E6", fg: "#9F1239", description: "Under investigation" },
+  scheduled:        { label: "Scheduled",        bg: "var(--pw-accent-soft)", fg: "var(--pw-accent-3)",  description: "Awaiting tutor confirmation" },
+  confirmed:        { label: "Confirmed",        bg: "var(--pw-surface-2)",   fg: "var(--pw-ink-2)",     description: "Locked in your calendars" },
+  reminder_sent:    { label: "Reminder sent",    bg: "var(--pw-surface-2)",   fg: "var(--pw-ink-2)",     description: "We pinged both of you" },
+  in_progress:      { label: "In progress",      bg: "var(--pw-surface-2)",   fg: "var(--pw-secondary)", description: "Session is live now" },
+  completed:        { label: "Completed",        bg: "var(--pw-surface-2)",   fg: "var(--pw-ink-2)",     description: "Session ended" },
+  awaiting_review:  { label: "Awaiting review",  bg: "var(--pw-accent-soft)", fg: "var(--pw-accent-3)",  description: "Leave feedback within 48h" },
+  closed:           { label: "Closed",           bg: "var(--pw-surface-2)",   fg: "var(--pw-ink-2)",     description: "All wrapped up" },
+  cancelled:        { label: "Cancelled",        bg: "var(--pw-surface-2)",   fg: "var(--pw-danger)",    description: "This session was cancelled" },
+  disputed:         { label: "Disputed",         bg: "var(--pw-surface-2)",   fg: "var(--pw-danger)",    description: "Under investigation" },
 };
 
 /** Allowed transitions for the session state machine. */
