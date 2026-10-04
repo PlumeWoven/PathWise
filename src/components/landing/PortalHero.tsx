@@ -3,8 +3,11 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { CircleCheckIcon, CircleXIcon, ClockIcon } from "lucide-react";
 import { LandingCtas } from "./LandingCtas";
 
-const HERO_IMG =
-  "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=2000";
+// Self-hosted (public/images) so the site doesn't depend on Unsplash or a CSP exception.
+// Photo from Unsplash (photo-1635070041078-e363dbe005cb), Unsplash License.
+const HERO_IMG = "/images/hero-chalkboard-2000.webp";
+const HERO_SRCSET =
+  "/images/hero-chalkboard-1000.webp 1000w, /images/hero-chalkboard-2000.webp 2000w";
 
 /**
  * Scroll-driven "portal": two ground-coloured panels slide apart while the PATH / WISE
@@ -37,6 +40,11 @@ export function PortalHero() {
       <div className="sticky top-[3.625rem] h-[calc(100svh_-_3.625rem)] w-full overflow-hidden isolate">
         <motion.img
           src={HERO_IMG}
+          srcSet={HERO_SRCSET}
+          sizes="100vw"
+          width={2000}
+          height={1333}
+          fetchPriority="high"
           alt=""
           style={{ scale: imgScale }}
           className="absolute inset-0 z-0 h-full w-full object-cover grayscale brightness-50 md:grayscale-0 motion-reduce:transform-none!"
