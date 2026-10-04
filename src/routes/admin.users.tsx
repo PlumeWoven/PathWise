@@ -55,9 +55,9 @@ function AdminUsers() {
                 throw new Error(errorMsg);
             }
 
-            const { magicLink } = data;
-            if (!magicLink) {
-                throw new Error('No magic link returned from server');
+            const { tokenHash } = data;
+            if (!tokenHash) {
+                throw new Error('No sign-in token returned from server');
             }
 
             // Store admin info for exit (including access token)
@@ -73,13 +73,20 @@ function AdminUsers() {
 
             // 🔥 Sign out admin and wait for it to complete
             await supabase.auth.signOut();
-            // Small delay to ensure session is cleared
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Sign in as the target. verifyOtp works with the PKCE client, unlike
+            // following the magic link (its #access_token fragment is rejected).
+            const { error: otpError } = await supabase.auth.verifyOtp({
+                token_hash: tokenHash,
+                type: 'magiclink',
+            });
+            if (otpError) throw otpError;
 
-            // Redirect to magic link
-            window.location.href = magicLink;
+            window.location.href = '/dashboard';
         } catch (err: unknown) {
             console.error('Impersonation error:', err);
+            // Don't leave the "You are impersonating" banner up when it failed.
+            localStorage.removeItem('impersonating');
+            localStorage.removeItem('impersonating_user_name');
             const e = err as { message?: string };
             toast.error(e?.message || 'Impersonation failed');
             setImpersonating(null);
