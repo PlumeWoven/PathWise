@@ -99,7 +99,10 @@ export default async function handler(req, res) {
         }
 
         console.warn(`[Impersonate] admin=${adminUser.user.id} target=${userId} origin=${origin}`);
-        return res.status(200).json({ magicLink: magicLinkData.properties?.action_link });
+        // Return the token hash, not the action_link: the browser client uses the
+        // PKCE flow, which rejects the #access_token fragment the link redirects with.
+        // The client exchanges this hash with supabase.auth.verifyOtp instead.
+        return res.status(200).json({ tokenHash: magicLinkData.properties?.hashed_token });
     } catch (err) {
         console.error('[Impersonate] Unhandled error:', err);
         return res.status(500).json({ error: err.message || 'Internal server error' });
