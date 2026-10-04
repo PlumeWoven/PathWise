@@ -1,20 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* FORCE DARK BACKGROUND – top-level rule */
+/* Page ground follows the theme tokens (dark = landing ground, light = paper).
+   !important kept so stray route/inline backgrounds can't leak through. */
 html.dark {
-  background-color: #1e1e1c !important;
+  background-color: var(--pw-bg) !important;
 }
 
-html.dark body {
-  background-color: #1e1e1c !important;
-  color: #f5f5f0 !important;
-}
-
+html.dark body,
 html:not(.dark) body {
-  background-color: #f5f3f0 !important;
-  color: #2a2a28 !important;
+  background-color: var(--pw-bg) !important;
+  color: var(--pw-ink) !important;
 }
 
 html,
@@ -26,13 +23,18 @@ body,
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
+  /* QED: square corners. Every rounded-* step is 0 (rounded-full is untouched).
+     Literal 0px, not calc(var(--radius) ± n): `calc(0 - 4px)` is invalid.
+     Bare `rounded` reads --radius, hence it is set here as well as in :root. */
+  --radius: 0px;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -67,143 +69,198 @@ body,
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* PathWise neomorphic theme extensions */
+  /* PathWise theme extensions (QED look) */
   --color-pw-bg: var(--pw-bg);
   --color-pw-surface: var(--pw-surface);
   --color-pw-ink: var(--pw-ink);
   --color-pw-muted: var(--pw-muted);
   --color-pw-accent: var(--pw-accent);
   --color-pw-secondary: var(--pw-secondary);
-  --font-sans: 'Outfit', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Fraunces', Georgia, serif;
+  /* Amber for FILLS (bg-pw-accent-fill) + the text colour that sits on it. --pw-accent is the
+     text-safe amber, which is darker than the fill in light mode. */
+  --color-pw-accent-fill: var(--pw-accent-fill);
+  --color-pw-on-accent: var(--pw-on-accent);
+  --font-sans: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
 
-  /* Neomorphic radius + shadow tokens (back rounded-pw / shadow-pw-* utilities) */
-  --radius-pw: 22px;
-  --shadow-pw-raised: 6px 6px 12px var(--pw-shadow-dark), -6px -6px 12px var(--pw-shadow-light);
-  --shadow-pw-raised-sm: 5px 5px 10px var(--pw-shadow-dark), -5px -5px 10px var(--pw-shadow-light);
-  --shadow-pw-raised-lg: 8px 8px 16px var(--pw-shadow-dark), -8px -8px 16px var(--pw-shadow-light);
-  --shadow-pw-inset: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
+  /* QED landing palette — always dark, scoped to the landing page via bg-qed-* / text-qed-* */
+  --color-qed-ground: #0a0c0e;
+  --color-qed-ground-2: #101317;
+  --color-qed-card: #16191e;
+  --color-qed-ink: #ede7dc;
+  --color-qed-ink-2: #9ea5a8;
+  --color-qed-muted: #6c7378; /* decorative only: 4.1:1 on ground, fails AA for small text */
+  --color-qed-amber: #e8913c;
+  --color-qed-teal: #2e6b72;
+  --color-qed-teal-ink: #5fa3ab; /* teal for text: 6.5:1 on ground-2 */
+  --color-qed-hairline: rgba(237, 231, 220, 0.13);
+  --font-syne: 'Syne', sans-serif;
+  --font-sora: 'Sora', sans-serif;
+
+  /* Radius + shadow tokens (back rounded-pw / shadow-pw-* utilities).
+     QED has no raised/inset shadows: the pw-* steps are a 1px hairline ring. */
+  --radius-pw: 0px;
+  --shadow-pw-raised: 0 0 0 1px var(--pw-border);
+  --shadow-pw-raised-sm: 0 0 0 1px var(--pw-border);
+  --shadow-pw-raised-lg: 0 0 0 1px var(--pw-border);
+  --shadow-pw-inset: inset 0 0 0 1px var(--pw-border);
+  /* The one shadow QED allows: floating cards, modals, popovers. */
+  --shadow-pw-float: 0 10px 30px -5px rgb(0 0 0 / 0.5);
+  /* Tailwind's stock shadows: small steps go flat, large steps (dialog, popover, sheet,
+     hover:shadow-lg) become the floating shadow. */
+  --shadow-2xs: 0 0 #0000;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: 0 0 #0000;
+  --shadow-lg: 0 10px 30px -5px rgb(0 0 0 / 0.5);
+  --shadow-xl: 0 10px 30px -5px rgb(0 0 0 / 0.5);
+  --shadow-2xl: 0 10px 30px -5px rgb(0 0 0 / 0.5);
 }
 
-/* ── Neomorphic radius utility ──
+/* ── Radius utility ──
    Tailwind v4 needs @utility for custom border-radius classes.
    Without this, every component using `rounded-pw` silently falls back to
-   the default border-radius — breaking the entire neomorphic design language. */
+   the default border-radius. (Now 0: QED is square.) */
 @utility rounded-pw {
   border-radius: var(--radius-pw);
 }
 
+@utility label-caps {
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 0.6562rem;
+  font-weight: 600;
+}
+
+@utility text-outline {
+  -webkit-text-stroke: 1px var(--color-qed-hairline);
+  color: transparent;
+}
+
 :root {
-  --radius: 0.75rem;
-  /* PathWise neomorphic palette — light mode */
-  --pw-bg: #f5f3f0;
-  --pw-surface: #ffffff;
-  --pw-ink: #2a2a28;
-  --pw-muted: #5a5a58;
-  --pw-accent: #e07a4a;
-  --pw-secondary: #3d8b6a;
-  /* neomorphic shadow channels */
-  --pw-shadow-dark: rgba(0, 0, 0, 0.08);
-  --pw-shadow-light: rgba(255, 255, 255, 0.70);
+  --radius: 0px;
+  /* QED light variant: paper ground, ink #0a0c0e, same amber/teal.
+     Every token used as TEXT is >= 4.5:1 on bg, surface and surface-2 (checked with a WCAG
+     script). --pw-accent / --pw-accent-2 / --pw-secondary are therefore darker here than the
+     amber/teal fills; use --pw-accent-fill for amber fills. */
+  --pw-bg: #ede7dc;
+  --pw-surface: #f6f2ea;
+  --pw-ink: #0a0c0e;
+  --pw-muted: #4a5257;
+  --pw-accent: #8a4a0a;
+  --pw-secondary: #2a5f66;
+  /* Neomorphic shadow channels, kept only so leftover inline `var(--pw-shadow-*)` render nothing. */
+  --pw-shadow-dark: transparent;
+  --pw-shadow-light: transparent;
 
   /* Legacy / extended variables for backward compatibility */
-  --pw-surface-2: #f3f0ea;
-  --pw-ink-2: #6b6560;
-  --pw-accent-soft: #fff5f0;
-  --pw-accent-2: #2d6a4f;
-  --pw-accent-3: #f4c430;
-  --pw-border: #e8e3db;
-  --pw-danger: #e05a5a;
-  --pw-input-bg: #ffffff;
-  --pw-input-text: #1a1a1a;
+  --pw-surface-2: #e3dccf;
+  --pw-ink-2: #4a5257;
+  --pw-ink-3: #4a5257;
+  --pw-accent-soft: #ecdbc6;
+  --pw-accent-2: #2a5f66;
+  --pw-accent-3: #7a5200;
+  --pw-border: rgba(10, 12, 14, 0.13);
+  --pw-danger: #b3261e;
+  --pw-input-bg: #e3dccf;
+  --pw-input-text: #0a0c0e;
+  /* Amber for fills (button hover, progress, dots) + the ink that sits on it (8:1). */
+  --pw-accent-fill: #e8913c;
+  --pw-on-accent: #0a0c0e;
 
-  --background: oklch(0.985 0.005 80);
-  --foreground: oklch(0.2 0.01 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.01 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.01 60);
-  --primary: oklch(0.66 0.18 40);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.01 80);
-  --secondary-foreground: oklch(0.2 0.01 60);
-  --muted: oklch(0.95 0.01 80);
-  --muted-foreground: oklch(0.5 0.01 60);
-  --accent: oklch(0.66 0.18 40);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.01 70);
-  --input: oklch(0.9 0.01 70);
-  --ring: oklch(0.66 0.18 40);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  /* shadcn tokens: aliases of the --pw-* values (the .dark block re-declares them so each
+     scope resolves its own --pw-*). primary = ink fill with ground text; ring = amber. */
+  --background: var(--pw-bg);
+  --foreground: var(--pw-ink);
+  --card: var(--pw-surface);
+  --card-foreground: var(--pw-ink);
+  --popover: var(--pw-surface);
+  --popover-foreground: var(--pw-ink);
+  --primary: var(--pw-ink);
+  --primary-foreground: var(--pw-bg);
+  --secondary: var(--pw-surface-2);
+  --secondary-foreground: var(--pw-ink);
+  --muted: var(--pw-surface-2);
+  --muted-foreground: var(--pw-ink-2);
+  --accent: var(--pw-surface-2);
+  --accent-foreground: var(--pw-ink);
+  --destructive: var(--pw-danger);
+  --destructive-foreground: var(--pw-bg);
+  --border: var(--pw-border);
+  --input: var(--pw-border);
+  --ring: var(--pw-accent);
+  --chart-1: #b8650f;
+  --chart-2: #2e6b72;
+  --chart-3: #4a5257;
+  --chart-4: #7a5200;
+  --chart-5: #b3261e;
+  --sidebar: var(--pw-surface);
+  --sidebar-foreground: var(--pw-ink);
+  --sidebar-primary: var(--pw-ink);
+  --sidebar-primary-foreground: var(--pw-bg);
+  --sidebar-accent: var(--pw-surface-2);
+  --sidebar-accent-foreground: var(--pw-ink);
+  --sidebar-border: var(--pw-border);
+  --sidebar-ring: var(--pw-accent);
 }
 
 .dark {
-  --pw-bg: #1e1e1c;
-  --pw-surface: #252523;
-  --pw-ink: #f5f5f0;
-  --pw-muted: #bfbfbc;
-  --pw-accent: #e07a4a;
-  --pw-secondary: #3d8b6a;
-  --pw-shadow-dark: rgba(0, 0, 0, 0.35);
-  --pw-shadow-light: rgba(255, 255, 255, 0.03);
+  /* QED dark = the exact landing palette (see --color-qed-* above). */
+  --pw-bg: #0a0c0e;
+  --pw-surface: #16191e;
+  --pw-ink: #ede7dc;
+  --pw-muted: #9ea5a8;
+  --pw-accent: #e8913c;
+  --pw-secondary: #5fa3ab;
+  --pw-shadow-dark: transparent;
+  --pw-shadow-light: transparent;
 
   /* Legacy / extended variables for backward compatibility */
-  --pw-surface-2: #333332;
-  --pw-ink-2: #a8a8a0;
-  --pw-accent-soft: #1f1f1e;
-  --pw-accent-2: #4c7a5e;
-  --pw-accent-3: #d4a830;
-  --pw-border: #3a3a38;
-  --pw-danger: #e05a5a;
-  --pw-input-bg: #1f1f1e;
-  --pw-input-text: #f5f5f0;
+  --pw-surface-2: #101317;
+  --pw-ink-2: #9ea5a8;
+  --pw-ink-3: #9ea5a8;
+  --pw-accent-soft: #251c14;
+  --pw-accent-2: #5fa3ab;
+  --pw-accent-3: #f2b66d;
+  --pw-border: rgba(237, 231, 220, 0.13);
+  --pw-danger: #f0786a;
+  --pw-input-bg: #101317;
+  --pw-input-text: #ede7dc;
+  --pw-accent-fill: #e8913c;
+  --pw-on-accent: #0a0c0e;
 
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.984 0.003 247.858);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: var(--pw-bg);
+  --foreground: var(--pw-ink);
+  --card: var(--pw-surface);
+  --card-foreground: var(--pw-ink);
+  --popover: var(--pw-surface);
+  --popover-foreground: var(--pw-ink);
+  --primary: var(--pw-ink);
+  --primary-foreground: var(--pw-bg);
+  --secondary: var(--pw-surface-2);
+  --secondary-foreground: var(--pw-ink);
+  --muted: var(--pw-surface-2);
+  --muted-foreground: var(--pw-ink-2);
+  --accent: var(--pw-surface-2);
+  --accent-foreground: var(--pw-ink);
+  --destructive: var(--pw-danger);
+  --destructive-foreground: var(--pw-bg);
+  --border: var(--pw-border);
+  --input: var(--pw-border);
+  --ring: var(--pw-accent);
+  --chart-1: #e8913c;
+  --chart-2: #5fa3ab;
+  --chart-3: #9ea5a8;
+  --chart-4: #f2b66d;
+  --chart-5: #f0786a;
+  --sidebar: var(--pw-surface);
+  --sidebar-foreground: var(--pw-ink);
+  --sidebar-primary: var(--pw-ink);
+  --sidebar-primary-foreground: var(--pw-bg);
+  --sidebar-accent: var(--pw-surface-2);
+  --sidebar-accent-foreground: var(--pw-ink);
+  --sidebar-border: var(--pw-border);
+  --sidebar-ring: var(--pw-accent);
 }
 
 /* ===== Dark-mode component overrides =====
@@ -214,79 +271,55 @@ body,
    reads var(--pw-bg)/var(--background), etc.). Keeping `.dark` as a pure
    declarations block (like `:root`) avoids that. */
 
-/* ----- Verification badges (dark mode) – background matches page bg ----- */
-.dark .verification-badge[data-tier="identity"] {
-  background: #1e1e1c !important;
-  color: #4c7a5e !important;
-  border: 1px solid #4c7a5e !important;
-}
-
-.dark .verification-badge[data-tier="email"] {
-  background: #1e1e1c !important;
-  color: #3b82f6 !important;
-  border: 1px solid #3b82f6 !important;
-}
-
-.dark .verification-badge[data-tier="unverified"] {
-  background: #1e1e1c !important;
-  color: #9ca3af !important;
-  border: 1px solid #9ca3af !important;
-}
-
-.dark .verification-badge[data-tier="premium"] {
-  background: #1e1e1c !important;
-  color: #facc15 !important;
-  border: 1px solid #facc15 !important;
-}
-
 /* ----- Unverified banner (dark mode) – consistent with page bg ----- */
 .dark .unverified-banner {
-  background: #1e1e1c !important;
-  border-color: #3a3a38 !important;
+  background: var(--pw-bg) !important;
+  border-color: var(--pw-border) !important;
 }
 
 .dark .unverified-banner .text-\[var\(--pw-ink-2\)\] {
-  color: #a8a8a0 !important;
+  color: var(--pw-ink-2) !important;
 }
 
 /* ----- Impersonation banner (dark mode) ----- */
 .dark .impersonation-banner {
-  background: #3d2b20 !important;
-  border-color: #5c3a2a !important;
+  background: var(--pw-accent-soft) !important;
+  border-color: color-mix(in srgb, var(--pw-accent) 35%, transparent) !important;
 }
 
 .dark .impersonation-banner span {
-  color: #f5f5f0 !important;
+  color: var(--pw-ink) !important;
 }
 
 .dark .impersonation-banner button {
-  background: #e07a4a !important;
+  background: var(--pw-accent-fill) !important;
+  color: var(--pw-on-accent) !important;
 }
 
 /* ----- Course page top card (dark mode) ----- */
 .dark .course-hero {
-  background: #252523 !important;
-  border-color: #3a3a38 !important;
+  background: var(--pw-surface) !important;
+  border-color: var(--pw-border) !important;
 }
 
 .dark .course-hero .course-title {
-  color: #f5f5f0 !important;
+  color: var(--pw-ink) !important;
 }
 
 .dark .course-hero .course-subtitle,
 .dark .course-hero .course-meta {
-  color: #a8a8a0 !important;
+  color: var(--pw-ink-2) !important;
 }
 
 /* ----- Impersonate button (dark mode) ----- */
 .dark .admin-impersonate-btn {
-  background: #1e1e1c !important;
-  color: #f5f5f0 !important;
-  border: 1px solid #4c7a5e !important;
+  background: var(--pw-bg) !important;
+  color: var(--pw-ink) !important;
+  border: 1px solid var(--pw-accent-2) !important;
 }
 
 .dark .admin-impersonate-btn:hover {
-  background: #252523 !important;
+  background: var(--pw-surface) !important;
 }
 
 /* ----- Daily/Weekly/Monthly pills (dark mode) ----- */
@@ -297,20 +330,35 @@ body,
 }
 
 .dark .chart-range-pill.active {
-  background: #d4d4d4 !important;
-  color: #000000 !important;
-  font-weight: 500;
+  background: var(--pw-ink) !important;
+  color: var(--pw-bg) !important;
+  font-weight: 600;
   box-shadow: none !important;
 }
 
-/* ----- Override hardcoded bg-white on inputs, selects, textareas ----- */
-.dark input.bg-white,
-.dark select.bg-white,
-.dark textarea.bg-white {
+/* ----- Override hardcoded bg-white on inputs, selects, textareas (both themes: white is
+   off-palette in the light variant too) ----- */
+input.bg-white,
+select.bg-white,
+textarea.bg-white {
   background-color: var(--pw-input-bg) !important;
 }
 
 @layer base {
+  /* Whole-site scale: 120% of the user's default font size. Every size is rem-based (px → rem
+     converted), so text, spacing and components scale together; media-query breakpoints don't. */
+  html {
+    font-size: 120%;
+  }
+
+  /* Native range/checkbox/radio controls pick up the QED amber instead of browser blue. */
+  input[type="range"],
+  input[type="checkbox"],
+  input[type="radio"],
+  progress {
+    accent-color: var(--pw-accent-fill);
+  }
+
   * {
     border-color: var(--color-border);
   }
@@ -318,16 +366,16 @@ body,
   body {
     background-color: var(--pw-bg);
     color: var(--pw-ink);
-    font-family: "Outfit", system-ui, sans-serif;
+    font-family: "Sora", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+    /* Left at 0.3px on purpose: the landing page inherits it from body, and it must not move. */
     letter-spacing: 0.3px;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   .font-display {
-    font-family: "Fraunces", Georgia, serif;
-    font-optical-sizing: auto;
-    letter-spacing: 0.6px;
+    font-family: "Syne", system-ui, sans-serif;
+    letter-spacing: -0.025em;
   }
 
   .font-mono-pw {
@@ -343,12 +391,13 @@ body,
     border-color: var(--pw-border);
   }
 
+  /* Focus = amber border + 1px amber ring (2px of amber in total). */
   input:focus,
   select:focus,
   textarea:focus {
     border-color: var(--pw-accent);
     outline: none;
-    box-shadow: 0 0 0 2px var(--pw-accent-soft);
+    box-shadow: 0 0 0 1px var(--pw-accent);
   }
 
   input::placeholder,
@@ -371,276 +420,297 @@ body,
 }
 
 /* =====================================================================
-   PathWise neomorphic COMPONENT VOCABULARY
-   These are the reusable classes to apply across every page. Hand this
-   file to your agent — the comment beside each class says where to use it.
-   All of them reference the --pw-* variables + shadow channels, so they
-   invert automatically in dark mode (.dark on <html>).
+   PathWise COMPONENT VOCABULARY (QED look)
+   Reusable classes for every page. Square corners, 1px hairline borders,
+   no raised/inset shadows; buttons, pills, nav and badges use uppercase
+   label-caps type. All of it reads the --pw-* tokens, so it follows the
+   light/dark toggle (.dark on <html>). Class names are unchanged.
+
+   Layering: what is UNLAYERED here (colour, radius, type of buttons/nav/
+   badge/pill) beats call-site Tailwind utilities, as before. What sits in
+   `@layer components` below (padding, border, pill colours) can still be
+   overridden per call site (p-*, border-*, text-*, hover:*).
    ===================================================================== */
 
-/* ----- Neomorphic surface utilities ----- */
+/* ----- Surface utilities: hairline ring instead of neomorphic shadow ----- */
 
-/* Raised card (outer shadow) */
-.pw-raised {
-  background-color: var(--pw-surface);
-  box-shadow: 6px 6px 12px var(--pw-shadow-dark), -6px -6px 12px var(--pw-shadow-light);
-}
-
-/* Softer raised (smaller depth) */
-.pw-raised-sm {
-  background-color: var(--pw-surface);
-  box-shadow: 5px 5px 10px var(--pw-shadow-dark), -5px -5px 10px var(--pw-shadow-light);
-}
-
-/* Deeper raised (more lift) */
+/* Flat panel (was: raised) */
+.pw-raised,
+.pw-raised-sm,
 .pw-raised-lg {
   background-color: var(--pw-surface);
-  box-shadow: 8px 8px 16px var(--pw-shadow-dark), -8px -8px 16px var(--pw-shadow-light);
+  box-shadow: 0 0 0 1px var(--pw-border);
 }
 
-/* Inset / pressed (inner shadow) */
+/* Recessed panel (was: inset / pressed) */
 .pw-inset {
   background-color: var(--pw-bg);
-  box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
+  box-shadow: inset 0 0 0 1px var(--pw-border);
 }
 
 /* CARD — metric cards, chart panels, roadmap stage cards, profile panels,
-   any raised content container. */
+   any content container. Surface + 1px hairline (border is in
+   `@layer components` so border and hover:border utilities still win). */
 .pw-card {
   background-color: var(--pw-surface);
-  border-radius: 22px;
-  box-shadow: 6px 6px 12px var(--pw-shadow-dark), -6px -6px 12px var(--pw-shadow-light);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  border-radius: 0;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 /* WELL — recessed container: chart wells, avatar tiles, icon tiles,
-   anything that should read as carved-in rather than raised. */
+   toggle tracks. Hairline ring, no inner shadow. */
 .pw-well {
   background-color: var(--pw-bg);
-  border-radius: 18px;
-  box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
+  border-radius: 0;
+  box-shadow: inset 0 0 0 1px var(--pw-border);
 }
 
 /* PRIMARY BUTTON — main CTAs (Get verified, Complete profile, Book trial,
-   "See My Matched Tutors", primary submit). */
+   "See My Matched Tutors", primary submit). Ink fill, ground text, amber on hover. */
 .pw-btn-primary {
-  background-color: var(--pw-accent);
-  color: #ffffff;
-  border-radius: 20px;
-  box-shadow: 6px 6px 12px var(--pw-shadow-dark), -6px -6px 12px var(--pw-shadow-light);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  background-color: var(--pw-ink);
+  color: var(--pw-bg);
+  border-radius: 0;
+  font-size: 0.7188rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.pw-btn-primary:hover:not(:disabled) {
+  background-color: var(--pw-accent-fill);
+  color: var(--pw-on-accent);
 }
 
 /* SECONDARY / GHOST BUTTON — outline-style actions (Find a tutor,
-   View profile, Message, Clear all filters, Withdraw earnings). Pressed/inset
-   look, accent text. */
+   View profile, Message, Clear all filters, Withdraw earnings). Hairline
+   border, ink text, border goes to ink on hover. */
 .pw-btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 28px;
-  border-radius: 20px;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  border: 1px solid var(--pw-border);
+  border-radius: 0;
+  font-size: 0.7188rem;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
   color: var(--pw-ink);
-  background-color: var(--pw-bg);
-  box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  background-color: transparent;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* NAV PILL — top-nav buttons (Dashboard, My Roadmap, Find a tutor, My
-   sessions, Admin) AND sidebar items (Dashboard, My Courses, Calendar...).
-   Default = flat-on-surface; add .is-active for the selected state. */
+.pw-btn-secondary:hover:not(:disabled) {
+  border-color: var(--pw-ink);
+}
+
+/* PILL — rounded-full hairline chip / top-nav button (Dashboard, My Roadmap,
+   Find a tutor, My sessions, Admin) and tag chips. Default = transparent with
+   hairline; add .is-active for the selected state (ink fill). Colours, border
+   and padding live in `@layer components`; only radius + type are forced here. */
 .pw-pill {
   border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
-/* SIDEBAR ITEM — left-rail nav rows; rounded rectangle pill. Use .is-active
-   for the highlighted row (light raised shadow + accent text). */
+/* SIDEBAR ITEM — left-rail nav rows. Use .is-active for the highlighted row
+   (amber text on surface). */
 .pw-nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
+  padding: 0.75rem 1rem;
+  border-radius: 0;
+  font-size: 0.7188rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
   color: var(--pw-muted);
   background-color: transparent;
-  transition: box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .pw-nav-item:hover {
-  color: var(--pw-ink);
-  background-color: var(--pw-surface);
-  box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
+  color: var(--pw-accent);
 }
 
 .pw-nav-item.is-active {
   color: var(--pw-accent);
   background-color: var(--pw-surface);
-  box-shadow: 4px 4px 8px var(--pw-shadow-dark), -4px -4px 8px var(--pw-shadow-light);
 }
 
 /* INPUT — text fields, selects, search boxes, the filter sidebar controls.
-   Soft inset well so fields read as carved-in. */
+   Square, hairline border, ground-2 fill; focus = amber border + 1px amber ring. */
 .pw-input {
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: none;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--pw-border);
+  border-radius: 0;
   outline: none;
   color: var(--pw-ink);
-  background-color: var(--pw-bg);
-  box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light);
-  transition: box-shadow 0.3s ease;
+  background-color: var(--pw-input-bg);
+  transition: border-color 0.3s ease;
 }
 
 .pw-input::placeholder {
-  color: var(--pw-muted);
+  color: var(--pw-ink-2);
 }
 
 .pw-input:focus {
-  box-shadow: inset 3px 3px 6px var(--pw-shadow-dark), inset -3px -3px 6px var(--pw-shadow-light), 0 0 0 2px var(--pw-accent);
+  border-color: var(--pw-accent);
+  box-shadow: 0 0 0 1px var(--pw-accent);
 }
 
 /* BADGE — status chips (EMAIL VERIFIED, Locked, "45% Match", tag chips like
-   Fractions / Decimals / Mathematics). Soft raised-sm pill. */
+   Fractions / Decimals / Mathematics). rounded-full hairline, label-caps, no shadow. */
 .pw-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--pw-border);
   border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
+  font-size: 0.6562rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--pw-muted);
-  background-color: var(--pw-surface);
-  box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
+  color: var(--pw-ink-2);
+  background-color: transparent;
 }
 
 .pw-badge-accent {
   color: var(--pw-accent);
+  border-color: var(--pw-accent);
 }
 
 /* ROW — list / table rows (upcoming sessions, reviews, admin users table,
-   lead-funnel rows). Subtle raised surface; separate rows with pw-divider
-   or vertical gap instead of hard borders. */
+   lead-funnel rows). Hairline row: transparent, 1px rule underneath. */
 .pw-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 20px;
-  border-radius: 16px;
-  background-color: var(--pw-surface);
-  box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--pw-border);
+  border-radius: 0;
+  background-color: transparent;
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
-/* DIVIDER — soft carved separator (footer, between table rows, card
-   sections). Replaces hard 1px borders. */
+/* DIVIDER — 1px hairline (footer, between table rows, card sections). */
 .pw-divider {
+  height: 1px;
+  width: 100%;
+  background-color: var(--pw-border);
+}
+
+/* PROGRESS — roadmap progress, profile-completeness, quiz step bar. Hairline
+   track + amber fill (2px, not 1px, so the fill stays visible on paper). Set
+   the fill width inline (e.g. style width:17%). */
+.pw-progress {
   height: 2px;
   width: 100%;
-  border-radius: 9999px;
-  box-shadow: inset 0 1px 2px var(--pw-shadow-dark), inset 0 -1px 1px var(--pw-shadow-light);
-}
-
-/* PROGRESS — roadmap progress, profile-completeness, quiz step bar. Inset
-   track + accent fill. Set the fill width inline (e.g. style width:17%). */
-.pw-progress {
-  height: 10px;
-  width: 100%;
-  border-radius: 9999px;
-  background-color: var(--pw-bg);
-  box-shadow: inset 2px 2px 4px var(--pw-shadow-dark), inset -2px -2px 4px var(--pw-shadow-light);
+  background-color: var(--pw-border);
   overflow: hidden;
 }
 
 .pw-progress > .pw-progress-fill {
   display: block;
   height: 100%;
-  border-radius: 9999px;
   background-color: var(--pw-accent);
 }
 
+/* Keyboard focus on the interactive component classes: 2px amber outline with offset. */
+.pw-btn-primary:focus-visible,
+.pw-btn-secondary:focus-visible,
+.pw-btn-outline:focus-visible,
+.pw-pill:focus-visible,
+.pw-nav-item:focus-visible,
+.pw-card:focus-visible {
+  outline: 2px solid var(--pw-accent);
+  outline-offset: 2px;
+}
+
 /* =====================================================================
-   Design-system completions (ported from the design zip). Placed in
-   @layer components so per-call-site Tailwind utilities (p-*, px-*, py-*,
-   font-*, shadow-*) still override these defaults. Existing usages stay
-   unchanged; bare usages + the style guide get the full neomorphic look.
+   Component defaults in @layer components, so per-call-site Tailwind
+   utilities (p-*, px-*, py-*, border-*, text-*, hover:*) still override them.
    ===================================================================== */
 @layer components {
 
-  /* CARD — default interior padding (override with p-* utilities). */
+  /* CARD — hairline border + default interior padding (override with p-* utilities). */
   .pw-card {
-    padding: 28px;
+    padding: 1.75rem;
+    border: 1px solid var(--pw-border);
   }
 
-  /* PRIMARY BUTTON — full flex/sizing/typography defaults. */
+  /* PRIMARY BUTTON — flex/sizing defaults. */
   .pw-btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 14px 28px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
+    gap: 0.5rem;
+    padding: 0.875rem 1.75rem;
   }
 
-  /* NAV PILL — flat-on-surface default; add .is-active for the selected state. */
+  /* PILL — transparent with a hairline; hover darkens the border only (so a call-site
+     text colour can never end up unreadable); .is-active = ink fill. */
   .pw-pill {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 18px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
     color: var(--pw-ink);
     background-color: transparent;
-    transition: box-shadow 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+    border: 1px solid var(--pw-border);
+    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
   }
 
   .pw-pill:hover {
-    background-color: var(--pw-surface);
-    box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
+    border-color: var(--pw-ink);
   }
 
   .pw-pill.is-active {
-    color: var(--pw-accent);
-    background-color: var(--pw-surface);
-    box-shadow: 3px 3px 6px var(--pw-shadow-dark), -3px -3px 6px var(--pw-shadow-light);
+    color: var(--pw-bg);
+    background-color: var(--pw-ink);
+    border-color: var(--pw-ink);
   }
 }
 
 @layer utilities {
   .pw-border {
-    border: 1.5px solid var(--pw-border);
+    border: 1px solid var(--pw-border);
   }
 
   .pw-border-accent {
-    border: 1.5px solid var(--pw-accent);
+    border: 1px solid var(--pw-accent);
   }
 
+  /* Outline button = QED secondary: square, hairline, ink text, label-caps; border to ink on hover. */
   .pw-btn-outline {
     background: transparent;
-    color: var(--pw-accent);
-    border: 1.5px solid var(--pw-accent);
-    border-radius: 100px;
-    transition: all 250ms ease-out;
+    color: var(--pw-ink);
+    border: 1px solid var(--pw-border);
+    border-radius: 0;
+    font-size: 0.7188rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
   }
 
-  .pw-btn-outline:hover {
-    background: var(--pw-accent-soft);
+  .pw-btn-outline:hover:not(:disabled) {
+    border-color: var(--pw-ink);
   }
 
   .pw-tracking-wide {
-    letter-spacing: 0.14em;
+    letter-spacing: 0.15em;
   }
 
   @keyframes pw-bounce-chev {
@@ -686,9 +756,10 @@ body,
       border-color: var(--pw-border);
     }
 
+    /* success = teal (--pw-accent-2) in both themes */
     50% {
       border-color: var(--pw-accent-2);
-      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.15);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--pw-accent-2) 20%, transparent);
     }
   }
 
@@ -703,9 +774,10 @@ body,
       border-color: var(--pw-border);
     }
 
+    /* error stays semantic red (--pw-danger), retuned per theme */
     50% {
       border-color: var(--pw-danger);
-      box-shadow: 0 0 0 3px rgba(224, 90, 90, 0.15);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--pw-danger) 20%, transparent);
     }
   }
 

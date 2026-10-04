@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { Icon } from "@/components/Icon";
 
 const searchSchema = z.object({
   ref: fallback(z.string(), "").default(""),
@@ -12,9 +13,16 @@ export const Route = createFileRoute("/_app/demo")({
   head: () => ({
     meta: [
       { title: "Try Pathwise — Live Demo" },
-      { name: "description", content: "Experience Pathwise as a tutor or student. Sample data, no signup, 60 minute session." },
+      {
+        name: "description",
+        content:
+          "Experience Pathwise as a tutor or student. Sample data, no signup, 60 minute session.",
+      },
       { property: "og:title", content: "Try Pathwise — Live Demo" },
-      { property: "og:description", content: "Explore the full tutor & student experience with sample data." },
+      {
+        property: "og:description",
+        content: "Explore the full tutor & student experience with sample data.",
+      },
       { property: "og:url", content: "/demo" },
     ],
     links: [{ rel: "canonical", href: "/demo" }],
@@ -33,49 +41,54 @@ function DemoEntry() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-3xl mx-auto px-5 sm:px-8 py-12 sm:py-20 text-center">
-        <span className="font-mono-pw text-[11px] uppercase tracking-wider text-[var(--pw-accent)]">Live Demo</span>
-        <h1 className="mt-3 font-display text-[36px] sm:text-[46px] leading-tight">
-          Experience Pathwise <span className="italic">in 60 seconds</span>
+        <span className="label-caps text-[var(--pw-accent)]">Live Demo</span>
+        <h1 className="mt-3 font-display text-[2.25rem] sm:text-[2.875rem] uppercase tracking-[-0.025em] leading-[1.1]">
+          Experience Pathwise <span className="text-[var(--pw-accent)]">in 60 seconds</span>
         </h1>
-        <p className="mt-4 text-[15px] text-[var(--pw-ink-2)] max-w-xl mx-auto">
-          Explore the full platform with realistic sample data. No signup, no credit card.
-          Your demo session lasts 60 minutes — choose which experience you want to start with.
+        <p className="mt-4 text-[0.9375rem] text-[var(--pw-ink-2)] max-w-xl mx-auto">
+          Explore the full platform with realistic sample data. No signup, no credit card. Your demo
+          session lasts 60 minutes — choose which experience you want to start with.
         </p>
 
-        <div className="mt-10 grid sm:grid-cols-2 gap-4 text-left">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
           <button
             onClick={() => start("tutor")}
-            className="pw-card p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 hover:border-[var(--pw-accent)] group"
+            className="pw-card p-6 hover:border-[var(--pw-ink)] transition-colors group"
           >
-            <div className="text-3xl">👩‍🏫</div>
-            <h2 className="mt-3 font-display text-[20px]">I want to see the Tutor experience</h2>
-            <p className="mt-2 text-[13px] text-[var(--pw-ink-2)]">
+            <Icon name="tutor" className="h-8 w-8" />
+            <h2 className="mt-3 font-display text-[1.25rem] transition-colors group-hover:text-[var(--pw-accent)]">
+              I want to see the Tutor experience
+            </h2>
+            <p className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
               Dashboard with earnings, students, courses, messages — everything tutors get.
             </p>
-            <div className="mt-4 text-[13px] text-[var(--pw-accent)] font-medium">
-              Start as Tutor →
-            </div>
+            <div className="mt-4 label-caps text-[var(--pw-accent)]">Start as Tutor →</div>
           </button>
 
           <button
             onClick={() => start("student")}
-            className="pw-card p-6 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 hover:border-[var(--pw-accent)] group"
+            className="pw-card p-6 hover:border-[var(--pw-ink)] transition-colors group"
           >
-            <div className="text-3xl">🎓</div>
-            <h2 className="mt-3 font-display text-[20px]">I want to see the Student experience</h2>
-            <p className="mt-2 text-[13px] text-[var(--pw-ink-2)]">
+            <Icon name="student" className="h-8 w-8" />
+            <h2 className="mt-3 font-display text-[1.25rem] transition-colors group-hover:text-[var(--pw-accent)]">
+              I want to see the Student experience
+            </h2>
+            <p className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
               Browse courses, enroll, and follow a sample learning roadmap.
             </p>
-            <div className="mt-4 text-[13px] text-[var(--pw-accent)] font-medium">
-              Start as Student →
-            </div>
+            <div className="mt-4 label-caps text-[var(--pw-accent)]">Start as Student →</div>
           </button>
         </div>
 
-        <p className="mt-8 text-[12px] text-[var(--pw-ink-2)]">
-          Already exploring? <Link to="/pathwise/demo" className="text-[var(--pw-accent)] hover:underline">Resume your demo</Link>
+        <p className="mt-8 text-[0.75rem] text-[var(--pw-ink-2)]">
+          Already exploring?{" "}
+          <Link to="/pathwise/demo" className="text-[var(--pw-accent)] hover:underline">
+            Resume your demo
+          </Link>
           {" · "}
-          <Link to="/" className="text-[var(--pw-accent)] hover:underline">Back to home</Link>
+          <Link to="/" className="text-[var(--pw-accent)] hover:underline">
+            Back to home
+          </Link>
         </p>
       </main>
     </div>

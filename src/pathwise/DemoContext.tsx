@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 
 export const DEMO_DURATION_MS = 60 * 60 * 1000; // 60 minutes
@@ -17,7 +25,11 @@ export const DEMO_TUTOR = {
   reviews: 127,
   students: 348,
   hourlyRate: 45,
-  credentials: ["MSc Computer Science — TU Delft", "AWS Certified Solutions Architect", "Ex-Google Engineer"],
+  credentials: [
+    "MSc Computer Science — TU Delft",
+    "AWS Certified Solutions Architect",
+    "Ex-Google Engineer",
+  ],
 };
 
 export const DEMO_COURSES = [
@@ -25,38 +37,83 @@ export const DEMO_COURSES = [
     id: "c1",
     title: "Full-Stack JavaScript: From Zero to Production",
     category: "Programming",
-    price: 89, discount: 49,
-    students: 214, rating: 4.9, reviews: 86, lessons: 42, hours: 18,
+    price: 89,
+    discount: 49,
+    students: 214,
+    rating: 4.9,
+    reviews: 86,
+    lessons: 42,
+    hours: 18,
     completion: 73,
-    thumb: "linear-gradient(135deg,#0ea5e9,#6366f1)",
+    thumb: "var(--pw-accent-2)",
     tutorId: "demo-tutor-1",
   },
   {
     id: "c2",
     title: "Build & Sell: A Practical Guide to Indie SaaS",
     category: "Business",
-    price: 129, discount: null as number | null,
-    students: 134, rating: 4.8, reviews: 41, lessons: 28, hours: 11,
+    price: 129,
+    discount: null as number | null,
+    students: 134,
+    rating: 4.8,
+    reviews: 41,
+    lessons: 28,
+    hours: 11,
     completion: 58,
-    thumb: "linear-gradient(135deg,#f59e0b,#ef4444)",
+    thumb: "var(--pw-accent-fill)",
     tutorId: "demo-tutor-1",
   },
 ];
 
 export const DEMO_MESSAGES = [
-  { id: 1, from: "Maria P.", avatar: "MP", time: "2h ago", preview: "Hi Alex! Loved lesson 12 — quick question about async patterns…", unread: true },
-  { id: 2, from: "Daniel C.", avatar: "DC", time: "yesterday", preview: "Could we schedule a 1:1 next week to review my project?", unread: true },
-  { id: 3, from: "Sarah K.", avatar: "SK", time: "3 days ago", preview: "Just finished the SaaS course — thank you, this was incredible.", unread: false },
+  {
+    id: 1,
+    from: "Maria P.",
+    avatar: "MP",
+    time: "2h ago",
+    preview: "Hi Alex! Loved lesson 12 — quick question about async patterns…",
+    unread: true,
+  },
+  {
+    id: 2,
+    from: "Daniel C.",
+    avatar: "DC",
+    time: "yesterday",
+    preview: "Could we schedule a 1:1 next week to review my project?",
+    unread: true,
+  },
+  {
+    id: 3,
+    from: "Sarah K.",
+    avatar: "SK",
+    time: "3 days ago",
+    preview: "Just finished the SaaS course — thank you, this was incredible.",
+    unread: false,
+  },
 ];
 
 export const DEMO_SESSIONS = [
-  { id: "s1", student: "Maria P.", topic: "Async JS deep dive", when: "Today · 16:00", duration: 60 },
-  { id: "s2", student: "Daniel C.", topic: "Project review", when: "Tomorrow · 10:30", duration: 45 },
+  {
+    id: "s1",
+    student: "Maria P.",
+    topic: "Async JS deep dive",
+    when: "Today · 16:00",
+    duration: 60,
+  },
+  {
+    id: "s2",
+    student: "Daniel C.",
+    topic: "Project review",
+    when: "Tomorrow · 10:30",
+    duration: 45,
+  },
   { id: "s3", student: "James L.", topic: "Career mentoring", when: "Fri · 14:00", duration: 30 },
 ];
 
 export const DEMO_REVIEW = {
-  student: "Maria P.", rating: 5, course: "Full-Stack JavaScript",
+  student: "Maria P.",
+  rating: 5,
+  course: "Full-Stack JavaScript",
   body: "Alex's teaching style is unmatched. The exercises are practical, and his feedback in 1:1s helped me land my first dev job.",
 };
 
@@ -159,12 +216,15 @@ export function DemoProvider({
     onExit();
   }, [onExit]);
 
-  const lockedFeature = useCallback((label = "this feature") => {
-    toast.message("Sign up to unlock " + label, {
-      description: "Demo mode is read-only. Create a free account to use it for real.",
-      action: { label: "Sign up →", onClick: () => onExit() },
-    });
-  }, [onExit]);
+  const lockedFeature = useCallback(
+    (label = "this feature") => {
+      toast.message("Sign up to unlock " + label, {
+        description: "Demo mode is read-only. Create a free account to use it for real.",
+        action: { label: "Sign up →", onClick: () => onExit() },
+      });
+    },
+    [onExit],
+  );
 
   const shareLink = useCallback(async () => {
     if (typeof window === "undefined") return "";
@@ -190,17 +250,42 @@ export function DemoProvider({
     if (typeof window !== "undefined") localStorage.setItem(EMAIL_KEY, email);
   }, []);
 
-  const value: DemoCtx = useMemo(() => ({
-    isDemo: true,
-    view, setView,
-    remaining, expired, warning,
-    exitDemo, lockedFeature, shareLink, viewsForRef,
-    capturedEmail, captureEmail,
-    data: {
-      tutor: DEMO_TUTOR, courses: DEMO_COURSES, messages: DEMO_MESSAGES,
-      sessions: DEMO_SESSIONS, review: DEMO_REVIEW, earnings: EARNINGS,
-    },
-  }), [view, remaining, expired, warning, exitDemo, lockedFeature, shareLink, viewsForRef, capturedEmail, captureEmail]);
+  const value: DemoCtx = useMemo(
+    () => ({
+      isDemo: true,
+      view,
+      setView,
+      remaining,
+      expired,
+      warning,
+      exitDemo,
+      lockedFeature,
+      shareLink,
+      viewsForRef,
+      capturedEmail,
+      captureEmail,
+      data: {
+        tutor: DEMO_TUTOR,
+        courses: DEMO_COURSES,
+        messages: DEMO_MESSAGES,
+        sessions: DEMO_SESSIONS,
+        review: DEMO_REVIEW,
+        earnings: EARNINGS,
+      },
+    }),
+    [
+      view,
+      remaining,
+      expired,
+      warning,
+      exitDemo,
+      lockedFeature,
+      shareLink,
+      viewsForRef,
+      capturedEmail,
+      captureEmail,
+    ],
+  );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

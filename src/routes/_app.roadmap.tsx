@@ -4,15 +4,27 @@ import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { toast } from "sonner";
 import { LEVEL_META, Subject, Level } from "../pathwise/data";
+import { Icon, type IconName } from "@/components/Icon";
 import { GOAL_LABELS, usePW } from "../pathwise/store";
 import { StageDetailModal } from "../pathwise/StageDetailModal";
 import { useAuth } from "../pathwise/auth";
 import { RoleGate } from "../pathwise/RoleGate";
 // ─── api.ts replaces inline supabase calls ───────────────────────────────────
-import { getRoadmapWithStages, completeStage, getRoadmapEnrollments, type StageEnrollment } from "../pathwise/api";
+import {
+  getRoadmapWithStages,
+  completeStage,
+  getRoadmapEnrollments,
+  type StageEnrollment,
+} from "../pathwise/api";
 import { requireAuth } from "../lib/authGuard";
 import { supabase } from "@/integrations/supabase/client";
-import { BAND_META, clampBand, LEVEL_TO_BAND, requiredBandForStage, type LevelBand } from "../pathwise/levels";
+import {
+  BAND_META,
+  clampBand,
+  LEVEL_TO_BAND,
+  requiredBandForStage,
+  type LevelBand,
+} from "../pathwise/levels";
 import { MatchedTutorsPanel } from "../pathwise/MatchedTutorsPanel";
 
 interface DBStage {
@@ -48,9 +60,15 @@ export const Route = createFileRoute("/_app/roadmap")({
   head: () => ({
     meta: [
       { title: "Your Roadmap — PathWise" },
-      { name: "description", content: "A personalized 5-stage learning roadmap built around your level and goal." },
+      {
+        name: "description",
+        content: "A personalized 5-stage learning roadmap built around your level and goal.",
+      },
       { property: "og:title", content: "Your Roadmap — PathWise" },
-      { property: "og:description", content: "Visual learning journey from where you are to where you want to be." },
+      {
+        property: "og:description",
+        content: "Visual learning journey from where you are to where you want to be.",
+      },
       { property: "og:url", content: "/roadmap" },
     ],
     links: [{ rel: "canonical", href: "/roadmap" }],
@@ -77,7 +95,11 @@ function RoadmapPageInner() {
   const [loading, setLoading] = useState(true);
   const [openStage, setOpenStage] = useState<number | null>(null);
   const [completing, setCompleting] = useState<number | null>(null);
-  const [overlay, setOverlay] = useState<{ stageNumber: number; nextTitle: string | null; xp: number } | null>(null);
+  const [overlay, setOverlay] = useState<{
+    stageNumber: number;
+    nextTitle: string | null;
+    xp: number;
+  } | null>(null);
   const [showAnonToast, setShowAnonToast] = useState(false);
   // Live enrollments keyed by stage id — drives the course gate on each card.
   const [enrollments, setEnrollments] = useState<Map<string, StageEnrollment>>(new Map());
@@ -93,7 +115,9 @@ function RoadmapPageInner() {
     if (localId) return localId;
 
     // 2. If authenticated, look up by user_id in the database
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (session?.user) {
       const { data } = await supabase
         .from("roadmaps")
@@ -137,10 +161,10 @@ function RoadmapPageInner() {
   // For the roadmap page we still need to fetch by roadmapId from the URL/localStorage,
   // so we keep a lightweight direct fetch here scoped to the specific roadmapId.
   async function fetchRoadmap(roadmapId: string) {
-    console.log('[roadmap] fetchRoadmap called');
-    console.log('[roadmap] roadmapId:', roadmapId);
+    console.log("[roadmap] fetchRoadmap called");
+    console.log("[roadmap] roadmapId:", roadmapId);
     if (!roadmapId) {
-      console.log('[roadmap] No roadmapId, redirecting to quiz');
+      console.log("[roadmap] No roadmapId, redirecting to quiz");
       navigate({ to: "/quiz" });
       return;
     }
@@ -150,37 +174,39 @@ function RoadmapPageInner() {
 
       // ─── FIX 2: Claim the roadmap FIRST before fetching ───────────────────────────
       // This eliminates the race condition — the claim and fetch happen sequentially
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (session?.user) {
-        const pendingId = localStorage.getItem('pathwise_roadmap_id');
+        const pendingId = localStorage.getItem("pathwise_roadmap_id");
         if (pendingId) {
-          console.log('[roadmap] Claiming roadmap for user:', session.user.id);
+          console.log("[roadmap] Claiming roadmap for user:", session.user.id);
           const { data: claimData, error: claimErr } = await supabase
-            .from('roadmaps')
+            .from("roadmaps")
             .update({ user_id: session.user.id })
-            .eq('id', pendingId)
-            .is('user_id', null)
-            .select()          // ← ADD .select() to get the updated row back
-            .maybeSingle();    // ← ADD .maybeSingle() to get the actual data
+            .eq("id", pendingId)
+            .is("user_id", null)
+            .select() // ← ADD .select() to get the updated row back
+            .maybeSingle(); // ← ADD .maybeSingle() to get the actual data
 
           if (claimErr) {
-            console.error('[roadmap] Claim failed:', claimErr.message);
+            console.error("[roadmap] Claim failed:", claimErr.message);
           } else {
-            console.log('[roadmap] Claim succeeded');
-            localStorage.removeItem('pathwise_roadmap_id');
+            console.log("[roadmap] Claim succeeded");
+            localStorage.removeItem("pathwise_roadmap_id");
 
             // If we got the claimed row back, use it directly instead of re-fetching
             if (claimData) {
-              console.log('[roadmap] Using claimed roadmap directly:', claimData.id);
+              console.log("[roadmap] Using claimed roadmap directly:", claimData.id);
               setRoadmap(claimData);
               // Fetch stages for this roadmap
               const { data: claimedStages } = await supabase
-                .from('roadmap_stages')
-                .select('*')
-                .eq('roadmap_id', claimData.id)
-                .order('stage_number');
+                .from("roadmap_stages")
+                .select("*")
+                .eq("roadmap_id", claimData.id)
+                .order("stage_number");
               if (claimedStages) {
-                console.log('[roadmap] Stages loaded:', claimedStages.length);
+                console.log("[roadmap] Stages loaded:", claimedStages.length);
                 setStages(claimedStages);
               }
               return; // ← DONE — don't fall through to the normal fetch
@@ -192,38 +218,42 @@ function RoadmapPageInner() {
       // ─── Now fetch the roadmap ────────────────────────────────────────────────
       // After claiming, the row has user_id set, so the authenticated
       // SELECT policy (auth.uid() = user_id) will match.
-      console.log('[roadmap] Fetching roadmap and stages from Supabase...');
+      console.log("[roadmap] Fetching roadmap and stages from Supabase...");
       const [{ data: rm, error: rErr }, { data: st, error: sErr }] = await Promise.all([
         supabase.from("roadmaps").select("*").eq("id", roadmapId).maybeSingle(),
-        supabase.from("roadmap_stages").select("*").eq("roadmap_id", roadmapId).order("stage_number"),
+        supabase
+          .from("roadmap_stages")
+          .select("*")
+          .eq("roadmap_id", roadmapId)
+          .order("stage_number"),
       ]);
-      console.log('[roadmap] Supabase responses:', { rm, rErr, st, sErr });
+      console.log("[roadmap] Supabase responses:", { rm, rErr, st, sErr });
 
       if (rErr) throw rErr;
       if (sErr) throw sErr;
 
       if (!rm) {
-        console.log('[roadmap] Roadmap not found');
+        console.log("[roadmap] Roadmap not found");
         // If authenticated and still not found, try loading by user_id as fallback
         if (session?.user) {
           const { data: userRm } = await supabase
-            .from('roadmaps')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
+            .from("roadmaps")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
 
           if (userRm) {
-            console.log('[roadmap] Found roadmap by user_id:', userRm.id);
+            console.log("[roadmap] Found roadmap by user_id:", userRm.id);
             // Set this as the active roadmap and continue
             setRoadmap(userRm);
             // Also fetch stages for this roadmap
             const { data: userStages } = await supabase
-              .from('roadmap_stages')
-              .select('*')
-              .eq('roadmap_id', userRm.id)
-              .order('stage_number');
+              .from("roadmap_stages")
+              .select("*")
+              .eq("roadmap_id", userRm.id)
+              .order("stage_number");
             if (userStages) setStages(userStages);
             return;
           }
@@ -231,21 +261,21 @@ function RoadmapPageInner() {
         // If authenticated but no roadmap found, try loading their latest roadmap
         if (session?.user) {
           const { data: latestRm } = await supabase
-            .from('roadmaps')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .order('created_at', { ascending: false })
+            .from("roadmaps")
+            .select("*")
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
 
           if (latestRm) {
-            console.log('[roadmap] Found latest roadmap by user_id:', latestRm.id);
+            console.log("[roadmap] Found latest roadmap by user_id:", latestRm.id);
             setRoadmap(latestRm);
             const { data: latestStages } = await supabase
-              .from('roadmap_stages')
-              .select('*')
-              .eq('roadmap_id', latestRm.id)
-              .order('stage_number');
+              .from("roadmap_stages")
+              .select("*")
+              .eq("roadmap_id", latestRm.id)
+              .order("stage_number");
             if (latestStages) setStages(latestStages);
             return;
           }
@@ -255,10 +285,10 @@ function RoadmapPageInner() {
         return;
       }
 
-      console.log('[roadmap] Roadmap loaded successfully:', rm.id, rm.user_id);
+      console.log("[roadmap] Roadmap loaded successfully:", rm.id, rm.user_id);
       setRoadmap(rm as DBRoadmap);
       setStages((st ?? []) as DBStage[]);
-      console.log('[roadmap] Stages loaded:', (st ?? []).length);
+      console.log("[roadmap] Stages loaded:", (st ?? []).length);
     } catch (err: unknown) {
       const e = err as { message?: string; code?: string; hint?: string; details?: unknown };
       console.error("[roadmap] fetch error", err);
@@ -266,7 +296,7 @@ function RoadmapPageInner() {
         message: e?.message,
         code: e?.code,
         hint: e?.hint,
-        details: e?.details
+        details: e?.details,
       });
       toast.error(e?.message || "Couldn't load your roadmap.");
     } finally {
@@ -409,7 +439,8 @@ function RoadmapPageInner() {
       const next = stages.find((s) => s.stage_number === stage.stage_number + 1);
       setStages((prev) =>
         prev.map((s) => {
-          if (s.id === stage.id) return { ...s, status: "complete", completed_at: new Date().toISOString() };
+          if (s.id === stage.id)
+            return { ...s, status: "complete", completed_at: new Date().toISOString() };
           if (next && s.id === next.id) return { ...s, status: "active" };
           return s;
         }),
@@ -422,7 +453,7 @@ function RoadmapPageInner() {
           particleCount: 90,
           spread: 75,
           origin,
-          colors: ["#E85D26", "#F4C430", "#2D6A4F", "#FFFFFF"],
+          colors: ["#e8913c", "#5fa3ab", "#ede7dc", "#2e6b72"],
         });
       fire({ x: 0.3, y: 0.5 });
       fire({ x: 0.7, y: 0.5 });
@@ -452,7 +483,9 @@ function RoadmapPageInner() {
   if (loading) {
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <main className="px-5 sm:px-8 pt-20 text-center text-[var(--pw-ink-2)]">Loading your roadmap…</main>
+        <main className="px-5 sm:px-8 pt-20 text-center text-[var(--pw-ink-2)]">
+          Loading your roadmap…
+        </main>
       </div>
     );
   }
@@ -468,7 +501,10 @@ function RoadmapPageInner() {
       : (pw.band ?? (pw.level ? LEVEL_TO_BAND[pw.level] : null) ?? diagnosticBand ?? 3);
   const level = BAND_META[baseBand].label as Level;
   const levelMeta = LEVEL_META[level];
-  const goalLabel = roadmap.goal && (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal] ? (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal] : "Improve";
+  const goalLabel =
+    roadmap.goal && (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal]
+      ? (GOAL_LABELS as unknown as Record<string, string>)[roadmap.goal]
+      : "Improve";
 
   const total = stages.length || 5;
   const done = stages.filter((s) => s.status === "complete").length;
@@ -478,296 +514,350 @@ function RoadmapPageInner() {
   // The stage the student is on drives which band the tutor panel matches
   // against — later stages ask for harder courses than the base placement.
   const activeStage = stages.find((s) => s.status === "active") ?? null;
-  const activeRequiredBand: LevelBand = activeStage?.required_level_band != null
-    ? clampBand(activeStage.required_level_band)
-    : requiredBandForStage(baseBand, activeStage?.stage_number ?? 1);
+  const activeRequiredBand: LevelBand =
+    activeStage?.required_level_band != null
+      ? clampBand(activeStage.required_level_band)
+      : requiredBandForStage(baseBand, activeStage?.stage_number ?? 1);
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-
-      {/* Anonymous save banner */}
-      <AnimatePresence>
-        {showAnonToast && !isLoggedIn && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="mx-5 sm:mx-8 mt-4 pw-card px-4 py-3 flex items-center justify-between gap-4"
-            style={{ background: "var(--pw-accent-soft)", borderColor: "var(--pw-accent)" }}
-          >
-            <div className="text-[13px]">
-              💾 <strong>Sign up</strong> to save your progress permanently
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => openLogin()}
-                className="pw-pill px-3 py-1 text-[12px] text-white font-medium"
-                style={{ background: "var(--pw-accent)" }}
-              >
-                Sign up
-              </button>
-              <button
-                onClick={() => setShowAnonToast(false)}
-                className="text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-lg leading-none px-1"
-                aria-label="Dismiss"
-              >
-                ×
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Anonymous save banner — same container as <main> so its edges line up with the columns */}
+      <div className="px-5 sm:px-8 max-w-6xl mx-auto">
+        <AnimatePresence>
+          {showAnonToast && !isLoggedIn && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mt-4 pw-card px-4 py-3 flex items-center justify-between gap-4"
+              style={{ background: "var(--pw-accent-soft)", borderColor: "var(--pw-accent)" }}
+            >
+              <div className="text-[0.8125rem] flex items-center gap-2">
+                <Icon name="save" className="h-4 w-4" />
+                <span>
+                  <strong>Sign up</strong> to save your progress permanently
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => openLogin()}
+                  className="label-caps inline-flex items-center whitespace-nowrap border border-pw-accent-fill bg-pw-accent-fill px-3 py-1.5 text-pw-on-accent transition-colors hover:bg-transparent hover:text-pw-accent"
+                >
+                  Sign up
+                </button>
+                <button
+                  onClick={() => setShowAnonToast(false)}
+                  className="text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-lg leading-none px-1"
+                  aria-label="Dismiss"
+                >
+                  ×
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <main className="px-5 sm:px-8 pb-24 max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4 }}
-          className="grid lg:grid-cols-[40%_60%] gap-10 mt-6"
+          className="mt-6"
         >
-          {/* LEFT — profile */}
-          <aside>
-            <div className="pw-card p-6">
-              <div className="flex items-center gap-4">
-                <div
-                  className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
-                  style={{ background: "var(--pw-surface-2)" }}
-                >
-                  {levelMeta.emoji}
+          <div className="label-caps text-[var(--pw-ink-2)] mb-2">YOUR ROADMAP</div>
+          <h1 className="font-display text-[2rem] leading-none uppercase tracking-[-0.025em] mb-6">
+            From {level} to your goal
+          </h1>
+
+          {/* Columns start on the same line: aside card top = Stage 01 card top. */}
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-10 items-start">
+            {/* LEFT — profile */}
+            <aside>
+              <div className="pw-card p-6">
+                <div className="flex items-center gap-4">
+                  <div
+                    className="w-16 h-16 rounded-full flex items-center justify-center"
+                    style={{ background: "var(--pw-surface-2)" }}
+                  >
+                    <Icon name={levelMeta.icon} className="h-8 w-8" />
+                  </div>
+                  <div>
+                    <div className="font-display text-[1.25rem] leading-none uppercase tracking-[-0.025em]">
+                      {level}
+                    </div>
+                    <div className="label-caps mt-1 text-[var(--pw-ink-2)]">YOUR RANK</div>
+                  </div>
                 </div>
+
+                <div className="mt-5">
+                  <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)]">
+                    <span>Roadmap progress</span>
+                    <span className="font-mono-pw">
+                      {done} / {total} stages
+                    </span>
+                  </div>
+                  <div className="pw-progress mt-1.5">
+                    <motion.div
+                      className="pw-progress-fill"
+                      initial={false}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.7, ease: "easeOut" }}
+                    />
+                  </div>
+                  <div className="font-mono-pw text-[0.6875rem] text-[var(--pw-ink-2)] mt-1">
+                    {pct}% complete
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <div className="label-caps text-[var(--pw-ink-2)]">YOUR MISSION</div>
+                  <p className="mt-2 text-[0.9375rem]">
+                    Master {subject} up to <strong>{lastStage?.title ?? "your goal"}</strong>,
+                    starting from {level}.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Pill>
+                      <Icon name="books" className="h-3.5 w-3.5" /> {subject}
+                    </Pill>
+                    <Pill>
+                      <Icon name={levelMeta.icon} className="h-3.5 w-3.5" /> {level} Level
+                    </Pill>
+                    <Pill>
+                      <Icon name="rocket" className="h-3.5 w-3.5" /> {goalLabel}
+                    </Pill>
+                  </div>
+                </div>
+
+                <div className="my-5 h-px bg-[var(--pw-border)]" />
+
                 <div>
-                  <div className="font-display text-[20px] leading-tight">{level}</div>
-                  <div className="font-mono-pw text-[11px] text-[var(--pw-ink-2)]">YOUR RANK</div>
+                  <div className="label-caps text-[var(--pw-ink-2)] mb-3">ESTIMATED JOURNEY</div>
+                  <ul className="space-y-2 text-[0.8125rem]">
+                    <li className="flex items-center gap-2">
+                      <Icon name="calendar" className="h-4 w-4" /> 8–12 weeks
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Icon name="books" className="h-4 w-4" /> 3–4 sessions / week
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Icon name="stopwatch" className="h-4 w-4" /> ~45 min per session
+                    </li>
+                  </ul>
                 </div>
               </div>
 
-              <div className="mt-5">
-                <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
-                  <span>Roadmap progress</span>
-                  <span className="font-mono-pw">{done} / {total} stages</span>
-                </div>
-                <div className="h-2 mt-1.5 rounded-full bg-[var(--pw-surface-2)] overflow-hidden">
-                  <motion.div
-                    className="h-full"
-                    initial={false}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ duration: 0.7, ease: "easeOut" }}
-                    style={{ background: "var(--pw-accent)" }}
-                  />
-                </div>
-                <div className="font-mono-pw text-[11px] text-[var(--pw-ink-2)] mt-1">{pct}% complete</div>
-              </div>
-
-              <div className="mt-6">
-                <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">YOUR MISSION</div>
-                <p className="mt-2 text-[15px]">
-                  Master {subject} up to <strong>{lastStage?.title ?? "your goal"}</strong>, starting from {level}.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Pill>📚 {subject}</Pill>
-                  <Pill>{levelMeta.emoji} {level} Level</Pill>
-                  <Pill>🚀 {goalLabel}</Pill>
-                </div>
-              </div>
-
-              <div className="my-5 h-px bg-[var(--pw-border)]" />
-
-              <div>
-                <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mb-3">ESTIMATED JOURNEY</div>
-                <ul className="space-y-2 text-[13px]">
-                  <li>📅 8–12 weeks</li>
-                  <li>📚 3–4 sessions / week</li>
-                  <li>⚡ ~45 min per session</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* ── Matched tutors ──────────────────────────────────────────────
+              {/* ── Matched tutors ──────────────────────────────────────────────
                 Sits under the profile card, outside the roadmap timeline.
                 Populates once the find-tutor quiz has been taken: it
                 intersects that quiz's answers with this roadmap's subject and
                 the band the active stage requires. */}
-            <MatchedTutorsPanel
-              subject={subject}
-              band={baseBand}
-              requiredBand={activeRequiredBand}
-              activeStageTitle={activeStage?.title ?? null}
-              userId={user?.id ?? null}
-            />
-          </aside>
+              <MatchedTutorsPanel
+                subject={subject}
+                band={baseBand}
+                requiredBand={activeRequiredBand}
+                activeStageTitle={activeStage?.title ?? null}
+                userId={user?.id ?? null}
+              />
+            </aside>
 
-          {/* RIGHT — roadmap */}
-          <section>
-            <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mb-2">YOUR ROADMAP</div>
-            <h1 className="font-display text-[32px] leading-tight mb-6">From {level} to your goal</h1>
+            {/* RIGHT — roadmap */}
+            <section>
+              <div className="relative pl-10">
+                <div className="absolute left-3 top-2 bottom-2 border-l border-[var(--pw-border)]" />
 
-            <div className="relative pl-10">
-              <div className="absolute left-3 top-2 bottom-2 border-l-2 border-dashed border-[var(--pw-border)]" />
+                {stages.map((s, i) => {
+                  const isCompleted = s.status === "complete";
+                  const isActive = s.status === "active";
+                  const isGoal = i === stages.length - 1;
+                  const req = requirementFor(s);
+                  const reqBand =
+                    s.required_level_band != null ? clampBand(s.required_level_band) : null;
 
-              {stages.map((s, i) => {
-                const isCompleted = s.status === "complete";
-                const isActive = s.status === "active";
-                const isGoal = i === stages.length - 1;
-                const req = requirementFor(s);
-                const reqBand =
-                  s.required_level_band != null ? clampBand(s.required_level_band) : null;
+                  let nodeBg = "var(--pw-surface)";
+                  let nodeBorder = "var(--pw-border)";
+                  let nodeFg = "var(--pw-ink)";
+                  let nodeIcon: IconName | null = null;
+                  let nodeIconColor = "";
+                  if (isCompleted) {
+                    nodeBg = "var(--pw-accent-2)";
+                    nodeBorder = "var(--pw-accent-2)";
+                    nodeFg = "var(--pw-bg)";
+                    nodeIcon = "check";
+                    nodeIconColor = "text-[var(--pw-bg)]";
+                  } else if (isActive) {
+                    nodeBg = "var(--pw-accent-fill)";
+                    nodeBorder = "var(--pw-accent-fill)";
+                    nodeFg = "var(--pw-on-accent)";
+                    nodeIcon = isGoal ? "flag" : "play";
+                    nodeIconColor = "text-pw-on-accent";
+                  } else if (isGoal) {
+                    nodeIcon = "flag";
+                  }
 
-                let nodeBg = "var(--pw-surface)";
-                let nodeBorder = "var(--pw-border)";
-                let nodeIcon: string = "";
-                if (isCompleted) {
-                  nodeBg = "var(--pw-accent-2)"; nodeBorder = "var(--pw-accent-2)"; nodeIcon = "✓";
-                } else if (isActive) {
-                  nodeBg = "var(--pw-accent)"; nodeBorder = "var(--pw-accent)"; nodeIcon = isGoal ? "🏁" : "▶";
-                } else if (isGoal) {
-                  nodeIcon = "🏁";
-                }
-
-                return (
-                  <motion.div
-                    key={s.id}
-                    layout
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0, scale: isActive && completing === null ? 1 : 1 }}
-                    transition={{ delay: i * 0.08, type: "spring", stiffness: 220, damping: 22 }}
-                    className="relative mb-7"
-                  >
+                  return (
                     <motion.div
-                      className="absolute -left-[30px] top-3 w-6 h-6 rounded-full flex items-center justify-center text-[12px]"
-                      style={{ background: nodeBg, border: "2px solid " + nodeBorder, color: "#fff" }}
-                      animate={isActive ? {
-                        boxShadow: [
-                          "0 0 0 0 rgba(232,93,38,0.55)",
-                          "0 0 0 10px rgba(232,93,38,0)",
-                        ],
-                      } : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }}
-                      transition={isActive ? { duration: 1.6, repeat: Infinity, ease: "easeOut" } : {}}
+                      key={s.id}
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0, scale: isActive && completing === null ? 1 : 1 }}
+                      transition={{ delay: i * 0.08, type: "spring", stiffness: 260, damping: 26 }}
+                      className="relative mb-7"
                     >
-                      {nodeIcon}
-                    </motion.div>
+                      <motion.div
+                        className="absolute -left-[1.875rem] top-3 w-6 h-6 rounded-full flex items-center justify-center text-[0.75rem]"
+                        style={{
+                          background: nodeBg,
+                          border: "2px solid " + nodeBorder,
+                          color: nodeFg,
+                        }}
+                        animate={
+                          isActive
+                            ? {
+                                boxShadow: [
+                                  "0 0 0 0 rgba(232,145,60,0.55)",
+                                  "0 0 0 10px rgba(232,145,60,0)",
+                                ],
+                              }
+                            : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }
+                        }
+                        transition={
+                          isActive ? { duration: 1.6, repeat: Infinity, ease: "easeOut" } : {}
+                        }
+                      >
+                        {nodeIcon && (
+                          <Icon name={nodeIcon} className={`h-3 w-3 ${nodeIconColor}`} />
+                        )}
+                      </motion.div>
 
-                    <div
-                      onClick={() => setOpenStage(s.stage_number)}
-                      className="text-left w-full pw-card p-5 relative transition-colors cursor-pointer"
-                      style={{
-                        borderColor: isActive ? "var(--pw-accent)" : isCompleted ? "var(--pw-accent-2)" : "var(--pw-border)",
-                        background: isCompleted ? "rgba(45,106,79,0.04)" : "var(--pw-surface)",
-                      }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="font-mono-pw text-[11px] text-[var(--pw-ink-2)]">STAGE {String(s.stage_number).padStart(2, "0")}</div>
-                          <h3 className="font-display text-[20px] leading-tight mt-0.5">{s.title}</h3>
-                        </div>
-                        {isCompleted && (
-                          <span className="pw-pill text-[11px] px-2.5 py-1 text-white whitespace-nowrap" style={{ background: "var(--pw-accent-2)" }}>
-                            ✓ Completed
-                          </span>
-                        )}
-                        {isActive && (
-                          <button
-                            onClick={(e) => {
-                              // The whole card is a button that opens the stage
-                              // modal; this one has its own destination.
-                              e.stopPropagation();
-                              handleStartHere(s);
-                            }}
-                            className="pw-pill text-[11px] px-2.5 py-1 text-white whitespace-nowrap"
-                            style={{ background: "var(--pw-accent)" }}
-                          >
-                            ▶ START HERE
-                          </button>
-                        )}
-                        {!isCompleted && !isActive && (
-                          <span className="pw-pill text-[11px] px-2.5 py-1 text-[var(--pw-ink-2)] pw-border whitespace-nowrap">
-                            🔒 Locked
-                          </span>
-                        )}
-                      </div>
-
-                      {s.skills && s.skills.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {s.skills.map((sk) => (
-                            <span key={sk} className="pw-pill text-[11px] px-2.5 py-1" style={{ background: "var(--pw-surface-2)" }}>
-                              {sk}
+                      <div
+                        onClick={() => setOpenStage(s.stage_number)}
+                        className={`text-left w-full pw-card p-5 relative transition-colors cursor-pointer hover:border-[var(--pw-ink)] ${isActive ? "border-[var(--pw-accent)]" : isCompleted ? "border-[var(--pw-accent-2)]" : ""}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div
+                              className={`label-caps ${isCompleted ? "text-pw-secondary" : isActive ? "text-pw-accent" : "text-[var(--pw-ink-2)]"}`}
+                            >
+                              STAGE {String(s.stage_number).padStart(2, "0")}
+                            </div>
+                            <h3 className="font-display text-[1.25rem] leading-[1.05] uppercase tracking-[-0.025em] mt-1">
+                              {s.title}
+                            </h3>
+                          </div>
+                          {isCompleted && (
+                            <span className="pw-pill px-2.5 py-1 whitespace-nowrap text-pw-secondary border-[var(--pw-accent-2)]">
+                              <Icon name="check" className="h-3.5 w-3.5" /> Completed
                             </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Course requirement — the level this stage unlocks against */}
-                      {reqBand && !isCompleted && (
-                        <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px]">
-                          <span
-                            className="pw-pill text-[11px] px-2.5 py-1 pw-border"
-                            style={{
-                              background: req.met ? "rgba(45,106,79,0.08)" : "var(--pw-surface-2)",
-                              borderColor: req.met ? "var(--pw-accent-2)" : "var(--pw-border)",
-                            }}
-                          >
-                            {req.met ? "✓" : "📘"} Requires a {BAND_META[reqBand].label} course
-                          </span>
-                          {req.enrollment && (
-                            <span className="text-[var(--pw-ink-2)] truncate max-w-[220px]">
-                              {req.enrollment.status === "completed" ? "Completed" : "In progress"}:{" "}
-                              {req.enrollment.course?.title ?? "your course"}
+                          )}
+                          {isActive && (
+                            <button
+                              onClick={(e) => {
+                                // The whole card is a button that opens the stage
+                                // modal; this one has its own destination.
+                                e.stopPropagation();
+                                handleStartHere(s);
+                              }}
+                              className="pw-pill px-2.5 py-1 whitespace-nowrap bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
+                            >
+                              <Icon name="play" className="h-3.5 w-3.5 text-pw-on-accent" /> START
+                              HERE
+                            </button>
+                          )}
+                          {!isCompleted && !isActive && (
+                            <span className="pw-pill px-2.5 py-1 text-[var(--pw-ink-2)] whitespace-nowrap">
+                              <Icon name="lock" className="h-3.5 w-3.5" /> Locked
                             </span>
                           )}
                         </div>
-                      )}
 
-                      <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
-                        <div className="text-[12px] text-[var(--pw-ink-2)]">
-                          {isCompleted && s.completed_at
-                            ? `Completed ${new Date(s.completed_at).toLocaleDateString()}`
-                            : "Tap to view details & log sessions"}
-                        </div>
-                        {isActive && (
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            title={
-                              req.met
-                                ? undefined
-                                : req.enrollment
-                                  ? "Finish your course to unlock this stage"
-                                  : "Pick a course at your level to unlock this stage"
-                            }
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleMarkComplete(s);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
+                        {s.skills && s.skills.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {s.skills.map((sk) => (
+                              <span key={sk} className="pw-badge">
+                                {sk}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Course requirement — the level this stage unlocks against */}
+                        {reqBand && !isCompleted && (
+                          <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.75rem]">
+                            <span
+                              className={`pw-pill px-2.5 py-1 ${req.met ? "text-pw-secondary border-[var(--pw-accent-2)]" : "text-[var(--pw-ink-2)]"}`}
+                            >
+                              <Icon name={req.met ? "check" : "book"} className="h-3.5 w-3.5" />{" "}
+                              Requires a {BAND_META[reqBand].label} course
+                            </span>
+                            {req.enrollment && (
+                              <span className="text-[var(--pw-ink-2)] truncate max-w-[13.75rem]">
+                                {req.enrollment.status === "completed"
+                                  ? "Completed"
+                                  : "In progress"}
+                                : {req.enrollment.course?.title ?? "your course"}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                          <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
+                            {isCompleted && s.completed_at
+                              ? `Completed ${new Date(s.completed_at).toLocaleDateString()}`
+                              : "Tap to view details & log sessions"}
+                          </div>
+                          {isActive && (
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              title={
+                                req.met
+                                  ? undefined
+                                  : req.enrollment
+                                    ? "Finish your course to unlock this stage"
+                                    : "Pick a course at your level to unlock this stage"
+                              }
+                              onClick={(e) => {
                                 e.stopPropagation();
                                 handleMarkComplete(s);
-                              }
-                            }}
-                            className="pw-pill text-[12px] px-3 py-1.5 font-medium transition-colors cursor-pointer"
-                            style={{
-                              background: req.met ? "var(--pw-accent)" : "var(--pw-surface-2)",
-                              color: req.met ? "#fff" : "var(--pw-ink-2)",
-                              border: req.met ? "none" : "1.5px solid var(--pw-border)",
-                              opacity: completing === s.stage_number ? 0.6 : 1,
-                            }}
-                          >
-                            {completing === s.stage_number
-                              ? "Saving…"
-                              : req.met
-                                ? "✓ Mark Stage Complete"
-                                : req.enrollment
-                                  ? "📘 Finish your course"
-                                  : "🔒 Choose your course"}
-                          </span>
-                        )}
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleMarkComplete(s);
+                                }
+                              }}
+                              className={`pw-pill px-3 py-1.5 transition-colors cursor-pointer ${req.met ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"}`}
+                              style={{ opacity: completing === s.stage_number ? 0.6 : 1 }}
+                            >
+                              {completing === s.stage_number ? (
+                                "Saving…"
+                              ) : req.met ? (
+                                <>
+                                  <Icon name="check" className="h-3.5 w-3.5 text-pw-on-accent" />{" "}
+                                  Mark Stage Complete
+                                </>
+                              ) : req.enrollment ? (
+                                <>
+                                  <Icon name="book" className="h-3.5 w-3.5" /> Finish your course
+                                </>
+                              ) : (
+                                <>
+                                  <Icon name="lock" className="h-3.5 w-3.5" /> Choose your course
+                                </>
+                              )}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </section>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
         </motion.div>
 
         {/* CTA */}
@@ -782,11 +872,13 @@ function RoadmapPageInner() {
                 navigate({ to: "/matches" });
               }
             }}
-            className="pw-btn-primary inline-flex justify-center w-full px-7 py-4 text-[16px] font-medium"
+            className="pw-btn-primary inline-flex justify-center w-full px-7 py-4"
           >
             See My Matched Tutors & Courses →
           </button>
-          <p className="mt-3 text-[12px] text-[var(--pw-ink-2)]">Free to browse · Book only when ready</p>
+          <p className="mt-3 text-[0.75rem] text-[var(--pw-ink-2)]">
+            Free to browse · Book only when ready
+          </p>
         </div>
       </main>
 
@@ -809,29 +901,33 @@ function RoadmapPageInner() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-            style={{ background: "rgba(26,26,26,0.6)", backdropFilter: "blur(8px)" }}
+            style={{ background: "rgba(10,12,14,0.6)", backdropFilter: "blur(8px)" }}
           >
             <motion.div
               initial={{ scale: 0.7, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 220, damping: 18 }}
-              className="pw-card text-center px-10 py-12 max-w-md w-full"
-              style={{ background: "var(--pw-surface)", borderColor: "var(--pw-accent)", borderWidth: 2 }}
+              transition={{ type: "spring", stiffness: 260, damping: 26 }}
+              className="pw-card text-center px-10 py-12 max-w-md w-full border-[var(--pw-accent)] shadow-pw-float"
             >
-              <div className="text-5xl">🎯</div>
-              <h2 className="font-display text-[36px] leading-tight mt-3">
+              <Icon name="target" className="h-12 w-12" />
+              <h2 className="font-display text-[2.25rem] leading-none uppercase tracking-[-0.025em] mt-3">
                 Stage {overlay.stageNumber} Complete!
               </h2>
-              <div className="font-mono-pw text-[12px] mt-2" style={{ color: "var(--pw-accent-3)" }}>
-                ✦ +{overlay.xp} XP earned
+              <div
+                className="font-mono-pw text-[0.75rem] mt-2 flex items-center justify-center gap-1.5"
+                style={{ color: "var(--pw-accent-3)" }}
+              >
+                <Icon name="sparkles" className="h-4 w-4" /> +{overlay.xp} XP earned
               </div>
               {overlay.nextTitle ? (
-                <p className="text-[14px] text-[var(--pw-ink-2)] mt-4">
+                <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4">
                   Next: <strong className="text-[var(--pw-ink)]">{overlay.nextTitle}</strong>
                 </p>
               ) : (
-                <p className="text-[14px] text-[var(--pw-ink-2)] mt-4">🏁 Final stage reached!</p>
+                <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4 flex items-center justify-center gap-1.5">
+                  <Icon name="flag" className="h-4 w-4" /> Final stage reached!
+                </p>
               )}
             </motion.div>
           </motion.div>
@@ -842,9 +938,5 @@ function RoadmapPageInner() {
 }
 
 function Pill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="pw-pill text-[12px] px-3 py-1 pw-border" style={{ background: "var(--pw-surface-2)" }}>
-      {children}
-    </span>
-  );
+  return <span className="pw-pill px-3 py-1">{children}</span>;
 }

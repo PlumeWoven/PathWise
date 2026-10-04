@@ -29,9 +29,15 @@ import {
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
-import { SortableContext, useSortable, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  useSortable,
+  arrayMove,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useAuth } from "@/pathwise/auth";
+import { Icon } from "@/components/Icon";
 import {
   BAND_META,
   canonicalSubjectFromCourseCategory,
@@ -89,7 +95,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
   const [course, setCourse] = useState<CourseRow | null>(null);
   const [sections, setSections] = useState<SectionRow[]>([]);
   const [lessons, setLessons] = useState<LessonRow[]>([]);
-  const [subjects, setSubjects] = useState<{ id: string; name: string; category: string | null }[]>([]);
+  const [subjects, setSubjects] = useState<{ id: string; name: string; category: string | null }[]>(
+    [],
+  );
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -121,7 +129,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         if (local) {
           try {
             const parsed = JSON.parse(local);
-            if (parsed && parsed.savedAt && parsed.savedAt > new Date(full.course.updated_at).getTime()) {
+            if (
+              parsed &&
+              parsed.savedAt &&
+              parsed.savedAt > new Date(full.course.updated_at).getTime()
+            ) {
               setCourse({ ...full.course, ...parsed.course });
             } else {
               setCourse(full.course);
@@ -138,7 +150,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         toast.error(e instanceof Error ? e.message : "Failed to load");
       }
     })();
-    (supabase as any).from("subjects").select("*").then(({ data }: any) => setSubjects(data ?? []));
+    (supabase as any)
+      .from("subjects")
+      .select("*")
+      .then(({ data }: any) => setSubjects(data ?? []));
   }, [courseId, supabaseUser, loading, navigate]);
 
   // Track latest course
@@ -146,21 +161,18 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     courseRef.current = course;
   }, [course]);
 
-  const patchCourse = useCallback(
-    (p: Partial<CourseRow>) => {
-      setCourse((c) => (c ? { ...c, ...p } : c));
-      setDirty(true);
-      dirtyRef.current = true;
-    },
-    []
-  );
+  const patchCourse = useCallback((p: Partial<CourseRow>) => {
+    setCourse((c) => (c ? { ...c, ...p } : c));
+    setDirty(true);
+    dirtyRef.current = true;
+  }, []);
 
   // Mirror to localStorage
   useEffect(() => {
     if (!course) return;
     localStorage.setItem(
       `course-draft-${courseId}`,
-      JSON.stringify({ savedAt: Date.now(), course })
+      JSON.stringify({ savedAt: Date.now(), course }),
     );
   }, [course, courseId]);
 
@@ -212,7 +224,9 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     }
 
     try {
-      console.log(`[CourseEditor] Submitting course ${course.id} for review. Current status: ${course.status}`);
+      console.log(
+        `[CourseEditor] Submitting course ${course.id} for review. Current status: ${course.status}`,
+      );
       await updateCourse(course.id, { status: "under_review" });
       patchCourse({ status: "under_review" });
       toast.success("Submitted for review");
@@ -232,10 +246,13 @@ export function CourseEditor({ courseId }: { courseId: string }) {
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-5xl mx-auto px-5 sm:px-8 pb-20">
         <div className="flex items-center justify-between gap-3 mb-4">
-          <Link to="/dashboard/courses" className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] inline-flex items-center gap-1">
+          <Link
+            to="/dashboard/courses"
+            className="label-caps text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)] transition-colors inline-flex items-center gap-1"
+          >
             <ArrowLeft className="size-3.5" /> All courses
           </Link>
-          <div className="text-[12px] text-[var(--pw-ink-2)] flex items-center gap-2">
+          <div className="text-[0.75rem] text-[var(--pw-ink-2)] flex items-center gap-2">
             {saving ? (
               <>
                 <Loader2 className="size-3.5 animate-spin" /> Saving…
@@ -251,10 +268,10 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         </div>
 
         {/* Stepper / progress */}
-        <div className="rounded-xl border border-[var(--pw-border)] bg-[var(--pw-surface)]/80 backdrop-blur-md p-4 mb-5">
-          <div className="h-1.5 rounded-full bg-[var(--pw-surface-2)] overflow-hidden mb-3">
+        <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-4 mb-5">
+          <div className="pw-progress mb-3">
             <div
-              className="h-full bg-[var(--pw-accent)] transition-all"
+              className="pw-progress-fill transition-all"
               style={{ width: `${(step / STEPS.length) * 100}%` }}
             />
           </div>
@@ -266,14 +283,15 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 <button
                   key={s.id}
                   onClick={() => setStep(s.id)}
-                  className={`flex-1 min-w-[110px] text-left text-[12px] px-2 py-1 rounded-md transition-colors ${active
+                  className={`flex-1 min-w-[6.875rem] text-left text-[0.75rem] px-2 py-1 transition-colors hover:text-[var(--pw-accent)] ${
+                    active
                       ? "text-[var(--pw-accent)] font-medium"
                       : done
                         ? "text-[var(--pw-ink)]"
                         : "text-[var(--pw-ink-2)]"
-                    }`}
+                  }`}
                 >
-                  <div className="text-[10px] uppercase tracking-wide opacity-70">Step {s.id}</div>
+                  <div className="label-caps">Step {s.id}</div>
                   {s.label}
                 </button>
               );
@@ -281,7 +299,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
           </div>
         </div>
 
-        {step === 1 && <Step1Basic course={course} patch={patchCourse} subjects={subjects} userId={supabaseUser!.id} />}
+        {step === 1 && (
+          <Step1Basic
+            course={course}
+            patch={patchCourse}
+            subjects={subjects}
+            userId={supabaseUser!.id}
+          />
+        )}
         {step === 2 && (
           <Step2Content
             course={course}
@@ -307,7 +332,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
         {/* Footer nav */}
         <div className="flex items-center justify-between mt-6">
-          <Button variant="outline" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
+          <Button
+            variant="outline"
+            onClick={() => setStep((s) => Math.max(1, s - 1))}
+            disabled={step === 1}
+          >
             <ArrowLeft className="size-4" /> Back
           </Button>
           <div className="flex gap-2">
@@ -356,7 +385,9 @@ function Step1Basic({
     setUploading(true);
     try {
       const path = `${userId}/courses/${course.id}/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("course-assets").upload(path, file, { upsert: true });
+      const { error } = await supabase.storage
+        .from("course-assets")
+        .upload(path, file, { upsert: true });
       if (error) throw error;
       const { data } = supabase.storage.from("course-assets").getPublicUrl(path);
       patch({ thumbnail_url: data.publicUrl });
@@ -396,10 +427,10 @@ function Step1Basic({
         />
       </Field>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Category">
           <select
-            className="h-9 w-full rounded-md border border-[var(--pw-border)] bg-transparent px-3 text-sm"
+            className="h-9 w-full border border-[var(--pw-border)] bg-transparent px-3 text-sm"
             value={course.category ?? ""}
             onChange={(e) => patch({ category: e.target.value })}
           >
@@ -413,7 +444,7 @@ function Step1Basic({
         </Field>
         <Field label="Language of instruction">
           <select
-            className="h-9 w-full rounded-md border border-[var(--pw-border)] bg-transparent px-3 text-sm"
+            className="h-9 w-full border border-[var(--pw-border)] bg-transparent px-3 text-sm"
             value={course.language ?? ""}
             onChange={(e) => patch({ language: e.target.value })}
           >
@@ -430,10 +461,17 @@ function Step1Basic({
       <Field label="Subcategory tags" hint="e.g. Python, React, Calculus">
         <div className="flex flex-wrap gap-1.5 mb-2">
           {(course.subcategory_tags ?? []).map((t) => (
-            <span key={t} className="inline-flex items-center gap-1 text-[12px] px-2 py-1 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]">
+            <span
+              key={t}
+              className="inline-flex items-center gap-1 label-caps px-2.5 py-1 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]"
+            >
               {t}
               <button
-                onClick={() => patch({ subcategory_tags: (course.subcategory_tags ?? []).filter((x) => x !== t) })}
+                onClick={() =>
+                  patch({
+                    subcategory_tags: (course.subcategory_tags ?? []).filter((x) => x !== t),
+                  })
+                }
                 className="text-[var(--pw-ink-2)] hover:text-[var(--pw-danger)]"
               >
                 <X className="size-3" />
@@ -467,10 +505,11 @@ function Step1Basic({
               <button
                 key={d}
                 onClick={() => patch({ difficulty: d })}
-                className={`px-3 py-2 rounded-md border text-[13px] transition-colors ${active
+                className={`px-3 py-2 border label-caps transition-colors ${
+                  active
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
-                  }`}
+                }`}
               >
                 {d}
               </button>
@@ -482,9 +521,9 @@ function Step1Basic({
       {/* The band is what the roadmap matches on — a student placed at Spark
           only sees Spark courses in their "perfect match" tier. */}
       <Field label="Roadmap level band" hint="Drives roadmap matching">
-        <p className="text-[12px] text-[var(--pw-ink-2)] -mt-0.5 mb-1">
-          Students are placed into these bands by the diagnostic quiz. A stage only unlocks
-          against a course at its band, so this decides who finds your course.
+        <p className="text-[0.75rem] text-[var(--pw-ink-2)] -mt-0.5 mb-1">
+          Students are placed into these bands by the diagnostic quiz. A stage only unlocks against
+          a course at its band, so this decides who finds your course.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
           {([1, 2, 3, 4, 5] as LevelBand[]).map((b) => {
@@ -499,18 +538,21 @@ function Step1Basic({
                     level_id: subject ? makeLevelId(subject, b) : null,
                   })
                 }
-                className={`px-3 py-2 rounded-md border text-[12px] transition-colors ${active
+                className={`px-3 py-2 border label-caps transition-colors ${
+                  active
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
-                  }`}
+                }`}
               >
-                <span className="block text-[16px]">{BAND_META[b].emoji}</span>
+                <span className="block">
+                  <Icon name={BAND_META[b].icon} className="h-4 w-4" />
+                </span>
                 <span className="block mt-0.5">{BAND_META[b].label}</span>
               </button>
             );
           })}
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[12px] text-[var(--pw-ink-2)]">
+        <div className="mt-2 flex flex-wrap items-center gap-3 text-[0.75rem] text-[var(--pw-ink-2)]">
           <button
             onClick={() => patch({ level_band: null, level_id: null })}
             className="underline underline-offset-2 hover:text-[var(--pw-ink)]"
@@ -518,7 +560,7 @@ function Step1Basic({
             Serves every level
           </button>
           {course.level_band != null && (
-            <span className="font-mono-pw">
+            <span className="tabular-nums">
               {course.level_id ??
                 (canonicalSubjectFromCourseCategory(course.category)
                   ? ""
@@ -532,14 +574,18 @@ function Step1Basic({
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={onDrop}
-          className="aspect-[16/9] rounded-lg border-2 border-dashed border-[var(--pw-border)] bg-[var(--pw-surface-2)] grid place-items-center relative overflow-hidden"
+          className="aspect-[16/9] border border-dashed border-[var(--pw-border)] bg-[var(--pw-surface-2)] grid place-items-center relative overflow-hidden"
         >
           {course.thumbnail_url ? (
-            <img src={course.thumbnail_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <img
+              src={course.thumbnail_url}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
           ) : (
             <div className="text-center text-[var(--pw-ink-2)]">
               <Upload className="size-8 mx-auto mb-2 opacity-50" />
-              <div className="text-[13px]">Drag & drop or pick a file</div>
+              <div className="text-[0.8125rem]">Drag & drop or pick a file</div>
             </div>
           )}
           <input
@@ -549,7 +595,7 @@ function Step1Basic({
             className="absolute inset-0 opacity-0 cursor-pointer"
           />
           {uploading && (
-            <div className="absolute inset-0 bg-black/30 grid place-items-center text-white">
+            <div className="absolute inset-0 bg-[rgba(10,12,14,0.6)] grid place-items-center text-qed-ink">
               <Loader2 className="size-6 animate-spin" />
             </div>
           )}
@@ -578,7 +624,10 @@ function Step2Content({
 }) {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
 
-  const totalDuration = useMemo(() => lessons.reduce((s, l) => s + (l.duration_minutes ?? 0), 0), [lessons]);
+  const totalDuration = useMemo(
+    () => lessons.reduce((s, l) => s + (l.duration_minutes ?? 0), 0),
+    [lessons],
+  );
 
   const handleAddSection = async () => {
     try {
@@ -597,7 +646,7 @@ function Step2Content({
     const next = arrayMove(sections, oldIndex, newIndex).map((s, i) => ({ ...s, position: i }));
     setSections(next);
     await reorderSections(next.map((s) => ({ id: s.id, position: s.position }))).catch((err) =>
-      toast.error(err.message ?? "Reorder failed")
+      toast.error(err.message ?? "Reorder failed"),
     );
   };
 
@@ -606,14 +655,20 @@ function Step2Content({
       title="Course Content"
       subtitle={`${sections.length} sections · ${lessons.length} lessons · ${totalDuration} min total`}
     >
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleSectionDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleSectionDragEnd}
+      >
         <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">
             {sections.map((sec) => (
               <SectionCard
                 key={sec.id}
                 section={sec}
-                lessons={lessons.filter((l) => l.section_id === sec.id).sort((a, b) => a.position - b.position)}
+                lessons={lessons
+                  .filter((l) => l.section_id === sec.id)
+                  .sort((a, b) => a.position - b.position)}
                 onUpdate={(patch) => {
                   setSections((arr) => arr.map((s) => (s.id === sec.id ? { ...s, ...patch } : s)));
                   updateSection(sec.id, patch).catch((e) => toast.error(e.message));
@@ -646,7 +701,7 @@ function Step2Content({
                     return [...others, ...next];
                   });
                   await reorderLessons(
-                    next.map((l) => ({ id: l.id, position: l.position, section_id: l.section_id }))
+                    next.map((l) => ({ id: l.id, position: l.position, section_id: l.section_id })),
                   ).catch((e) => toast.error(e.message));
                 }}
                 userId={userId}
@@ -687,8 +742,14 @@ function SectionCard({
   userId: string;
   courseId: string;
 }) {
-  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({ id: section.id });
-  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.6 : 1 };
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+    id: section.id,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
   const onLessonDragEnd = (e: DragEndEvent) => {
@@ -701,9 +762,17 @@ function SectionCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="rounded-xl border border-[var(--pw-border)] bg-[var(--pw-surface)]/80 backdrop-blur-md p-4">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-4"
+    >
       <div className="flex items-center gap-2 mb-3">
-        <button {...attributes} {...listeners} className="cursor-grab text-[var(--pw-ink-2)] touch-none">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab text-[var(--pw-ink-2)] touch-none"
+        >
           <GripVertical className="size-4" />
         </button>
         <Input
@@ -711,7 +780,10 @@ function SectionCard({
           onChange={(e) => onUpdate({ title: e.target.value })}
           className="font-medium"
         />
-        <button onClick={onDelete} className="text-[var(--pw-danger)] p-1.5 rounded hover:bg-[var(--pw-danger)]/10">
+        <button
+          onClick={onDelete}
+          className="text-[var(--pw-danger)] p-1.5 hover:bg-[var(--pw-danger)]/10"
+        >
           <Trash2 className="size-4" />
         </button>
       </div>
@@ -755,8 +827,14 @@ function LessonCard({
   userId: string;
   courseId: string;
 }) {
-  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({ id: lesson.id });
-  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.6 : 1 };
+  const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+    id: lesson.id,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -764,7 +842,9 @@ function LessonCard({
     setUploading(true);
     try {
       const path = `${userId}/courses/${courseId}/${lesson.id}/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("course-assets").upload(path, file, { upsert: true });
+      const { error } = await supabase.storage
+        .from("course-assets")
+        .upload(path, file, { upsert: true });
       if (error) throw error;
       const { data } = supabase.storage.from("course-assets").getPublicUrl(path);
       onUpdate({ video_url: data.publicUrl });
@@ -780,28 +860,45 @@ function LessonCard({
     const next = lesson.resources.map((r, idx) => (idx === i ? { ...r, ...p } : r));
     onUpdate({ resources: next });
   };
-  const addResource = () => onUpdate({ resources: [...lesson.resources, { type: "link", label: "", value: "" }] });
-  const removeResource = (i: number) => onUpdate({ resources: lesson.resources.filter((_, idx) => idx !== i) });
+  const addResource = () =>
+    onUpdate({ resources: [...lesson.resources, { type: "link", label: "", value: "" }] });
+  const removeResource = (i: number) =>
+    onUpdate({ resources: lesson.resources.filter((_, idx) => idx !== i) });
 
   return (
-    <div ref={setNodeRef} style={style} className="rounded-lg border border-[var(--pw-border)] bg-[var(--pw-bg)]">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="border border-[var(--pw-border)] bg-[var(--pw-bg)]"
+    >
       <div className="flex items-center gap-2 p-2">
-        <button {...attributes} {...listeners} className="cursor-grab text-[var(--pw-ink-2)] touch-none">
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab text-[var(--pw-ink-2)] touch-none"
+        >
           <GripVertical className="size-3.5" />
         </button>
-        <Input value={lesson.title} onChange={(e) => onUpdate({ title: e.target.value })} className="text-[13px] h-8" />
+        <Input
+          value={lesson.title}
+          onChange={(e) => onUpdate({ title: e.target.value })}
+          className="text-[0.8125rem] h-8"
+        />
         <Input
           type="number"
           min={0}
           value={lesson.duration_minutes}
           onChange={(e) => onUpdate({ duration_minutes: Number(e.target.value) || 0 })}
-          className="w-20 text-[13px] h-8"
+          className="w-20 text-[0.8125rem] h-8"
           placeholder="min"
         />
         <button onClick={() => setOpen(!open)} className="text-[var(--pw-ink-2)] p-1">
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </button>
-        <button onClick={onDelete} className="text-[var(--pw-danger)] p-1 hover:bg-[var(--pw-danger)]/10 rounded">
+        <button
+          onClick={onDelete}
+          className="text-[var(--pw-danger)] p-1 hover:bg-[var(--pw-danger)]/10"
+        >
           <Trash2 className="size-3.5" />
         </button>
       </div>
@@ -818,10 +915,14 @@ function LessonCard({
               value={lesson.video_url ?? ""}
               onChange={(e) => onUpdate({ video_url: e.target.value })}
               placeholder="Video URL or upload"
-              className="text-[13px] h-8"
+              className="text-[0.8125rem] h-8"
             />
-            <label className="inline-flex items-center gap-1 text-[12px] cursor-pointer px-2 py-1.5 rounded border border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]">
-              {uploading ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />}
+            <label className="inline-flex items-center gap-1 text-[0.75rem] cursor-pointer px-2 py-1.5 border border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]">
+              {uploading ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : (
+                <Upload className="size-3" />
+              )}
               Upload
               <input
                 type="file"
@@ -831,7 +932,7 @@ function LessonCard({
               />
             </label>
           </div>
-          <label className="flex items-center gap-2 text-[13px]">
+          <label className="flex items-center gap-2 text-[0.8125rem]">
             <Switch
               checked={lesson.is_free_preview}
               onCheckedChange={(v) => onUpdate({ is_free_preview: v })}
@@ -839,20 +940,32 @@ function LessonCard({
             Free preview
           </label>
           <div>
-            <div className="text-[12px] font-medium mb-1.5">Resources</div>
+            <div className="label-caps text-[var(--pw-ink-2)] mb-1.5">Resources</div>
             {lesson.resources.map((r, i) => (
               <div key={i} className="flex gap-1.5 mb-1.5">
                 <select
                   value={r.type}
-                  onChange={(e) => updateResource(i, { type: e.target.value as LessonResource["type"] })}
-                  className="h-8 rounded border border-[var(--pw-border)] bg-transparent text-[12px] px-2"
+                  onChange={(e) =>
+                    updateResource(i, { type: e.target.value as LessonResource["type"] })
+                  }
+                  className="h-8 border border-[var(--pw-border)] bg-transparent text-[0.75rem] px-2"
                 >
                   <option value="link">Link</option>
                   <option value="pdf">PDF</option>
                   <option value="snippet">Snippet</option>
                 </select>
-                <Input value={r.label} onChange={(e) => updateResource(i, { label: e.target.value })} placeholder="Label" className="h-8 text-[12px]" />
-                <Input value={r.value} onChange={(e) => updateResource(i, { value: e.target.value })} placeholder="URL or text" className="h-8 text-[12px]" />
+                <Input
+                  value={r.label}
+                  onChange={(e) => updateResource(i, { label: e.target.value })}
+                  placeholder="Label"
+                  className="h-8 text-[0.75rem]"
+                />
+                <Input
+                  value={r.value}
+                  onChange={(e) => updateResource(i, { value: e.target.value })}
+                  placeholder="URL or text"
+                  className="h-8 text-[0.75rem]"
+                />
                 <button onClick={() => removeResource(i)} className="text-[var(--pw-danger)] p-1">
                   <X className="size-3.5" />
                 </button>
@@ -870,7 +983,13 @@ function LessonCard({
 
 /* ---------- Step 3 ---------- */
 
-function Step3Description({ course, patch }: { course: CourseRow; patch: (p: Partial<CourseRow>) => void }) {
+function Step3Description({
+  course,
+  patch,
+}: {
+  course: CourseRow;
+  patch: (p: Partial<CourseRow>) => void;
+}) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const [prereq, setPrereq] = useState("");
 
@@ -894,26 +1013,36 @@ function Step3Description({ course, patch }: { course: CourseRow; patch: (p: Par
 
   const audience = course.target_audience ?? [];
   const toggleAudience = (a: string) =>
-    patch({ target_audience: audience.includes(a) ? audience.filter((x) => x !== a) : [...audience, a] });
+    patch({
+      target_audience: audience.includes(a) ? audience.filter((x) => x !== a) : [...audience, a],
+    });
 
   return (
     <Panel title="Description & Details" subtitle="Tell students what they'll get out of it.">
       <Field label="Course description">
-        <div className="rounded-md border border-[var(--pw-border)] bg-[var(--pw-surface)]">
+        <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)]">
           <div className="flex gap-1 p-1.5 border-b border-[var(--pw-border)]">
-            <ToolBtn onClick={() => exec("bold")}><Bold className="size-3.5" /></ToolBtn>
-            <ToolBtn onClick={() => exec("italic")}><Italic className="size-3.5" /></ToolBtn>
-            <ToolBtn onClick={() => exec("formatBlock")}>
-              <span className="text-[11px] font-bold">H2</span>
+            <ToolBtn onClick={() => exec("bold")}>
+              <Bold className="size-3.5" />
             </ToolBtn>
-            <ToolBtn onClick={() => exec("insertUnorderedList")}><List className="size-3.5" /></ToolBtn>
-            <ToolBtn onClick={() => exec("insertOrderedList")}><ListOrdered className="size-3.5" /></ToolBtn>
+            <ToolBtn onClick={() => exec("italic")}>
+              <Italic className="size-3.5" />
+            </ToolBtn>
+            <ToolBtn onClick={() => exec("formatBlock")}>
+              <span className="text-[0.6875rem] font-bold">H2</span>
+            </ToolBtn>
+            <ToolBtn onClick={() => exec("insertUnorderedList")}>
+              <List className="size-3.5" />
+            </ToolBtn>
+            <ToolBtn onClick={() => exec("insertOrderedList")}>
+              <ListOrdered className="size-3.5" />
+            </ToolBtn>
           </div>
           <div
             ref={editorRef}
             contentEditable
             onInput={(e) => patch({ description: (e.target as HTMLDivElement).innerHTML })}
-            className="min-h-[150px] p-3 text-[14px] focus:outline-none prose prose-sm max-w-none"
+            className="min-h-[9.375rem] p-3 text-[0.875rem] focus:outline-none prose prose-sm max-w-none"
             suppressContentEditableWarning
           />
         </div>
@@ -923,7 +1052,11 @@ function Step3Description({ course, patch }: { course: CourseRow; patch: (p: Par
         <div className="space-y-2">
           {outcomes.map((o, i) => (
             <div key={i} className="flex gap-2">
-              <Input value={o} onChange={(e) => setOutcome(i, e.target.value)} placeholder={`Outcome ${i + 1}`} />
+              <Input
+                value={o}
+                onChange={(e) => setOutcome(i, e.target.value)}
+                placeholder={`Outcome ${i + 1}`}
+              />
               <button
                 onClick={() => patch({ learning_outcomes: outcomes.filter((_, idx) => idx !== i) })}
                 className="text-[var(--pw-danger)] p-2"
@@ -947,9 +1080,16 @@ function Step3Description({ course, patch }: { course: CourseRow; patch: (p: Par
       <Field label="Prerequisites">
         <div className="flex flex-wrap gap-1.5 mb-2">
           {(course.prerequisites ?? []).map((p) => (
-            <span key={p} className="inline-flex items-center gap-1 text-[12px] px-2 py-1 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]">
+            <span
+              key={p}
+              className="inline-flex items-center gap-1 label-caps px-2.5 py-1 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]"
+            >
               {p}
-              <button onClick={() => patch({ prerequisites: (course.prerequisites ?? []).filter((x) => x !== p) })}>
+              <button
+                onClick={() =>
+                  patch({ prerequisites: (course.prerequisites ?? []).filter((x) => x !== p) })
+                }
+              >
                 <X className="size-3" />
               </button>
             </span>
@@ -982,10 +1122,11 @@ function Step3Description({ course, patch }: { course: CourseRow; patch: (p: Par
               <button
                 key={a}
                 onClick={() => toggleAudience(a)}
-                className={`px-3 py-1.5 rounded-full border text-[12px] ${on
+                className={`px-3 py-1.5 rounded-full border label-caps transition-colors ${
+                  on
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
-                  }`}
+                }`}
               >
                 {a}
               </button>
@@ -1000,7 +1141,7 @@ function Step3Description({ course, patch }: { course: CourseRow; patch: (p: Par
           min={1}
           value={course.estimated_weeks ?? ""}
           onChange={(e) => patch({ estimated_weeks: Number(e.target.value) || null })}
-          className="max-w-[120px]"
+          className="max-w-[7.5rem]"
         />
       </Field>
     </Panel>
@@ -1015,7 +1156,7 @@ function ToolBtn({ children, onClick }: { children: React.ReactNode; onClick: ()
         e.preventDefault();
         onClick();
       }}
-      className="px-2 py-1 rounded hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"
+      className="px-2 py-1 hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"
     >
       {children}
     </button>
@@ -1024,21 +1165,29 @@ function ToolBtn({ children, onClick }: { children: React.ReactNode; onClick: ()
 
 /* ---------- Step 4 ---------- */
 
-function Step4Pricing({ course, patch }: { course: CourseRow; patch: (p: Partial<CourseRow>) => void }) {
+function Step4Pricing({
+  course,
+  patch,
+}: {
+  course: CourseRow;
+  patch: (p: Partial<CourseRow>) => void;
+}) {
   return (
     <Panel title="Pricing & Settings" subtitle="Set price, discounts, certificate and SEO.">
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Price">
           <div className="flex gap-2">
             <Input
               type="number"
               min={0}
               value={course.price ?? ""}
-              onChange={(e) => patch({ price: e.target.value === "" ? null : Number(e.target.value) })}
+              onChange={(e) =>
+                patch({ price: e.target.value === "" ? null : Number(e.target.value) })
+              }
               placeholder="0"
             />
             <select
-              className="h-9 rounded-md border border-[var(--pw-border)] bg-transparent px-3 text-sm"
+              className="h-9 border border-[var(--pw-border)] bg-transparent px-3 text-sm"
               value={course.currency}
               onChange={(e) => patch({ currency: e.target.value })}
             >
@@ -1052,7 +1201,9 @@ function Step4Pricing({ course, patch }: { course: CourseRow; patch: (p: Partial
             type="number"
             min={0}
             value={course.discount_price ?? ""}
-            onChange={(e) => patch({ discount_price: e.target.value === "" ? null : Number(e.target.value) })}
+            onChange={(e) =>
+              patch({ discount_price: e.target.value === "" ? null : Number(e.target.value) })
+            }
           />
         </Field>
       </div>
@@ -1061,12 +1212,16 @@ function Step4Pricing({ course, patch }: { course: CourseRow; patch: (p: Partial
         <Input
           type="datetime-local"
           value={course.discount_expiry ? course.discount_expiry.slice(0, 16) : ""}
-          onChange={(e) => patch({ discount_expiry: e.target.value ? new Date(e.target.value).toISOString() : null })}
-          className="max-w-[260px]"
+          onChange={(e) =>
+            patch({
+              discount_expiry: e.target.value ? new Date(e.target.value).toISOString() : null,
+            })
+          }
+          className="max-w-[16.25rem]"
         />
       </Field>
 
-      <label className="flex items-center gap-3 text-[14px]">
+      <label className="flex items-center gap-3 text-[0.875rem]">
         <Switch
           checked={course.certificate_enabled}
           onCheckedChange={(v) => patch({ certificate_enabled: v })}
@@ -1075,9 +1230,12 @@ function Step4Pricing({ course, patch }: { course: CourseRow; patch: (p: Partial
       </label>
 
       <div className="border-t border-[var(--pw-border)] pt-4 mt-2 space-y-4">
-        <h3 className="font-medium text-[14px]">SEO</h3>
+        <h3 className="label-caps text-[var(--pw-ink-2)]">SEO</h3>
         <Field label="Meta title">
-          <Input value={course.seo_title ?? ""} onChange={(e) => patch({ seo_title: e.target.value })} />
+          <Input
+            value={course.seo_title ?? ""}
+            onChange={(e) => patch({ seo_title: e.target.value })}
+          />
         </Field>
         <Field label="Meta description">
           <Textarea
@@ -1102,7 +1260,10 @@ function validateCourse(course: CourseRow, sections: SectionRow[], lessons: Less
     { ok: !!course.category, label: "Category" },
     { ok: !!course.thumbnail_url, label: "Thumbnail" },
     { ok: !!course.description?.trim(), label: "Description" },
-    { ok: (course.learning_outcomes ?? []).filter(Boolean).length >= 3, label: "≥ 3 learning outcomes" },
+    {
+      ok: (course.learning_outcomes ?? []).filter(Boolean).length >= 3,
+      label: "≥ 3 learning outcomes",
+    },
     { ok: course.price != null, label: "Price set" },
     {
       ok: sections.length >= 1 && sections.some((s) => lessons.some((l) => l.section_id === s.id)),
@@ -1129,15 +1290,31 @@ function Step5Review({
 }) {
   return (
     <Panel title="Review & Publish" subtitle="See exactly what students will see.">
-      <div className="rounded-xl border border-[var(--pw-border)] overflow-hidden">
-        {course.thumbnail_url && <img src={course.thumbnail_url} alt="" className="w-full aspect-[16/9] object-cover" />}
+      <div className="border border-[var(--pw-border)] overflow-hidden">
+        {course.thumbnail_url && (
+          <img src={course.thumbnail_url} alt="" className="w-full aspect-[16/9] object-cover" />
+        )}
         <div className="p-5">
-          <h2 className="font-display text-2xl">{course.title}</h2>
+          <h2 className="font-display text-2xl uppercase tracking-[-0.025em] leading-[1.1]">
+            {course.title}
+          </h2>
           {course.subtitle && <p className="text-[var(--pw-ink-2)] mt-1">{course.subtitle}</p>}
-          <div className="flex flex-wrap gap-2 mt-3 text-[12px]">
-            {course.category && <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">{course.category}</span>}
-            {course.difficulty && <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">{course.difficulty}</span>}
-            {course.language && <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">{course.language}</span>}
+          <div className="flex flex-wrap gap-2 mt-3 text-[0.75rem]">
+            {course.category && (
+              <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">
+                {course.category}
+              </span>
+            )}
+            {course.difficulty && (
+              <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">
+                {course.difficulty}
+              </span>
+            )}
+            {course.language && (
+              <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">
+                {course.language}
+              </span>
+            )}
           </div>
           {course.description && (
             <div
@@ -1147,8 +1324,8 @@ function Step5Review({
           )}
           {(course.learning_outcomes ?? []).length > 0 && (
             <>
-              <h3 className="font-medium mt-4 mb-2">What you'll learn</h3>
-              <ul className="space-y-1 text-[13px]">
+              <h3 className="label-caps text-[var(--pw-ink-2)] mt-6 mb-2">What you'll learn</h3>
+              <ul className="space-y-1 text-[0.8125rem]">
                 {(course.learning_outcomes ?? []).filter(Boolean).map((o, i) => (
                   <li key={i} className="flex gap-2">
                     <Check className="size-4 text-[var(--pw-accent-2)] mt-0.5" /> {o}
@@ -1157,18 +1334,26 @@ function Step5Review({
               </ul>
             </>
           )}
-          <h3 className="font-medium mt-4 mb-2">Curriculum</h3>
+          <h3 className="label-caps text-[var(--pw-ink-2)] mt-6 mb-2">Curriculum</h3>
           <div className="space-y-2">
             {sections.map((s) => (
-              <div key={s.id} className="border border-[var(--pw-border)] rounded">
-                <div className="px-3 py-2 bg-[var(--pw-surface-2)] text-[13px] font-medium">{s.title}</div>
-                <ul className="text-[13px]">
+              <div key={s.id} className="border border-[var(--pw-border)]">
+                <div className="px-3 py-2 bg-[var(--pw-surface-2)] text-[0.8125rem] font-medium">
+                  {s.title}
+                </div>
+                <ul className="text-[0.8125rem]">
                   {lessons
                     .filter((l) => l.section_id === s.id)
                     .map((l) => (
-                      <li key={l.id} className="px-3 py-1.5 flex justify-between border-t border-[var(--pw-border)]">
+                      <li
+                        key={l.id}
+                        className="px-3 py-1.5 flex justify-between border-t border-[var(--pw-border)]"
+                      >
                         <span>
-                          {l.title} {l.is_free_preview && <span className="ml-1 text-[10px] text-[var(--pw-accent)]">PREVIEW</span>}
+                          {l.title}{" "}
+                          {l.is_free_preview && (
+                            <span className="ml-1 label-caps text-[var(--pw-accent)]">PREVIEW</span>
+                          )}
                         </span>
                         <span className="text-[var(--pw-ink-2)]">{l.duration_minutes} min</span>
                       </li>
@@ -1180,9 +1365,9 @@ function Step5Review({
         </div>
       </div>
 
-      <div className="rounded-xl border border-[var(--pw-border)] p-4 mt-4">
-        <h3 className="font-medium mb-2">Publish checklist</h3>
-        <ul className="space-y-1 text-[13px]">
+      <div className="border border-[var(--pw-border)] p-4 mt-4">
+        <h3 className="label-caps text-[var(--pw-ink-2)] mb-3">Publish checklist</h3>
+        <ul className="space-y-1 text-[0.8125rem]">
           {validation.checks.map((c) => (
             <li key={c.label} className="flex items-center gap-2">
               {c.ok ? (
@@ -1210,24 +1395,40 @@ function Step5Review({
 
 /* ---------- shared ---------- */
 
-function Panel({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Panel({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="rounded-xl border border-[var(--pw-border)] bg-[var(--pw-surface)]/80 backdrop-blur-md p-6 space-y-5">
+    <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6 space-y-5">
       <div>
-        <h2 className="font-display text-xl">{title}</h2>
-        {subtitle && <p className="text-[13px] text-[var(--pw-ink-2)] mt-1">{subtitle}</p>}
+        <h2 className="font-display text-xl uppercase tracking-[-0.025em]">{title}</h2>
+        {subtitle && <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1">{subtitle}</p>}
       </div>
       {children}
     </div>
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <label className="text-[13px] font-medium">{label}</label>
-        {hint && <span className="text-[11px] text-[var(--pw-ink-2)]">{hint}</span>}
+        <label className="label-caps text-[var(--pw-ink-2)]">{label}</label>
+        {hint && <span className="text-[0.6875rem] text-[var(--pw-ink-2)]">{hint}</span>}
       </div>
       {children}
     </div>

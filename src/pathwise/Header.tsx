@@ -5,11 +5,45 @@ import { isAdmin } from "./roles";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Icon } from "@/components/Icon";
+
+// Class strings per look. Markup is shared; only these swap. PW is theme-aware (--pw-* tokens);
+// QED is the always-dark landing look (fixed qed-* tokens).
+const pwCta =
+  "label-caps inline-flex items-center border border-[var(--pw-border)] px-3 sm:px-4 py-2 text-[var(--pw-ink)] hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors";
+const PW = {
+  brand:
+    "font-syne text-[0.9375rem] font-bold uppercase leading-none text-[var(--pw-ink)] after:content-['.'] after:text-pw-accent",
+  name: "hidden sm:inline text-[0.8125rem] text-[var(--pw-ink-2)]",
+  role: "label-caps inline-flex items-center rounded-full border border-[var(--pw-border)] px-2.5 py-1 text-[var(--pw-ink-2)]",
+  accent: pwCta,
+  link: "label-caps px-1 py-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  signOut: "label-caps text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  signIn: pwCta,
+};
+// Landing ("/") is always dark. `dark` on the header re-scopes --pw-* tokens so ThemeToggle,
+// NotificationBell and VerificationBadge (which read them) stay legible on the dark bar.
+const cta =
+  "label-caps inline-flex items-center border border-qed-hairline px-3 sm:px-4 py-2 text-qed-ink hover:bg-qed-ink hover:text-qed-ground transition-colors";
+const QED = {
+  header:
+    "dark sticky top-0 z-40 w-full h-[3.625rem] px-5 sm:px-8 flex items-center justify-between gap-3 border-b border-qed-hairline bg-qed-ground",
+  brand:
+    "font-syne text-[0.9375rem] font-bold uppercase leading-none text-qed-ink after:content-['.'] after:text-qed-amber",
+  name: "hidden sm:inline text-[0.8125rem] text-qed-ink-2",
+  role: "label-caps inline-flex items-center rounded-full border border-qed-hairline px-2.5 py-1 text-qed-ink-2",
+  accent: cta,
+  link: "label-caps px-1 py-2 text-qed-ink-2 hover:text-qed-amber transition-colors",
+  signOut: "label-caps text-qed-ink-2 hover:text-qed-amber transition-colors",
+  signIn: cta,
+};
 
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const qed = location.pathname === "/";
+  const c = qed ? QED : PW;
   // Starts false so the first render matches the server. Reading pageYOffset here
   // instead would mismatch on hydration: browsers restore scroll position before
   // React runs, so a deep link or mid-page refresh renders `true` on the client
@@ -17,11 +51,11 @@ export function PWHeader() {
   const [scrolled, setScrolled] = useState(false);
 
   const [impersonating, setImpersonating] = useState(false);
-  const [impersonatingName, setImpersonatingName] = useState('');
+  const [impersonatingName, setImpersonatingName] = useState("");
 
   const readImpersonationState = () => {
-    const imp = localStorage.getItem('impersonating') === 'true';
-    const name = localStorage.getItem('impersonating_user_name') || 'User';
+    const imp = localStorage.getItem("impersonating") === "true";
+    const name = localStorage.getItem("impersonating_user_name") || "User";
     setImpersonating(imp);
     setImpersonatingName(name);
   };
@@ -32,12 +66,12 @@ export function PWHeader() {
 
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'impersonating' || e.key === 'impersonating_user_name') {
+      if (e.key === "impersonating" || e.key === "impersonating_user_name") {
         readImpersonationState();
       }
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   useEffect(() => {
@@ -49,37 +83,41 @@ export function PWHeader() {
 
   const handleSignOut = async () => {
     if (impersonating) {
-      localStorage.removeItem('impersonating');
-      localStorage.removeItem('impersonating_user_name');
-      localStorage.removeItem('admin_user_id');
-      localStorage.removeItem('admin_email');
-      localStorage.removeItem('admin_access_token');
+      localStorage.removeItem("impersonating");
+      localStorage.removeItem("impersonating_user_name");
+      localStorage.removeItem("admin_user_id");
+      localStorage.removeItem("admin_email");
+      localStorage.removeItem("admin_access_token");
     }
     await logout();
     navigate({ to: "/" });
   };
 
   const handleExitImpersonation = async () => {
-    localStorage.removeItem('impersonating');
-    localStorage.removeItem('impersonating_user_name');
-    localStorage.removeItem('admin_user_id');
-    localStorage.removeItem('admin_email');
-    localStorage.removeItem('admin_access_token');
+    localStorage.removeItem("impersonating");
+    localStorage.removeItem("impersonating_user_name");
+    localStorage.removeItem("admin_user_id");
+    localStorage.removeItem("admin_email");
+    localStorage.removeItem("admin_access_token");
     await logout();
-    navigate({ to: '/admin' });
+    navigate({ to: "/admin" });
   };
 
   return (
     <>
       {/* Impersonation Banner */}
       {impersonating && (
-        <div className="sticky top-0 z-50 w-full bg-amber-50 border-b border-amber-300 px-5 py-2 flex items-center justify-between text-sm impersonation-banner">
-          <span className="text-amber-800">
-            🔒 You are impersonating <strong>{impersonatingName}</strong>. Actions will affect their account.
+        <div className="sticky top-0 z-50 w-full bg-[var(--pw-accent-soft)] border-b border-[var(--pw-border)] px-5 py-2 flex items-center justify-between text-sm impersonation-banner">
+          <span className="text-pw-accent inline-flex items-center gap-1.5">
+            <Icon name="lock" className="h-4 w-4" />
+            <span>
+              You are impersonating <strong>{impersonatingName}</strong>. Actions will affect their
+              account.
+            </span>
           </span>
           <button
             onClick={handleExitImpersonation}
-            className="px-3 py-1 rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+            className="label-caps px-3 py-1 bg-pw-accent-fill text-pw-on-accent hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors"
           >
             Exit Impersonation
           </button>
@@ -87,12 +125,16 @@ export function PWHeader() {
       )}
 
       <header
-        className={`sticky top-0 z-40 w-full px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-3 transition-all duration-200 backdrop-blur-md ${
-          scrolled ? "bg-pw-bg/95 border-b border-[var(--pw-border)]" : "bg-pw-bg/70 border-b border-transparent"
-        }`}
+        className={
+          qed
+            ? QED.header
+            : `sticky top-0 z-40 w-full h-[3.625rem] px-5 sm:px-8 flex items-center justify-between gap-3 border-b border-[var(--pw-border)] ${
+                scrolled ? "bg-[var(--pw-bg)]/95 backdrop-blur-md" : "bg-[var(--pw-bg)]"
+              }`
+        }
       >
         <div className="flex items-center gap-3">
-          <Link to="/" className="font-display italic text-[24px] leading-none text-[var(--pw-ink)]">
+          <Link to="/" className={c.brand}>
             PathWise
           </Link>
           <ThemeToggle />
@@ -101,19 +143,17 @@ export function PWHeader() {
         <div className="flex items-center gap-3">
           {isLoggedIn && user ? (
             <>
-              <span className="hidden sm:inline text-[13px] text-[var(--pw-ink-2)]">{user.name}</span>
+              <span className={c.name}>{user.name}</span>
               <NotificationBell userId={user.id} />
               {(user.role === "tutor" || user.role === "both") && profile ? (
                 <VerificationBadge tier={statusToTier(profile.verification_status)} size="sm" />
               ) : (
-                <span className="pw-pill text-[11px] px-2.5 py-1 pw-border text-[var(--pw-ink-2)] uppercase pw-tracking-wide">
-                  {user.role}
-                </span>
+                <span className={c.role}>{user.role}</span>
               )}
               {(user.role === "tutor" || user.role === "both") && (
                 <Link
                   to="/dashboard"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
+                  className={c.accent}
                   activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
                 >
                   Dashboard
@@ -121,37 +161,28 @@ export function PWHeader() {
               )}
               {(user.role === "student" || user.role === "both") && (
                 <>
-                  <Link to="/roadmap" className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors">
+                  <Link to="/roadmap" className={c.accent}>
                     My Roadmap
                   </Link>
-                  <Link to="/find-tutor" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
+                  <Link to="/find-tutor" className={`${c.link} hidden sm:inline-flex`}>
                     Find a tutor
                   </Link>
-                  <Link to="/sessions" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
+                  <Link to="/sessions" className={`${c.link} hidden sm:inline-flex`}>
                     My sessions
                   </Link>
                 </>
               )}
               {isAdmin(user.app_metadata) && (
-                <Link
-                  to="/admin"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                >
+                <Link to="/admin" className={c.accent}>
                   Admin
                 </Link>
               )}
-              <button
-                onClick={handleSignOut}
-                className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] underline-offset-4 hover:underline"
-              >
+              <button onClick={handleSignOut} className={c.signOut}>
                 Sign Out
               </button>
             </>
           ) : (
-            <button
-              onClick={openLogin}
-              className="pw-pill px-4 py-1.5 text-[14px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors"
-            >
+            <button onClick={openLogin} className={c.signIn}>
               Sign In
             </button>
           )}

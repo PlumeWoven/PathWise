@@ -30,7 +30,7 @@ function Avatar({ name, src }: { name: string; src?: string | null }) {
     return <img src={src} alt={name} className="h-7 w-7 rounded-full object-cover" />;
   }
   return (
-    <div className="h-7 w-7 rounded-full grid place-items-center text-[11px] font-semibold bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]">
+    <div className="h-7 w-7 rounded-full grid place-items-center text-[0.6875rem] font-semibold bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]">
       {initials || "?"}
     </div>
   );
@@ -44,7 +44,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
 
   return (
     <div
-      className="group relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-[var(--pw-surface-2)] border border-[var(--pw-border)] cursor-pointer transition-transform duration-200 hover:scale-[1.02] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.25)]"
+      className="group relative w-full aspect-[16/10] overflow-hidden bg-[var(--pw-surface-2)] border border-[var(--pw-border)] cursor-pointer transition-colors hover:border-[var(--pw-ink)]"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
@@ -73,29 +73,31 @@ export function CourseCard({ course }: { course: CourseCardData }) {
       {/* Top badges */}
       <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2 pointer-events-none">
         {course.category && (
-          <span className="pw-pill text-[10px] px-2 py-0.5 bg-black/60 text-white border border-white/10 uppercase pw-tracking-wide">
+          <span className="pw-pill px-2 py-0.5 bg-[rgba(10,12,14,0.7)] text-qed-ink border border-qed-hairline">
             {course.category}
           </span>
         )}
         {course.priceFromPerHour != null && (
-          <span className="pw-pill text-[11px] px-2 py-0.5 bg-white/95 text-[var(--pw-ink)] border border-white/40">
+          <span className="pw-pill px-2 py-0.5 bg-qed-ink text-qed-ground border border-qed-ink">
             {course.multipleFormats ? "From " : ""}${course.priceFromPerHour}/hr
           </span>
         )}
       </div>
 
       {/* Bottom gradient + content */}
-      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/85 via-black/55 to-transparent text-white">
-        <h3 className="font-semibold text-[15px] leading-tight line-clamp-2">{course.title}</h3>
-        <div className="mt-1.5 flex items-center gap-2 text-[12px] text-white/85">
+      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-[rgba(10,12,14,0.9)] via-[rgba(10,12,14,0.6)] to-transparent text-qed-ink">
+        <h3 className="font-display font-bold uppercase text-[0.9375rem] leading-tight line-clamp-2 transition-colors group-hover:text-qed-amber">
+          {course.title}
+        </h3>
+        <div className="mt-1.5 flex items-center gap-2 label-caps text-qed-ink-2">
           <Avatar name={course.tutorName} src={course.tutorAvatarUrl} />
           <span className="truncate">{course.tutorName}</span>
         </div>
-        <div className="mt-1.5 flex items-center gap-3 text-[11px] text-white/80">
+        <div className="mt-1.5 flex items-center gap-3 label-caps text-qed-ink-2">
           <span className="inline-flex items-center gap-1">
-            <Star className="size-3 fill-[var(--pw-accent-3)] text-[var(--pw-accent-3)]" />
+            <Star className="size-3 fill-qed-amber text-qed-amber" />
             {rating ? rating.toFixed(1) : "New"}
-            {reviews > 0 && <span className="text-white/60">({reviews})</span>}
+            {reviews > 0 && <span className="text-qed-ink-2">({reviews})</span>}
           </span>
           {course.durationMinutes && (
             <span className="inline-flex items-center gap-1">
@@ -115,7 +117,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             {course.outcomes.slice(0, 3).map((o, i) => (
               <span
                 key={i}
-                className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/15 backdrop-blur text-white truncate max-w-[120px]"
+                className="label-caps px-2 py-0.5 rounded-full border border-qed-hairline bg-[rgba(10,12,14,0.5)] text-qed-ink truncate max-w-[7.5rem]"
               >
                 {o}
               </span>
@@ -129,7 +131,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             hover ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <button className="w-full mt-1 text-[12px] font-medium bg-white text-[var(--pw-ink)] rounded-md py-1.5 hover:bg-white/90">
+          <button className="label-caps w-full mt-1 bg-qed-ink text-qed-ground py-2 hover:bg-qed-amber transition-colors">
             View Details
           </button>
         </div>

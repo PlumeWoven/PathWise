@@ -4,9 +4,9 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 // so the list itself lives in dashboard.courses.index.tsx and this file just
 // renders the outlet. Same shape as dashboard.settings.tsx.
 export const Route = createFileRoute("/dashboard/courses")({
-    component: DashboardCoursesLayout,
+  component: DashboardCoursesLayout,
 });
 
 function DashboardCoursesLayout() {
-    return <Outlet />;
+  return <Outlet />;
 }

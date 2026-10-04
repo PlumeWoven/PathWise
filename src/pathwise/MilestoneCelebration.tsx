@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import { Icon } from "@/components/Icon";
 
 interface Props {
   show: boolean;
@@ -10,7 +11,13 @@ interface Props {
   onClose: () => void;
 }
 
-export function MilestoneCelebration({ show, stageNumber, stageTitle, nextStageTitle, onClose }: Props) {
+export function MilestoneCelebration({
+  show,
+  stageNumber,
+  stageTitle,
+  nextStageTitle,
+  onClose,
+}: Props) {
   useEffect(() => {
     if (!show) return;
     // Burst
@@ -19,7 +26,7 @@ export function MilestoneCelebration({ show, stageNumber, stageTitle, nextStageT
         particleCount: 80,
         spread: 70,
         origin,
-        colors: ["#E85D26", "#F4C430", "#2D6A4F", "#FFFFFF"],
+        colors: ["#e8913c", "#5fa3ab", "#ede7dc", "#2e6b72"],
         scalar: 1,
       });
     };
@@ -39,50 +46,54 @@ export function MilestoneCelebration({ show, stageNumber, stageTitle, nextStageT
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-          style={{ background: "rgba(26,26,26,0.55)", backdropFilter: "blur(8px)" }}
+          style={{ background: "rgba(10,12,14,0.7)", backdropFilter: "blur(8px)" }}
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.7, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 220, damping: 18 }}
-            className="pw-card text-center px-8 py-10 max-w-md w-full"
-            style={{ background: "var(--pw-surface)", borderColor: "var(--pw-accent)", borderWidth: 2 }}
+            transition={{ type: "spring", stiffness: 260, damping: 26 }}
+            className="pw-card text-center px-8 py-10 max-w-md w-full shadow-pw-float"
             onClick={(e) => e.stopPropagation()}
           >
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
               transition={{ delay: 0.1, duration: 0.6 }}
-              className="text-6xl mb-3"
+              className="mb-3 flex justify-center"
             >
-              🎉
+              <Icon name="celebrate" className="h-12 w-12" />
             </motion.div>
-            <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-accent)]">
+            <div className="label-caps text-pw-accent">
               STAGE {String(stageNumber).padStart(2, "0")} COMPLETE
             </div>
-            <h2 className="font-display text-[34px] leading-tight mt-2">{stageTitle}</h2>
+            <h2 className="font-display font-bold uppercase tracking-[-0.025em] text-[2.125rem] leading-none mt-2">
+              {stageTitle}
+            </h2>
             {nextStageTitle ? (
               <>
                 <div className="my-4 h-px bg-[var(--pw-border)]" />
-                <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-                  UNLOCKED
-                </div>
-                <p className="font-display text-[20px] mt-1">▶ {nextStageTitle}</p>
-                <p className="text-[13px] text-[var(--pw-ink-2)] mt-2">Keep the streak going.</p>
+                <div className="label-caps text-[var(--pw-ink-2)]">UNLOCKED</div>
+                <p className="font-display font-bold uppercase tracking-[-0.025em] text-[1.25rem] mt-1 flex items-center justify-center gap-2">
+                  <Icon name="play" className="h-5 w-5" />
+                  {nextStageTitle}
+                </p>
+                <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">Keep the streak going.</p>
               </>
             ) : (
               <>
                 <div className="my-4 h-px bg-[var(--pw-border)]" />
-                <p className="font-display text-[22px]">🏁 You reached your goal!</p>
-                <p className="text-[13px] text-[var(--pw-ink-2)] mt-2">Every stage mastered. Outstanding.</p>
+                <p className="font-display text-[1.375rem] flex items-center justify-center gap-2">
+                  <Icon name="flag" className="h-6 w-6" />
+                  You reached your goal!
+                </p>
+                <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">
+                  Every stage mastered. Outstanding.
+                </p>
               </>
             )}
-            <button
-              onClick={onClose}
-              className="pw-btn-primary mt-6 px-5 py-2.5 text-[14px] font-medium"
-            >
+            <button onClick={onClose} className="pw-btn-primary mt-6 px-5 py-2.5">
               Continue →
             </button>
           </motion.div>

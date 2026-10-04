@@ -2,6 +2,7 @@ import { ReactNode, useEffect } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
 import { canAccess, isTutorSide, roleHome } from "./roles";
+import { Icon } from "@/components/Icon";
 
 /**
  * Restricts a route to specific roles.
@@ -36,20 +37,26 @@ export function RoleGate({
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
         <main className="px-5 sm:px-8 py-16 max-w-lg mx-auto text-center">
-          <div className="text-5xl">🔒</div>
-          <h1 className="font-display text-[28px] mt-3">This area isn't available for your account</h1>
-          <p className="mt-2 text-[14px] text-[var(--pw-ink-2)]">
+          <div className="flex justify-center">
+            <Icon name="lock" className="h-12 w-12" />
+          </div>
+          <h1 className="font-display text-[1.75rem] mt-3">
+            This area isn't available for your account
+          </h1>
+          <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
             {tutorSide
               ? "You're signed in as a tutor. This section is for students."
               : "You're signed in as a student. This section is for tutors."}
           </p>
           <div className="mt-6 flex gap-3 justify-center">
             {home !== "/" && (
-              <Link to={home} className="pw-btn-primary px-5 py-2.5 text-[14px]">
+              <Link to={home} className="pw-btn-primary px-5 py-2.5">
                 {tutorSide ? "Go to your dashboard" : "Go to your roadmap"}
               </Link>
             )}
-            <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-5 py-2.5 text-[14px]">Home</button>
+            <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-5 py-2.5">
+              Home
+            </button>
           </div>
         </main>
       </div>

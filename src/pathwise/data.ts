@@ -1,3 +1,4 @@
+import type { IconName } from "@/components/Icon";
 import type { LevelBand } from "./levels";
 
 export type Subject =
@@ -24,22 +25,22 @@ export interface QuizQuestion {
   difficulty: LevelBand;
 }
 
-export const SUBJECTS: { id: Subject; emoji: string; label: string }[] = [
-  { id: "Mathematics", emoji: "📐", label: "Mathematics" },
-  { id: "Sciences", emoji: "🧪", label: "Sciences" },
-  { id: "Literature", emoji: "📖", label: "Literature" },
-  { id: "History", emoji: "🌍", label: "History" },
-  { id: "Programming", emoji: "💻", label: "Programming" },
-  { id: "Languages", emoji: "🗣️", label: "Languages" },
+export const SUBJECTS: { id: Subject; icon: IconName; label: string }[] = [
+  { id: "Mathematics", icon: "math", label: "Mathematics" },
+  { id: "Sciences", icon: "science", label: "Sciences" },
+  { id: "Literature", icon: "bookOpen", label: "Literature" },
+  { id: "History", icon: "globe", label: "History" },
+  { id: "Programming", icon: "coding", label: "Programming" },
+  { id: "Languages", icon: "languages", label: "Languages" },
 ];
 
 export const GOALS = [
-  { id: "exam", emoji: "🎓", label: "Pass an exam" },
-  { id: "grades", emoji: "📈", label: "Improve my grades" },
-  { id: "gaps", emoji: "⚡", label: "Fill in gaps" },
-  { id: "advanced", emoji: "🚀", label: "Go to advanced level" },
-  { id: "work", emoji: "💼", label: "Learn for work" },
-] as const;
+  { id: "exam", icon: "diploma", label: "Pass an exam" },
+  { id: "grades", icon: "growth", label: "Improve my grades" },
+  { id: "gaps", icon: "spark", label: "Fill in gaps" },
+  { id: "advanced", icon: "rocket", label: "Go to advanced level" },
+  { id: "work", icon: "briefcase", label: "Learn for work" },
+] as const satisfies readonly { id: string; icon: IconName; label: string }[];
 
 export type GoalId = typeof GOALS[number]["id"];
 
@@ -275,12 +276,12 @@ export function levelFromScore(score: number): Level {
   return "Mastermind";
 }
 
-export const LEVEL_META: Record<Level, { emoji: string; blurb: string }> = {
-  Seedling: { emoji: "🌱", blurb: "You're just starting out — we'll build strong foundations." },
-  Spark: { emoji: "⚡", blurb: "Basic foundations are there — let's strengthen and extend them." },
-  Builder: { emoji: "🔥", blurb: "Solid foundation, with a few gaps to plug before advancing." },
-  Sharpshooter: { emoji: "🎯", blurb: "Strong skills — you're ready for advanced material." },
-  Mastermind: { emoji: "🏆", blurb: "Exceptional. We'll skip the basics and head straight to advanced." },
+export const LEVEL_META: Record<Level, { icon: IconName; blurb: string }> = {
+  Seedling: { icon: "seedling", blurb: "You're just starting out — we'll build strong foundations." },
+  Spark: { icon: "spark", blurb: "Basic foundations are there — let's strengthen and extend them." },
+  Builder: { icon: "flame", blurb: "Solid foundation, with a few gaps to plug before advancing." },
+  Sharpshooter: { icon: "target", blurb: "Strong skills — you're ready for advanced material." },
+  Mastermind: { icon: "trophy", blurb: "Exceptional. We'll skip the basics and head straight to advanced." },
 };
 
 export interface Stage {
@@ -372,36 +373,36 @@ function tutorsFor(subject: Subject, level: Level): Tutor[] {
     {
       name: "Amélie Laurent",
       initial: "A",
-      color: "#E85D26",
+      color: "#e8913c",
       oneLiner: `Specializes in ${subj.toLowerCase()} gap-filling for ${level} learners`,
       tags: [subj, "Foundations", "Stage 01"],
       rating: 4.9,
       reviews: 127,
-      availability: "🟢 Available this week",
+      availability: "Available this week",
       price: "€18",
       matchReason: `Focuses on Stage 1 gap topics · 94% ${level}-level student success rate`,
     },
     {
       name: "Marcus Chen",
       initial: "M",
-      color: "#2D6A4F",
+      color: "#5fa3ab",
       oneLiner: `Patient coach who builds confidence step by step in ${subj.toLowerCase()}`,
       tags: [subj, "Coaching", "Beginner-friendly"],
       rating: 4.8,
       reviews: 89,
-      availability: "🟡 2 spots left",
+      availability: "2 spots left",
       price: "€22",
       matchReason: `Available for your preferred schedule · Expert in your weakest topics`,
     },
     {
       name: "Sofia Rossi",
       initial: "S",
-      color: "#F4C430",
+      color: "#f2b66d",
       oneLiner: `Gets ${level}-level students to advanced fast with structured plans`,
       tags: [subj, "Advanced", "Exam-prep"],
       rating: 5.0,
       reviews: 64,
-      availability: "🟢 Available this week",
+      availability: "Available this week",
       price: "€25",
       matchReason: "Highly rated by students with your goal: Go Advanced",
     },
@@ -418,11 +419,11 @@ function coursesFor(subject: Subject): Course[] {
       hours: 6,
       lessons: 24,
       rating: 4.8,
-      coverage: "📍 Covers Stage 01 + 02 of your roadmap",
+      coverage: "Covers Stage 01 + 02 of your roadmap",
       price: "Free",
-      bandFrom: "#E85D26",
-      bandTo: "#F4C430",
-      icon: "✦",
+      bandFrom: "#e8913c",
+      bandTo: "#f2b66d",
+      icon: "sparkles",
     },
     {
       title: `${subject}: Core Skills`,
@@ -432,11 +433,11 @@ function coursesFor(subject: Subject): Course[] {
       hours: 9,
       lessons: 32,
       rating: 4.7,
-      coverage: "📍 Covers Stage 02 of your roadmap",
+      coverage: "Covers Stage 02 of your roadmap",
       price: "€29",
-      bandFrom: "#2D6A4F",
-      bandTo: "#1A1A1A",
-      icon: "◆",
+      bandFrom: "#2e6b72",
+      bandTo: "#16191e",
+      icon: "spark",
     },
   ];
 }

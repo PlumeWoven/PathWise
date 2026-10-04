@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { RoleGate } from "../pathwise/RoleGate";
+import { Icon, type IconName } from "@/components/Icon";
 
 export const Route = createFileRoute("/_app/find-tutor")({
   head: () => ({
@@ -77,14 +78,18 @@ function FindTutorPageInner() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setAnswers(JSON.parse(raw));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   // Persist on every change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(answers));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [answers]);
 
   const totalQ = 8;
@@ -133,22 +138,20 @@ function FindTutorPageInner() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-
       {/* Progress bar */}
       <div className="sticky top-0 z-30 bg-[var(--pw-bg)]/90 backdrop-blur border-b border-[var(--pw-border)]">
         <div className="max-w-2xl mx-auto px-5 py-3">
-          <div className="flex items-center justify-between text-[11px] font-mono-pw uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+          <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
             <span>{isResults ? "Your profile" : `Question ${step + 1} of ${totalQ}`}</span>
             {!isResults && step > 0 && (
-              <button onClick={back} className="hover:text-[var(--pw-ink)] transition">
+              <button onClick={back} className="hover:text-[var(--pw-ink)] transition-colors">
                 ← Back
               </button>
             )}
           </div>
-          <div className="mt-2 h-1.5 rounded-full bg-[var(--pw-surface-2)] overflow-hidden">
+          <div className="mt-2 pw-progress">
             <motion.div
-              className="h-full"
-              style={{ background: "var(--pw-accent)" }}
+              className="pw-progress-fill"
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             />
@@ -241,15 +244,15 @@ function FindTutorPageInner() {
 }
 
 // ---------- Q1: Subject ----------
-const SUBJECTS: { id: Subject; label: string; emoji: string }[] = [
-  { id: "math", label: "Math", emoji: "🔢" },
-  { id: "science", label: "Science", emoji: "🔬" },
-  { id: "languages", label: "Languages", emoji: "🗣️" },
-  { id: "coding", label: "Coding", emoji: "💻" },
-  { id: "test_prep", label: "Test prep", emoji: "📝" },
-  { id: "music", label: "Music", emoji: "🎵" },
-  { id: "writing", label: "Writing", emoji: "✍️" },
-  { id: "art", label: "Art", emoji: "🎨" },
+const SUBJECTS: { id: Subject; label: string; icon: IconName }[] = [
+  { id: "math", label: "Math", icon: "math" },
+  { id: "science", label: "Science", icon: "science" },
+  { id: "languages", label: "Languages", icon: "languages" },
+  { id: "coding", label: "Coding", icon: "coding" },
+  { id: "test_prep", label: "Test prep", icon: "notes" },
+  { id: "music", label: "Music", icon: "music" },
+  { id: "writing", label: "Writing", icon: "writing" },
+  { id: "art", label: "Art", icon: "art" },
 ];
 
 function Q1({
@@ -280,12 +283,10 @@ function Q1({
                 onChange("multi_subject", false);
                 setTimeout(onNext, 200);
               }}
-              className={`pw-card p-4 flex flex-col items-center text-center transition ${active ? "ring-2 ring-[var(--pw-accent)]" : ""}`}
+              className={`pw-card p-4 flex flex-col items-center text-center transition-colors hover:border-[var(--pw-ink)] ${active ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
             >
-              <span className="text-[36px]" aria-hidden>
-                {s.emoji}
-              </span>
-              <span className="mt-2 text-[13px] font-medium">{s.label}</span>
+              <Icon name={s.icon} className="h-10 w-10" />
+              <span className="label-caps mt-2">{s.label}</span>
             </motion.button>
           );
         })}
@@ -296,7 +297,12 @@ function Q1({
           onChange("subject", undefined);
           setTimeout(onNext, 150);
         }}
-        className={`mt-5 w-full pw-btn-outline px-4 py-3 text-[13px] ${value.multi_subject ? "bg-[var(--pw-accent-soft)]" : ""}`}
+        className="mt-5 w-full pw-btn-outline px-4 py-3"
+        style={
+          value.multi_subject
+            ? { background: "var(--pw-accent-soft)", borderColor: "var(--pw-ink)" }
+            : undefined
+        }
       >
         I need help with multiple subjects
       </button>
@@ -305,12 +311,17 @@ function Q1({
 }
 
 // ---------- Q2: Goal ----------
-const GOALS: { id: Goal; label: string; emoji: string; desc: string }[] = [
-  { id: "ace_exam", label: "Ace an exam", emoji: "🏆", desc: "Crush that upcoming test" },
-  { id: "master_skill", label: "Master a skill", emoji: "🎯", desc: "Go deep, become great" },
-  { id: "build_confidence", label: "Build confidence", emoji: "💪", desc: "Believe you can do it" },
-  { id: "get_ahead", label: "Get ahead", emoji: "🚀", desc: "Stay one step in front" },
-  { id: "homework", label: "Homework help", emoji: "📚", desc: "Tackle assignments together" },
+const GOALS: { id: Goal; label: string; icon: IconName; desc: string }[] = [
+  { id: "ace_exam", label: "Ace an exam", icon: "trophy", desc: "Crush that upcoming test" },
+  { id: "master_skill", label: "Master a skill", icon: "target", desc: "Go deep, become great" },
+  {
+    id: "build_confidence",
+    label: "Build confidence",
+    icon: "thumbsUp",
+    desc: "Believe you can do it",
+  },
+  { id: "get_ahead", label: "Get ahead", icon: "rocket", desc: "Stay one step in front" },
+  { id: "homework", label: "Homework help", icon: "books", desc: "Tackle assignments together" },
 ];
 function Q2({ value, onChange }: { value?: Goal; onChange: (v: Goal) => void }) {
   return (
@@ -326,12 +337,14 @@ function Q2({ value, onChange }: { value?: Goal; onChange: (v: Goal) => void }) 
             whileHover={{ x: 4 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange(g.id)}
-            className={`w-full pw-card p-4 flex items-center gap-4 text-left transition ${value === g.id ? "ring-2 ring-[var(--pw-accent)]" : ""}`}
+            className={`w-full pw-card p-4 flex items-center gap-4 text-left transition-colors hover:border-[var(--pw-ink)] ${value === g.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
-            <span className="text-[40px]">{g.emoji}</span>
+            <Icon name={g.icon} className="h-10 w-10" />
             <div>
-              <div className="font-medium text-[16px]">{g.label}</div>
-              <div className="text-[13px] text-[var(--pw-ink-2)]">{g.desc}</div>
+              <div className="font-display uppercase tracking-[-0.025em] text-[1rem]">
+                {g.label}
+              </div>
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)]">{g.desc}</div>
             </div>
           </motion.button>
         ))}
@@ -341,16 +354,16 @@ function Q2({ value, onChange }: { value?: Goal; onChange: (v: Goal) => void }) 
 }
 
 // ---------- Q3: Learning Style ----------
-const STYLES: { id: Style; label: string; sub: string; emoji: string }[] = [
-  { id: "visual", label: "Show me", sub: "Visual learner", emoji: "👁️" },
-  { id: "auditory", label: "Tell me", sub: "Auditory learner", emoji: "👂" },
-  { id: "kinesthetic", label: "Let me try", sub: "Kinesthetic", emoji: "✋" },
+const STYLES: { id: Style; label: string; sub: string; icon: IconName }[] = [
+  { id: "visual", label: "Show me", sub: "Visual learner", icon: "eye" },
+  { id: "auditory", label: "Tell me", sub: "Auditory learner", icon: "ear" },
+  { id: "kinesthetic", label: "Let me try", sub: "Kinesthetic", icon: "hand" },
 ];
 function Q3({ value, onChange }: { value?: Style; onChange: (v: Style) => void }) {
   return (
     <div>
       <Heading kicker="03" title="How do you like to learn?" />
-      <div className="mt-6 grid sm:grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
         {STYLES.map((s, i) => (
           <motion.button
             key={s.id}
@@ -360,17 +373,19 @@ function Q3({ value, onChange }: { value?: Style; onChange: (v: Style) => void }
             whileHover={{ y: -4 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onChange(s.id)}
-            className={`pw-card p-6 text-center ${value === s.id ? "ring-2 ring-[var(--pw-accent)]" : ""}`}
+            className={`pw-card p-6 text-center transition-colors hover:border-[var(--pw-ink)] ${value === s.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
             <motion.div
-              className="text-[56px]"
+              className="flex justify-center"
               animate={{ rotate: [0, -8, 8, 0] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
             >
-              {s.emoji}
+              <Icon name={s.icon} className="h-12 w-12" />
             </motion.div>
-            <div className="mt-3 font-display text-[20px]">{s.label}</div>
-            <div className="text-[12px] text-[var(--pw-ink-2)] mt-0.5">{s.sub}</div>
+            <div className="mt-3 font-display text-[1.25rem] uppercase tracking-[-0.025em]">
+              {s.label}
+            </div>
+            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{s.sub}</div>
           </motion.button>
         ))}
       </div>
@@ -393,9 +408,13 @@ function Q4({
     <div>
       <Heading kicker="04" title="What's your pace?" />
       <div className="mt-10 px-2">
-        <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
-          <span>🐢 I need time to absorb</span>
-          <span>Challenge me! 🐇</span>
+        <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)]">
+          <span className="inline-flex items-center gap-1.5">
+            <Icon name="slow" className="h-4 w-4" /> I need time to absorb
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            Challenge me! <Icon name="fast" className="h-4 w-4" />
+          </span>
         </div>
         <div className="relative mt-3">
           <input
@@ -408,18 +427,21 @@ function Q4({
             className="w-full accent-[var(--pw-accent)]"
           />
           <motion.div
-            className="absolute -top-12 text-[40px]"
+            className="absolute -top-12"
             animate={{ left: `calc(${pct}% - 20px)` }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            transition={{ type: "spring", stiffness: 260, damping: 26 }}
           >
-            {value <= 2 ? "🐢" : value === 3 ? "🐎" : "🐇"}
+            <Icon
+              name={value <= 2 ? "slow" : value === 3 ? "steady" : "fast"}
+              className="h-10 w-10"
+            />
           </motion.div>
         </div>
-        <div className="mt-6 text-center text-[14px] text-[var(--pw-ink-2)]">
+        <div className="mt-6 text-center text-[0.875rem] text-[var(--pw-ink-2)]">
           {["Take it slow", "Easygoing", "Just right", "Push me", "Sprint mode"][value - 1]}
         </div>
       </div>
-      <button onClick={onNext} className="mt-10 w-full pw-btn-primary px-5 py-3 text-[14px]">
+      <button onClick={onNext} className="mt-10 w-full pw-btn-primary px-5 py-3">
         Continue →
       </button>
     </div>
@@ -427,11 +449,11 @@ function Q4({
 }
 
 // ---------- Q5: Time of day ----------
-const TIMES: { id: TimeOfDay; label: string; emoji: string }[] = [
-  { id: "early_bird", label: "Early Bird", emoji: "🌅" },
-  { id: "midday", label: "Midday", emoji: "☀️" },
-  { id: "night_owl", label: "Night Owl", emoji: "🌙" },
-  { id: "weekend", label: "Weekend Warrior", emoji: "🎉" },
+const TIMES: { id: TimeOfDay; label: string; icon: IconName }[] = [
+  { id: "early_bird", label: "Early Bird", icon: "sunrise" },
+  { id: "midday", label: "Midday", icon: "sun" },
+  { id: "night_owl", label: "Night Owl", icon: "moon" },
+  { id: "weekend", label: "Weekend Warrior", icon: "party" },
 ];
 function Q5({ value, onChange }: { value?: TimeOfDay; onChange: (v: TimeOfDay) => void }) {
   return (
@@ -447,10 +469,14 @@ function Q5({ value, onChange }: { value?: TimeOfDay; onChange: (v: TimeOfDay) =
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onChange(t.id)}
-            className={`pw-card p-6 text-center ${value === t.id ? "ring-2 ring-[var(--pw-accent)]" : ""}`}
+            className={`pw-card p-6 text-center transition-colors hover:border-[var(--pw-ink)] ${value === t.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
-            <div className="text-[44px]">{t.emoji}</div>
-            <div className="mt-2 font-medium text-[15px]">{t.label}</div>
+            <div className="flex justify-center">
+              <Icon name={t.icon} className="h-10 w-10" />
+            </div>
+            <div className="mt-2 font-display uppercase tracking-[-0.025em] text-[0.9375rem]">
+              {t.label}
+            </div>
           </motion.button>
         ))}
       </div>
@@ -493,10 +519,10 @@ function Q6({
             whileHover={{ x: 4 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange(l.id)}
-            className={`w-full pw-card p-5 text-left ${value === l.id ? "ring-2 ring-[var(--pw-accent)]" : ""}`}
+            className={`w-full pw-card p-5 text-left transition-colors hover:border-[var(--pw-ink)] ${value === l.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
-            <div className="font-medium text-[16px]">{l.label}</div>
-            <div className="text-[13px] text-[var(--pw-ink-2)] mt-0.5">{l.desc}</div>
+            <div className="font-display uppercase tracking-[-0.025em] text-[1rem]">{l.label}</div>
+            <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0.5">{l.desc}</div>
           </motion.button>
         ))}
       </div>
@@ -505,11 +531,11 @@ function Q6({
 }
 
 // ---------- Q7: Frequency ----------
-const FREQS: { id: Frequency; label: string; sub: string; emoji: string }[] = [
-  { id: "weekly", label: "Once a week", sub: "Steady & consistent", emoji: "📅" },
-  { id: "biweekly", label: "Twice a week", sub: "Build momentum", emoji: "⚡" },
-  { id: "intensive", label: "Intensive (3+)", sub: "Go all in", emoji: "🔥" },
-  { id: "flexible", label: "Flexible", sub: "As needed", emoji: "🌊" },
+const FREQS: { id: Frequency; label: string; sub: string; icon: IconName }[] = [
+  { id: "weekly", label: "Once a week", sub: "Steady & consistent", icon: "calendar" },
+  { id: "biweekly", label: "Twice a week", sub: "Build momentum", icon: "momentum" },
+  { id: "intensive", label: "Intensive (3+)", sub: "Go all in", icon: "flame" },
+  { id: "flexible", label: "Flexible", sub: "As needed", icon: "flow" },
 ];
 function Q7({ value, onChange }: { value?: Frequency; onChange: (v: Frequency) => void }) {
   return (
@@ -525,11 +551,15 @@ function Q7({ value, onChange }: { value?: Frequency; onChange: (v: Frequency) =
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onChange(f.id)}
-            className={`pw-card p-5 text-center ${value === f.id ? "ring-2 ring-[var(--pw-accent)]" : ""}`}
+            className={`pw-card p-5 text-center transition-colors hover:border-[var(--pw-ink)] ${value === f.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
-            <div className="text-[34px]">{f.emoji}</div>
-            <div className="mt-2 font-medium text-[15px]">{f.label}</div>
-            <div className="text-[12px] text-[var(--pw-ink-2)] mt-0.5">{f.sub}</div>
+            <div className="flex justify-center">
+              <Icon name={f.icon} className="h-10 w-10" />
+            </div>
+            <div className="mt-2 font-display uppercase tracking-[-0.025em] text-[0.9375rem]">
+              {f.label}
+            </div>
+            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{f.sub}</div>
           </motion.button>
         ))}
       </div>
@@ -567,10 +597,10 @@ function Q8({
     <div>
       <Heading kicker="08" title="What's your budget per hour?" />
       <div className="mt-10 px-2">
-        <div className="text-center font-display text-[56px]" style={{ color: "var(--pw-accent)" }}>
+        <div className="text-center font-display text-[3.5rem]" style={{ color: "var(--pw-accent)" }}>
           ${value}
           {value >= 150 ? "+" : ""}
-          <span className="text-[16px] text-[var(--pw-ink-2)] ml-1">/hr</span>
+          <span className="text-[1rem] text-[var(--pw-ink-2)] ml-1">/hr</span>
         </div>
         <input
           type="range"
@@ -581,7 +611,7 @@ function Q8({
           onChange={(e) => onChange(Number(e.target.value))}
           className="mt-6 w-full accent-[var(--pw-accent)]"
         />
-        <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)] mt-2">
+        <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
           <span>$15</span>
           <span>$150+</span>
         </div>
@@ -589,15 +619,15 @@ function Q8({
           key={count ?? -1}
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="mt-6 text-center text-[14px]"
+          className="mt-6 text-center text-[0.875rem]"
         >
-          <span className="font-display text-[22px]" style={{ color: "var(--pw-accent-2)" }}>
+          <span className="font-display text-[1.375rem]" style={{ color: "var(--pw-accent-2)" }}>
             {count ?? "…"}
           </span>{" "}
           <span className="text-[var(--pw-ink-2)]">tutors available in your range</span>
         </motion.div>
       </div>
-      <button onClick={onNext} className="mt-10 w-full pw-btn-primary px-5 py-3 text-[14px]">
+      <button onClick={onNext} className="mt-10 w-full pw-btn-primary px-5 py-3">
         See my matches →
       </button>
     </div>
@@ -647,38 +677,32 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
         {matching ? (
           <motion.div key="matching" exit={{ opacity: 0 }} className="text-center py-12">
             <motion.div
-              className="text-[64px]"
+              className="flex justify-center"
               animate={{ rotate: 360 }}
               transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
             >
-              ✨
+              <Icon name="sparkles" className="h-12 w-12" />
             </motion.div>
-            <div className="font-display text-[26px] mt-4">Finding your perfect match…</div>
-            <div className="text-[13px] text-[var(--pw-ink-2)] mt-2">
+            <div className="font-display text-[1.625rem] leading-none uppercase tracking-[-0.025em] mt-4">
+              Finding your perfect match…
+            </div>
+            <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">
               Analyzing your learning profile
             </div>
           </motion.div>
         ) : (
           <motion.div key="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             {/* Profile card */}
-            <div
-              className="relative pw-card p-7 overflow-hidden"
-              style={{
-                background:
-                  "linear-gradient(135deg, var(--pw-accent-soft) 0%, var(--pw-surface) 60%)",
-              }}
-            >
+            <div className="relative pw-card p-7 overflow-hidden">
               <motion.div
-                className="absolute -top-8 -right-8 text-[140px] opacity-10"
+                className="absolute -top-8 -right-8 opacity-10"
                 animate={{ rotate: [0, 8, -8, 0] }}
                 transition={{ duration: 6, repeat: Infinity }}
               >
-                🎯
+                <Icon name="target" className="h-32 w-32" />
               </motion.div>
-              <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-                Your learning profile
-              </div>
-              <div className="font-display text-[32px] leading-tight mt-1">
+              <div className="label-caps text-[var(--pw-ink-2)]">Your learning profile</div>
+              <div className="font-display text-[2rem] leading-none uppercase tracking-[-0.025em] mt-2">
                 The {traits[0] ?? "Curious Learner"}
               </div>
               <div className="mt-5 flex flex-wrap gap-2">
@@ -688,14 +712,13 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 + i * 0.08 }}
-                    className="pw-pill px-3 py-1 text-[12px] font-medium"
-                    style={{ background: "var(--pw-accent)", color: "white" }}
+                    className="pw-pill px-3 py-1 bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
                   >
                     {t}
                   </motion.span>
                 ))}
               </div>
-              <div className="mt-6 grid grid-cols-2 gap-4 text-[13px]">
+              <div className="mt-6 grid grid-cols-2 gap-4 text-[0.8125rem]">
                 <Field label="Subject" value={subjLabel ?? "—"} />
                 <Field label="Level" value={cap(answers.experience_level)} />
                 <Field label="Frequency" value={freqLabel(answers.frequency)} />
@@ -716,17 +739,17 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
                   budget: answers.budget_max,
                   level: answers.experience_level,
                 })}
-                className="pw-btn-primary text-center px-5 py-3 text-[14px]"
+                className="pw-btn-primary text-center px-5 py-3"
               >
                 View my matches →
               </Link>
-              <button onClick={onRestart} className="pw-btn-outline px-5 py-3 text-[14px]">
+              <button onClick={onRestart} className="pw-btn-outline px-5 py-3">
                 Retake the quiz
               </button>
             </div>
 
             {!user && (
-              <div className="mt-5 text-center text-[12px] text-[var(--pw-ink-2)]">
+              <div className="mt-5 text-center text-[0.75rem] text-[var(--pw-ink-2)]">
                 Your answers are saved locally. Sign up to keep them.
               </div>
             )}
@@ -741,22 +764,15 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
 function Heading({ kicker, title }: { kicker: string; title: string }) {
   return (
     <div>
-      <div
-        className="font-mono-pw text-[11px] uppercase pw-tracking-wide"
-        style={{ color: "var(--pw-accent)" }}
-      >
-        {kicker}
-      </div>
-      <h1 className="font-display text-[28px] sm:text-[32px] leading-tight mt-1">{title}</h1>
+      <div className="label-caps text-pw-accent">{kicker}</div>
+      <h1 className="font-display text-[1.75rem] sm:text-[2rem] leading-tight mt-1">{title}</h1>
     </div>
   );
 }
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-        {label}
-      </div>
+      <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
       <div className="font-medium mt-0.5">{value}</div>
     </div>
   );

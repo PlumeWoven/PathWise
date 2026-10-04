@@ -42,12 +42,6 @@ export interface MatchScore {
 export const VIBE_TAGS = ["Motivational", "Patient", "Strict", "Fun", "Methodical", "Creative"] as const;
 export type Vibe = typeof VIBE_TAGS[number];
 
-export function matchColor(pct: number): string {
-  if (pct >= 80) return "var(--pw-accent-2)";
-  if (pct >= 60) return "var(--pw-warn, #d97706)";
-  return "var(--pw-ink-2)";
-}
-
 // ---------- Client‑side scoring (kept for backwards compatibility / fallback) ----------
 
 const WEIGHTS = { learningStyle: 0.30, subject: 0.25, availability: 0.20, budget: 0.15, rating: 0.10 };

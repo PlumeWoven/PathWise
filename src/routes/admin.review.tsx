@@ -50,8 +50,10 @@ function AdminReview() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-4xl mx-auto px-5 sm:px-8 pb-20">
-        <h1 className="font-display text-3xl mb-1">Course Review Queue</h1>
-        <p className="text-[14px] text-[var(--pw-ink-2)] mb-6">
+        <h1 className="font-display text-3xl uppercase tracking-[-0.025em] leading-none mb-2">
+          Course Review Queue
+        </h1>
+        <p className="text-[0.875rem] text-[var(--pw-ink-2)] mb-8">
           {items ? `${items.length} courses awaiting review` : "Loading…"}
         </p>
 
@@ -60,16 +62,22 @@ function AdminReview() {
             <Loader2 className="size-6 animate-spin text-[var(--pw-ink-2)]" />
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20 text-[var(--pw-ink-2)]">Nothing to review right now.</div>
+          <div className="text-center py-20 text-[var(--pw-ink-2)]">
+            Nothing to review right now.
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="divide-y divide-[var(--pw-border)] border-y border-[var(--pw-border)]">
             {items.map((c) => (
-              <div key={c.id} className="rounded-xl border border-[var(--pw-border)] bg-[var(--pw-surface)] p-4 flex gap-4 items-center">
-                {c.thumbnail_url && <img src={c.thumbnail_url} alt="" className="size-20 rounded object-cover" />}
+              <div key={c.id} className="group py-6 flex gap-4 items-center">
+                {c.thumbnail_url && (
+                  <img src={c.thumbnail_url} alt="" className="size-20 object-cover" />
+                )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium">{c.title}</div>
-                  <div className="text-[12px] text-[var(--pw-ink-2)] truncate">{c.subtitle}</div>
-                  <div className="text-[11px] text-[var(--pw-ink-2)] mt-1">
+                  <div className="font-display text-xl leading-snug transition-colors group-hover:text-pw-accent">
+                    {c.title}
+                  </div>
+                  <div className="text-[0.75rem] text-[var(--pw-ink-2)] truncate">{c.subtitle}</div>
+                  <div className="label-caps text-[var(--pw-ink-2)] mt-2">
                     {c.category} · {c.difficulty} · {c.price} {c.currency}
                   </div>
                 </div>
@@ -79,7 +87,7 @@ function AdminReview() {
                       href={`/courses/${c.slug}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[12px] underline text-[var(--pw-ink-2)] text-center"
+                      className="label-caps text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors text-center"
                     >
                       Preview
                     </a>

@@ -1,3 +1,4 @@
+import type { IconName } from "@/components/Icon";
 /**
  * src/pathwise/levels.ts
  *
@@ -40,12 +41,12 @@ export const LEVEL_TO_BAND: Record<Level, LevelBand> = {
 };
 
 /** Short, learner-facing description of what a band means for course choice. */
-export const BAND_META: Record<LevelBand, { label: Level; emoji: string; blurb: string }> = {
-  1: { label: "Seedling", emoji: "🌱", blurb: "Foundations from scratch" },
-  2: { label: "Spark", emoji: "⚡", blurb: "Basics in place, building up" },
-  3: { label: "Builder", emoji: "🔥", blurb: "Solid core, plugging gaps" },
-  4: { label: "Sharpshooter", emoji: "🎯", blurb: "Strong — ready for depth" },
-  5: { label: "Mastermind", emoji: "🏆", blurb: "Advanced and specialised" },
+export const BAND_META: Record<LevelBand, { label: Level; icon: IconName; blurb: string }> = {
+  1: { label: "Seedling", icon: "seedling", blurb: "Foundations from scratch" },
+  2: { label: "Spark", icon: "spark", blurb: "Basics in place, building up" },
+  3: { label: "Builder", icon: "flame", blurb: "Solid core, plugging gaps" },
+  4: { label: "Sharpshooter", icon: "target", blurb: "Strong — ready for depth" },
+  5: { label: "Mastermind", icon: "trophy", blurb: "Advanced and specialised" },
 };
 
 export function clampBand(n: number): LevelBand {
@@ -286,5 +287,5 @@ export function courseBand(course: {
 }
 
 export function bandLabel(band: LevelBand): string {
-  return `${BAND_META[band].emoji} ${BAND_META[band].label}`;
+  return BAND_META[band].label;
 }

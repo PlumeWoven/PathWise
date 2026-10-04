@@ -6,21 +6,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/pathwise/auth";
 import { applyPendingRole, readReturnPath } from "@/pathwise/oauth";
 import { normalizeRole, postAuthDestination, type DbRole } from "@/pathwise/roles";
+import { Icon, type IconName } from "@/components/Icon";
 
 export const Route = createFileRoute("/auth/choose-role")({
   head: () => ({
-    meta: [
-      { title: "Choose your role — PathWise" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Choose your role — PathWise" }, { name: "robots", content: "noindex" }],
   }),
   component: ChooseRolePage,
 });
 
-const OPTIONS: { id: DbRole; emoji: string; label: string; sub: string }[] = [
-  { id: "student", emoji: "🎓", label: "Student", sub: "Get a roadmap & matched tutors" },
-  { id: "tutor", emoji: "👨‍🏫", label: "Tutor", sub: "Teach, publish courses & earn" },
-  { id: "both", emoji: "🔁", label: "Both", sub: "Learn and teach on one account" },
+const OPTIONS: { id: DbRole; icon: IconName; label: string; sub: string }[] = [
+  { id: "student", icon: "student", label: "Student", sub: "Get a roadmap & matched tutors" },
+  { id: "tutor", icon: "tutor", label: "Tutor", sub: "Teach, publish courses & earn" },
+  { id: "both", icon: "switchRole", label: "Both", sub: "Learn and teach on one account" },
 ];
 
 /**
@@ -111,7 +109,7 @@ function ChooseRolePage() {
   if (loading || !checked) {
     return (
       <div className="min-h-screen bg-[var(--pw-bg)] flex items-center justify-center">
-        <p className="text-[14px] text-[var(--pw-ink-2)]" role="status" aria-live="polite">
+        <p className="text-[0.875rem] text-[var(--pw-ink-2)]" role="status" aria-live="polite">
           Loading your account…
         </p>
       </div>
@@ -124,16 +122,14 @@ function ChooseRolePage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="w-full max-w-[560px]"
+        className="w-full max-w-[35rem]"
       >
         <div className="pw-card p-7">
-          <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-            One last step
-          </div>
-          <h1 className="font-display text-[28px] leading-tight mt-1">
+          <div className="label-caps text-[var(--pw-ink-2)]">One last step</div>
+          <h1 className="font-display text-[1.75rem] uppercase tracking-[-0.025em] leading-none mt-3">
             {displayName ? `Welcome, ${displayName.split(" ")[0]}` : "Welcome to PathWise"}
           </h1>
-          <p className="mt-2 text-[14px] text-[var(--pw-ink-2)]">
+          <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
             You're signed in with Google. Tell us how you'll use PathWise — this decides your
             dashboard, and you can't change it later, so pick the one that fits.
           </p>
@@ -149,17 +145,18 @@ function ChooseRolePage() {
                     type="button"
                     onClick={() => setChoice(o.id)}
                     aria-pressed={selected}
-                    className="pw-card text-left p-4 transition-colors"
-                    style={{
-                      borderColor: selected ? "var(--pw-accent)" : "var(--pw-border)",
-                      background: selected ? "var(--pw-accent-soft)" : "var(--pw-surface)",
-                    }}
+                    className={`pw-card text-left p-4 transition-colors ${
+                      selected
+                        ? "border-[var(--pw-accent)]"
+                        : "border-[var(--pw-border)] hover:border-[var(--pw-ink)]"
+                    }`}
+                    style={selected ? { background: "var(--pw-accent-soft)" } : undefined}
                   >
-                    <div className="text-2xl" aria-hidden="true">
-                      {o.emoji}
+                    <Icon name={o.icon} className="h-6 w-6" />
+                    <div className="font-display text-[1rem] uppercase tracking-[-0.025em] leading-none mt-3">
+                      {o.label}
                     </div>
-                    <div className="font-display text-[16px] mt-1.5">{o.label}</div>
-                    <div className="text-[12px] text-[var(--pw-ink-2)] mt-0.5">{o.sub}</div>
+                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{o.sub}</div>
                   </button>
                 );
               })}
@@ -169,12 +166,12 @@ function ChooseRolePage() {
           <button
             onClick={handleContinue}
             disabled={!choice || submitting}
-            className="pw-btn-primary w-full inline-flex justify-center items-center mt-6 px-6 py-3 text-[15px] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="pw-btn-primary w-full inline-flex justify-center items-center mt-6 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Saving…" : "Continue →"}
           </button>
           {!choice && (
-            <p className="mt-2 text-[11px] text-[var(--pw-ink-2)] text-center">
+            <p className="mt-2 text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
               Pick a role to continue.
             </p>
           )}

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "../pathwise/auth";
 import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
+import { Icon } from "@/components/Icon";
 
 export const Route = createFileRoute("/_app/settings/verification")({
   head: () => ({ meta: [{ title: "Verification Center — PathWise" }] }),
@@ -63,7 +64,7 @@ export function VerificationCenter() {
   if (loading || !profile) {
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[14px] text-[var(--pw-ink-2)]">
+        <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
           Loading…
         </main>
       </div>
@@ -80,14 +81,14 @@ export function VerificationCenter() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="max-w-3xl mx-auto px-5 sm:px-8 py-10">
-        <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-          Settings
-        </div>
+        <div className="label-caps text-[var(--pw-ink-2)]">Settings</div>
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-[36px] leading-tight">Verification Center</h1>
+          <h1 className="font-display text-[2.25rem] uppercase tracking-[-0.025em] leading-none">
+            Verification Center
+          </h1>
           <VerificationBadge tier={tier} size="lg" />
         </div>
-        <p className="mt-2 text-[15px] text-[var(--pw-ink-2)]">
+        <p className="mt-2 text-[0.9375rem] text-[var(--pw-ink-2)]">
           Verified tutors get a trust badge, rank higher in search, and earn up to 3× more bookings.
         </p>
 
@@ -100,10 +101,11 @@ export function VerificationCenter() {
             statusLabel={emailVerified ? "Complete" : "Pending"}
             actionLabel={null}
           >
-            <div className="text-[13px] text-[var(--pw-ink-2)]">
+            <div className="text-[0.8125rem] text-[var(--pw-ink-2)]">
               {supabaseUser?.email ? (
-                <span>
-                  ✓ <span className="text-[var(--pw-ink)] font-medium">{supabaseUser.email}</span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Icon name="check" className="h-4 w-4" />
+                  <span className="text-[var(--pw-ink)] font-medium">{supabaseUser.email}</span>
                 </span>
               ) : (
                 "Sign in with an email account."
@@ -120,16 +122,12 @@ export function VerificationCenter() {
               identityVerified ? "Verified" : pendingIdentity ? "In review" : "Not started"
             }
             actionLabel={
-              identityVerified
-                ? null
-                : pendingIdentity
-                  ? "View status"
-                  : "Start verification"
+              identityVerified ? null : pendingIdentity ? "View status" : "Start verification"
             }
             onAction={() => setShowUpload(true)}
           >
             {pendingIdentity && !identityVerified ? (
-              <div className="text-[13px] text-[var(--pw-ink-2)]">
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)]">
                 Submitted {new Date(pendingIdentity.submitted_at).toLocaleDateString()} — usually
                 reviewed within 1–2 minutes.
               </div>
@@ -144,7 +142,7 @@ export function VerificationCenter() {
             statusLabel="Coming soon"
             actionLabel={null}
           >
-            <div className="text-[13px] text-[var(--pw-ink-2)]">
+            <div className="text-[0.8125rem] text-[var(--pw-ink-2)]">
               We're partnering with a verified background-check provider. Existing identity-verified
               tutors will be invited first.
             </div>
@@ -153,44 +151,35 @@ export function VerificationCenter() {
 
         {/* Recent requests */}
         <section className="mt-12">
-          <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mb-3">
-            Submission history
-          </div>
+          <div className="label-caps text-[var(--pw-ink-2)] mb-3">Submission history</div>
           {requestsLoading ? (
             <div className="pw-card p-4 animate-pulse h-16 bg-[var(--pw-surface-2)]" />
           ) : requests.length === 0 ? (
-            <div className="pw-card p-4 text-[13px] text-[var(--pw-ink-2)]">
+            <div className="pw-card p-4 text-[0.8125rem] text-[var(--pw-ink-2)]">
               No verification requests yet.
             </div>
           ) : (
-            <ul className="space-y-2">
+            <ul className="divide-y divide-[var(--pw-border)] border-y border-[var(--pw-border)]">
               {requests.map((r) => (
-                <li
-                  key={r.id}
-                  className="pw-card p-3 flex items-center justify-between text-[13px]"
-                >
+                <li key={r.id} className="py-4 flex items-center justify-between text-[0.8125rem]">
                   <span className="capitalize">{r.type}</span>
                   <span
-                    className="pw-pill px-2.5 py-1 text-[11px] uppercase pw-tracking-wide"
+                    className="pw-pill px-2.5 py-1"
                     style={{
                       color:
                         r.status === "approved"
                           ? "var(--pw-accent-2)"
                           : r.status === "rejected"
                             ? "var(--pw-danger)"
-                            : "#a16207",
+                            : "var(--pw-accent-3)",
                       background:
-                        r.status === "approved"
-                          ? "var(--pw-accent-soft)"
-                          : r.status === "rejected"
-                            ? "#fee2e2"
-                            : "#fef3c7",
+                        r.status === "approved" ? "var(--pw-accent-soft)" : "var(--pw-surface-2)",
                       borderColor:
                         r.status === "approved"
                           ? "var(--pw-accent-2)"
                           : r.status === "rejected"
                             ? "var(--pw-danger)"
-                            : "#f59e0b",
+                            : "var(--pw-accent-3)",
                       borderWidth: 1,
                       borderStyle: "solid",
                     }}
@@ -206,7 +195,7 @@ export function VerificationCenter() {
         <div className="mt-10">
           <Link
             to="/dashboard"
-            className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] underline-offset-4 hover:underline"
+            className="label-caps text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
           >
             ← Back to dashboard
           </Link>
@@ -251,7 +240,7 @@ function TierCard({
     tone === "done"
       ? "var(--pw-accent-2)"
       : tone === "pending"
-        ? "#a16207"
+        ? "var(--pw-accent-3)"
         : tone === "locked"
           ? "var(--pw-ink-2)"
           : "var(--pw-accent)";
@@ -261,12 +250,17 @@ function TierCard({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-display text-[20px]">{title}</h3>
+            <h3 className="font-display text-[1.25rem] uppercase tracking-[-0.025em] leading-none">
+              {title}
+            </h3>
             <span
-              className="pw-pill px-2 py-0.5 text-[10px] uppercase pw-tracking-wide"
+              className="pw-pill px-2 py-0.5"
               style={{
                 color: accent,
-                background: tone === "locked" ? "var(--pw-surface-2)" : `${accent}10`,
+                background:
+                  tone === "locked"
+                    ? "var(--pw-surface-2)"
+                    : `color-mix(in srgb, ${accent} 10%, transparent)`,
                 borderColor: accent,
                 borderWidth: 1,
                 borderStyle: "solid",
@@ -275,14 +269,11 @@ function TierCard({
               {statusLabel}
             </span>
           </div>
-          <p className="mt-1 text-[14px] text-[var(--pw-ink-2)]">{subtitle}</p>
+          <p className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">{subtitle}</p>
           {children ? <div className="mt-3">{children}</div> : null}
         </div>
         {actionLabel && onAction && (
-          <button
-            onClick={onAction}
-            className="pw-btn-primary px-4 py-2 text-[13px] whitespace-nowrap"
-          >
+          <button onClick={onAction} className="pw-btn-primary px-4 py-2 whitespace-nowrap">
             {actionLabel}
           </button>
         )}
@@ -342,10 +333,7 @@ function UploadModal({
       if (error) throw error;
 
       // Mirror to profile so badges update across the app.
-      await supabase
-        .from("profiles")
-        .update({ verification_status: "pending" })
-        .eq("id", userId);
+      await supabase.from("profiles").update({ verification_status: "pending" }).eq("id", userId);
 
       setStep("processing");
       // Simulate processing — Stripe Identity webhook would replace this.
@@ -366,22 +354,24 @@ function UploadModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(10,12,14,0.5)] px-4"
       onClick={onClose}
     >
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 20, opacity: 0 }}
-        className="pw-card w-full max-w-lg p-6 sm:p-7 bg-[var(--pw-surface)]"
+        className="pw-card w-full max-w-lg p-6 sm:p-7 bg-[var(--pw-surface)] shadow-pw-float"
         onClick={(e) => e.stopPropagation()}
       >
         <Stepper step={step} />
 
         {step === "upload" && (
           <div className="mt-6 space-y-5">
-            <h2 className="font-display text-[24px]">Verify your identity</h2>
-            <p className="text-[13px] text-[var(--pw-ink-2)]">
+            <h2 className="font-display text-[1.5rem] uppercase tracking-[-0.025em] leading-none">
+              Verify your identity
+            </h2>
+            <p className="text-[0.8125rem] text-[var(--pw-ink-2)]">
               Your documents are encrypted and only used for verification.
             </p>
 
@@ -418,14 +408,14 @@ function UploadModal({
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)]"
+                className="label-caps px-4 py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !idFile || !selfieFile}
-                className="pw-btn-primary px-5 py-2.5 text-[14px] disabled:opacity-50"
+                className="pw-btn-primary px-5 py-2.5 disabled:opacity-50"
               >
                 {submitting ? "Uploading…" : "Submit for verification"}
               </button>
@@ -436,8 +426,10 @@ function UploadModal({
         {step === "processing" && (
           <div className="mt-8 text-center">
             <div className="mx-auto h-12 w-12 rounded-full border-2 border-[var(--pw-accent)] border-t-transparent animate-spin" />
-            <h2 className="mt-5 font-display text-[22px]">Processing your documents</h2>
-            <p className="mt-2 text-[13px] text-[var(--pw-ink-2)]">
+            <h2 className="mt-5 font-display text-[1.375rem] uppercase tracking-[-0.025em] leading-none">
+              Processing your documents
+            </h2>
+            <p className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
               Estimated time: 1–2 minutes. You can safely close this window.
             </p>
           </div>
@@ -445,17 +437,16 @@ function UploadModal({
 
         {step === "verified" && (
           <div className="mt-8 text-center">
-            <div className="mx-auto inline-flex items-center justify-center h-14 w-14 rounded-full bg-[var(--pw-accent-soft)] text-[var(--pw-accent-2)] text-[28px]">
-              ✓
+            <div className="mx-auto inline-flex items-center justify-center h-14 w-14 rounded-full bg-[var(--pw-accent-soft)] text-[var(--pw-accent-2)]">
+              <Icon name="check" className="h-7 w-7" />
             </div>
-            <h2 className="mt-4 font-display text-[24px]">Submitted!</h2>
-            <p className="mt-2 text-[13px] text-[var(--pw-ink-2)]">
+            <h2 className="mt-4 font-display text-[1.5rem] uppercase tracking-[-0.025em] leading-none">
+              Submitted!
+            </h2>
+            <p className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
               Your documents are in review. We'll email you when verification is complete.
             </p>
-            <button
-              onClick={onClose}
-              className="pw-btn-primary mt-6 px-5 py-2.5 text-[14px]"
-            >
+            <button onClick={onClose} className="pw-btn-primary mt-6 px-5 py-2.5">
               Done
             </button>
           </div>
@@ -479,19 +470,25 @@ function Stepper({ step }: { step: Step }) {
         return (
           <div key={s.key} className="flex items-center gap-2 flex-1">
             <div
-              className="h-7 w-7 rounded-full flex items-center justify-center text-[12px] font-medium"
+              className="h-7 w-7 rounded-full flex items-center justify-center text-[0.75rem] font-medium"
               style={{
-                background: active ? "var(--pw-accent)" : "var(--pw-surface-2)",
-                color: active ? "white" : "var(--pw-ink-2)",
+                background: active ? "var(--pw-accent-fill)" : "var(--pw-surface-2)",
+                color: active ? "var(--pw-on-accent)" : "var(--pw-ink-2)",
               }}
             >
               {i + 1}
             </div>
-            <div className="text-[12px] uppercase pw-tracking-wide" style={{ color: active ? "var(--pw-ink)" : "var(--pw-ink-2)" }}>
+            <div
+              className="label-caps"
+              style={{ color: active ? "var(--pw-ink)" : "var(--pw-ink-2)" }}
+            >
               {s.label}
             </div>
             {i < steps.length - 1 && (
-              <div className="flex-1 h-px" style={{ background: i < idx ? "var(--pw-accent)" : "var(--pw-border)" }} />
+              <div
+                className="flex-1 h-px"
+                style={{ background: i < idx ? "var(--pw-accent-fill)" : "var(--pw-border)" }}
+              />
             )}
           </div>
         );
@@ -515,20 +512,16 @@ function FileSlot({
     <button
       type="button"
       onClick={onPick}
-      className="w-full text-left pw-border rounded-md px-4 py-3 hover:bg-[var(--pw-surface-2)] transition-colors flex items-center gap-3"
+      className="w-full text-left pw-border px-4 py-3 hover:border-[var(--pw-ink)] transition-colors flex items-center gap-3"
     >
-      <div className="h-10 w-10 rounded-md flex items-center justify-center bg-[var(--pw-accent-soft)] text-[var(--pw-accent)] text-[18px]">
-        {file ? "📎" : "📷"}
+      <div className="h-10 w-10 flex items-center justify-center bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]">
+        <Icon name={file ? "attachment" : "camera"} className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[14px] font-medium text-[var(--pw-ink)]">{label}</div>
-        <div className="text-[12px] text-[var(--pw-ink-2)] truncate">
-          {file ? file.name : hint}
-        </div>
+        <div className="text-[0.875rem] font-medium text-[var(--pw-ink)]">{label}</div>
+        <div className="text-[0.75rem] text-[var(--pw-ink-2)] truncate">{file ? file.name : hint}</div>
       </div>
-      <div className="text-[12px] text-[var(--pw-accent)] font-medium">
-        {file ? "Change" : "Upload"}
-      </div>
+      <div className="label-caps text-pw-accent">{file ? "Change" : "Upload"}</div>
     </button>
   );
 }

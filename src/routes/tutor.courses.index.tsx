@@ -43,7 +43,8 @@ export function TutorCoursesPage() {
     }
   };
 
-  if (loading) return <div className="p-8 text-center">Loading courses...</div>;
+  if (loading)
+    return <div className="p-8 text-center text-[var(--pw-ink-2)]">Loading courses...</div>;
 
   return (
     <div>
@@ -51,7 +52,7 @@ export function TutorCoursesPage() {
         <div className="mb-4 flex items-center gap-2">
           <Link
             to="/dashboard/courses"
-            className="inline-flex items-center gap-1.5 text-[13px] text-[var(--pw-accent)] hover:underline"
+            className="label-caps inline-flex items-center gap-1.5 text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
           >
             <LayoutDashboard className="size-3.5" />
             Back to Dashboard
@@ -59,7 +60,9 @@ export function TutorCoursesPage() {
         </div>
       )}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="font-display text-2xl">My Courses</h1>
+        <h1 className="font-display text-2xl uppercase tracking-[-0.025em] leading-none">
+          My Courses
+        </h1>
         <Link to="/dashboard/courses/new" className="pw-btn-primary flex items-center gap-1">
           <Plus className="size-4" /> New Course
         </Link>
@@ -67,29 +70,58 @@ export function TutorCoursesPage() {
       {courses.length === 0 ? (
         <div className="pw-card p-12 text-center text-[var(--pw-ink-2)]">
           You haven't created any courses yet.
-          <Link to="/dashboard/courses/new" className="block mt-2 text-[var(--pw-accent)] underline">Create your first course</Link>
+          <Link
+            to="/dashboard/courses/new"
+            className="block mt-2 text-[var(--pw-accent)] underline underline-offset-4 hover:text-[var(--pw-ink)] transition-colors"
+          >
+            Create your first course
+          </Link>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => (
-            <div key={course.id} className="pw-card p-4">
+            <div
+              key={course.id}
+              className="pw-card group p-4 hover:border-[var(--pw-ink)] transition-colors"
+            >
               {course.thumbnail_url && (
-                <img src={course.thumbnail_url} alt={course.title} className="w-full h-32 object-cover rounded-md mb-3" />
+                <img
+                  src={course.thumbnail_url}
+                  alt={course.title}
+                  className="w-full h-32 object-cover mb-3"
+                />
               )}
-              <h3 className="font-medium text-lg">{course.title}</h3>
-              <p className="text-sm text-[var(--pw-ink-2)] mt-1 line-clamp-2">{course.subtitle || "No description"}</p>
-              <div className="mt-3 flex items-center justify-between text-xs">
-                <span className={`px-2 py-0.5 rounded-full ${course.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+              <h3 className="font-display text-lg leading-tight transition-colors group-hover:text-pw-accent">
+                {course.title}
+              </h3>
+              <p className="text-sm text-[var(--pw-ink-2)] mt-1 line-clamp-2">
+                {course.subtitle || "No description"}
+              </p>
+              <div className="mt-3 flex items-center justify-between">
+                <span
+                  className={`label-caps rounded-full border px-2.5 py-0.5 ${course.status === "published" ? "border-[var(--pw-secondary)] text-[var(--pw-secondary)]" : "border-[var(--pw-accent-3)] text-[var(--pw-accent-3)]"}`}
+                >
                   {course.status}
                 </span>
                 <div className="flex gap-2">
-                  <Link to="/dashboard/courses/$courseId/edit" params={{ courseId: course.id }} className="p-1 hover:bg-[var(--pw-surface-2)] rounded">
+                  <Link
+                    to="/dashboard/courses/$courseId/edit"
+                    params={{ courseId: course.id }}
+                    className="p-1 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
+                  >
                     <Edit className="size-4" />
                   </Link>
-                  <Link to="/courses/$slug" params={{ slug: course.slug || course.id }} className="p-1 hover:bg-[var(--pw-surface-2)] rounded">
+                  <Link
+                    to="/courses/$slug"
+                    params={{ slug: course.slug || course.id }}
+                    className="p-1 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
+                  >
                     <Eye className="size-4" />
                   </Link>
-                  <button onClick={() => deleteCourse(course.id)} className="p-1 hover:bg-red-100 rounded text-red-600">
+                  <button
+                    onClick={() => deleteCourse(course.id)}
+                    className="p-1 text-[var(--pw-danger)] hover:bg-[var(--pw-surface-2)] transition-colors"
+                  >
                     <Trash2 className="size-4" />
                   </button>
                 </div>

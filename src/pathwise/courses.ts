@@ -192,7 +192,7 @@ export function statusColor(s: CourseStatus): string {
     case "published":
       return "bg-[var(--pw-accent-2)]/10 text-[var(--pw-accent-2)] border-[var(--pw-accent-2)]/30";
     case "under_review":
-      return "bg-[var(--pw-accent-3)]/15 text-[#7a5800] border-[var(--pw-accent-3)]/40";
+      return "bg-[var(--pw-accent-3)]/15 text-[var(--pw-accent-3)] border-[var(--pw-accent-3)]/40";
     case "archived":
       return "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)] border-[var(--pw-border)]";
     default:
