@@ -27,7 +27,10 @@ export function RoleGate({
   }, [loading, isLoggedIn, allowAnonymous, openLogin]);
 
   if (loading) return null;
-  if (!isLoggedIn) return allowAnonymous ? <>{children}</> : null;
+  if (!isLoggedIn) {
+    if (allowAnonymous) return <>{children}</>;
+    return <SignInPrompt />;
+  }
   // Only block a user who has a known role that isn't permitted. A logged-in
   // user without a role yet falls through (these gates are used on pages that
   // also allow anonymous access).
@@ -63,4 +66,24 @@ export function RoleGate({
     );
   }
   return <>{children}</>;
+}
+
+/** Shown on guarded pages once the login modal is dismissed, so the page isn't left blank. */
+export function SignInPrompt() {
+  const { openLogin } = useAuth();
+  const navigate = useNavigate();
+  return (
+    <main className="px-5 sm:px-8 py-16 max-w-lg mx-auto text-center text-[var(--pw-ink)]">
+      <h1 className="font-display text-[1.75rem]">Sign in to continue</h1>
+      <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">This page needs an account.</p>
+      <div className="mt-6 flex gap-3 justify-center">
+        <button onClick={openLogin} className="pw-btn-primary px-5 py-2.5">
+          Sign in
+        </button>
+        <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-5 py-2.5">
+          Home
+        </button>
+      </div>
+    </main>
+  );
 }

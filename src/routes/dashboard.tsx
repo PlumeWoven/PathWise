@@ -6,6 +6,7 @@ import { DashboardShell } from "../components/dashboard/TutorSidebar";
 import { useAuth } from "../pathwise/auth";
 import { isTutorSide } from "../pathwise/roles";
 import { RequireOnboarding } from "../pathwise/RequireOnboarding";
+import { SignInPrompt } from "../pathwise/RoleGate";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardLayout,
@@ -30,9 +31,13 @@ function DashboardLayout() {
     return (
       <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
         <PWHeader />
-        <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
-          Loading…
-        </main>
+        {loading ? (
+          <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
+            Loading…
+          </main>
+        ) : (
+          <SignInPrompt />
+        )}
       </div>
     );
   }
