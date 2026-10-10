@@ -123,7 +123,9 @@ function SessionDetail() {
     minsToStart > -((session.duration_minutes ?? 60) + 30);
 
   const isUpcoming = ["scheduled", "confirmed", "reminder_sent"].includes(session.status_v2);
-  const canReschedule = isUpcoming && minsToStart > 24 * 60;
+  // Only the student reschedules: rebooking runs as the caller, so a tutor
+  // pressing it would have become the "student" of the new session.
+  const canReschedule = isStudent && isUpcoming && minsToStart > 24 * 60;
   const canCancel = isUpcoming;
 
   async function doTransition(

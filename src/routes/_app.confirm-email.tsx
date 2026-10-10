@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeRole, postAuthDestination } from "@/pathwise/roles";
+import { normalizeRole, pendingBookingTutorId, postAuthDestination } from "@/pathwise/roles";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -75,7 +75,9 @@ function ConfirmEmailPage() {
           // Wait a moment, then redirect via the single role-correct
           // helper (handles tutor/both/student/unknown + onboarding).
           setTimeout(() => {
-            navigate({ to: postAuthDestination(role, profile?.onboarding_completed) });
+            const pendingTutor = profile?.onboarding_completed ? pendingBookingTutorId() : null;
+            if (pendingTutor) navigate({ to: "/book/$tutorId", params: { tutorId: pendingTutor } });
+            else navigate({ to: postAuthDestination(role, profile?.onboarding_completed) });
           }, 2000);
         } else {
           setStatus("error");

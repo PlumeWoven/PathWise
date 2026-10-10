@@ -590,12 +590,6 @@ function UpcomingSessions({
                   >
                     Join
                   </button>
-                  <button
-                    className="pw-btn-outline text-[0.75rem] px-3 py-1.5"
-                    onClick={() => toast.info("Messaging coming soon")}
-                  >
-                    Message
-                  </button>
                   <Link
                     to="/sessions/$id"
                     params={{ id: s.id }}

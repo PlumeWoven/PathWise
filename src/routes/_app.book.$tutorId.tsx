@@ -120,14 +120,15 @@ function BookPage() {
   const [recCount, setRecCount] = useState(4);
   const [recEndDate, setRecEndDate] = useState<Date | undefined>(undefined);
 
-  // Persist intent so we resume after login.
+  // Persist intent so a signed-out student resumes here after signing up.
   useEffect(() => {
+    if (user) return;
     try {
       localStorage.setItem("pathwise_pending_booking", JSON.stringify({ tutorId }));
     } catch {
       /* ignore */
     }
-  }, [tutorId]);
+  }, [tutorId, user]);
 
   useEffect(() => {
     void (async () => {

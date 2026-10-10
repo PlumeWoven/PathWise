@@ -5,7 +5,6 @@ import {
   CalendarDays,
   Star,
   Clock,
-  MessageSquare,
   Phone,
   GraduationCap,
   Briefcase,
@@ -306,27 +305,6 @@ function TutorProfilePage() {
     .join("")
     .toUpperCase();
 
-  const startMessage = async () => {
-    const { data: u } = await supabase.auth.getUser();
-    if (!u.user) {
-      toast.error("Sign in to message this tutor");
-      navigate({ to: "/login" as any });
-      return;
-    }
-    const sb: any = supabase;
-    const { data: existing } = await sb
-      .from("message_threads")
-      .select("id")
-      .eq("tutor_id", tutor.id)
-      .eq("student_id", u.user.id)
-      .maybeSingle();
-    if (!existing) {
-      await sb.from("message_threads").insert({ tutor_id: tutor.id, student_id: u.user.id });
-    }
-    toast.success("Conversation opened");
-    navigate({ to: "/dashboard" });
-  };
-
   const longBio = (tutor.bio ?? "").length > 360;
   const displayBio = !longBio || bioExpanded ? tutor.bio : (tutor.bio ?? "").slice(0, 360) + "…";
 
@@ -425,9 +403,6 @@ function TutorProfilePage() {
                   className="flex-1"
                 >
                   <Phone className="size-4 mr-1.5" /> Book a Call
-                </Button>
-                <Button variant="outline" onClick={startMessage} className="flex-1">
-                  <MessageSquare className="size-4 mr-1.5" /> Message
                 </Button>
               </div>
             </div>
@@ -809,9 +784,6 @@ function TutorProfilePage() {
               className="w-full mt-3"
             >
               Book a Session
-            </Button>
-            <Button variant="outline" onClick={startMessage} className="w-full mt-2">
-              Message
             </Button>
           </div>
 
