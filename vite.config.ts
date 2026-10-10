@@ -98,18 +98,23 @@ function vercelApiDevPlugin(envDir: string): Plugin {
 
 const envDir = resolveEnvDir(import.meta.dirname);
 
-export default defineConfig({
-  nitro: {
-    preset: "vercel",
-    // Run server functions in Dublin, next to the Supabase database (eu-west-1);
-    // the default (iad1, US East) added a transatlantic hop to every query.
-    vercel: { functions: { regions: ["dub1"] } },
-    output: {
-      dir: ".vercel/output",
-      serverDir: ".vercel/output/functions/__server.func",
-      publicDir: ".vercel/output/static",
-    },
+// A variable, not an inline literal: the Lovable config types `nitro` narrowly
+// (preset/output/cloudflare) and would reject `vercel`, but it forwards the
+// object to Nitro as-is, so the region still applies.
+const nitro = {
+  preset: "vercel",
+  // Run server functions in Dublin, next to the Supabase database (eu-west-1);
+  // the default (iad1, US East) added a transatlantic hop to every query.
+  vercel: { functions: { regions: ["dub1"] } },
+  output: {
+    dir: ".vercel/output",
+    serverDir: ".vercel/output/functions/__server.func",
+    publicDir: ".vercel/output/static",
   },
+};
+
+export default defineConfig({
+  nitro,
   vite: {
     envDir,
     plugins: [vercelApiDevPlugin(envDir ?? import.meta.dirname)],
