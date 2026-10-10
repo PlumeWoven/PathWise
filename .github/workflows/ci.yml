@@ -1,0 +1,23 @@
+# Typecheck, tests and build on every PR and push to main.
+# Lint isn't run yet: the repo has ~8.6k pre-existing Prettier errors
+# (`npm run format` clears most) — add `npm run lint` here once that's done.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit -p .
+      - run: npm test
+      - run: npm run build
