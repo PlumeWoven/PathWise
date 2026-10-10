@@ -116,8 +116,11 @@ export async function getCourseBySlug(slug: string) {
 }
 
 export async function updateCourse(id: string, patch: Partial<CourseRow>) {
-  const { error } = await c.from("courses").update(patch).eq("id", id);
+  // RLS turns a disallowed update into "0 rows, no error" — surface that instead
+  // of reporting success for a change that never happened.
+  const { data, error } = await c.from("courses").update(patch).eq("id", id).select("id");
   if (error) throw error;
+  if (!data?.length) throw new Error("Course wasn't updated — you may not have permission.");
 }
 
 export async function deleteCourse(id: string) {

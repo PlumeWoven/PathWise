@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { updateCourse } from "@/pathwise/courses";
 
 export const Route = createFileRoute("/admin/courses")({
   component: AdminCourses,
@@ -15,7 +16,7 @@ function AdminCourses() {
     setLoading(true);
     const { data } = await supabase
       .from("courses")
-      .select("*, tutor:tutor_id(id, display_name, email)")
+      .select("*, tutor:tutor_id(id, display_name)")
       .eq("status", "under_review")
       .order("created_at", { ascending: false });
     setCourses(data || []);
@@ -27,12 +28,12 @@ function AdminCourses() {
   }, []);
 
   const handleAction = async (id: string, newStatus: "published" | "draft") => {
-    const { error } = await supabase.from("courses").update({ status: newStatus }).eq("id", id);
-    if (error) {
-      toast.error("Failed to update course");
-    } else {
+    try {
+      await updateCourse(id, { status: newStatus });
       toast.success(`Course ${newStatus === "published" ? "published" : "rejected"}`);
       await load();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to update course");
     }
   };
 

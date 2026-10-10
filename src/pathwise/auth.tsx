@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -221,6 +221,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       : null;
 
+  // Stable identities: guards list openLogin in effect deps, so a fresh function
+  // each render re-opened the modal the instant it was closed.
+  const openLogin = useCallback(() => setLoginOpen(true), []);
+  const closeLogin = useCallback(() => setLoginOpen(false), []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -234,8 +239,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         logout: signOut,
         loginOpen,
-        openLogin: () => setLoginOpen(true),
-        closeLogin: () => setLoginOpen(false),
+        openLogin,
+        closeLogin,
         refreshProfile,
         emailConfirmed,
         confirmationSent,

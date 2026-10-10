@@ -184,7 +184,6 @@ function SessionDetail() {
       patch: {
         cancellation_reason: cancelReason,
         cancelled_by: user?.id,
-        payment_status: "refunded",
       },
       title: "Session cancelled",
       message: cancelReason,

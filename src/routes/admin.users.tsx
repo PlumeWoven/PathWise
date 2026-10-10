@@ -72,7 +72,6 @@ function AdminUsers() {
       if (user) {
         localStorage.setItem("admin_user_id", user.id);
         localStorage.setItem("admin_email", user.email || "");
-        localStorage.setItem("admin_access_token", adminToken);
       }
 
       localStorage.setItem("impersonating", "true");
@@ -112,7 +111,6 @@ function AdminUsers() {
           <thead className="label-caps border-b border-[var(--pw-border)] text-[var(--pw-ink-2)]">
             <tr>
               <th className="text-left py-4 font-semibold">Name</th>
-              <th className="text-left py-4 font-semibold">Email</th>
               <th className="text-left py-4 font-semibold">Role</th>
               <th className="text-left py-4 font-semibold">Verified</th>
               <th className="text-left py-4 font-semibold">Actions</th>
@@ -122,7 +120,6 @@ function AdminUsers() {
             {users.map((u) => (
               <tr key={u.id}>
                 <td className="py-4">{u.display_name || u.full_name || "—"}</td>
-                <td className="py-4">{u.email}</td>
                 <td className="label-caps py-4 text-[var(--pw-ink-2)]">{u.role}</td>
                 <td className="label-caps py-4 text-[var(--pw-ink-2)]">{u.verification_status}</td>
                 <td className="py-4">
