@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ContactLink, LegalPage, OPERATOR } from "../pathwise/legal";
+import { ContactLink, LegalPage, WHO_RUNS_IT } from "../pathwise/legal";
 
 export const Route = createFileRoute("/_app/privacy")({
   head: () => ({ meta: [{ title: "Privacy Policy — PathWise" }] }),
@@ -10,7 +10,7 @@ function Privacy() {
   return (
     <LegalPage title="Privacy Policy">
       <p>
-        PathWise is run by {OPERATOR}. This page explains what we collect, why, and what you can
+        {WHO_RUNS_IT}. This page explains what we collect, why, and what you can
         ask us to do with it. Questions: <ContactLink />.
       </p>
 

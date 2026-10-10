@@ -2,11 +2,15 @@ import type { ReactNode } from "react";
 
 /**
  * Who runs PathWise and how to reach them. Shown on /privacy, /terms and
- * /contact. Both must be filled in before these pages go live.
+ * /contact. OPERATOR (person or company) should be filled in: privacy law
+ * expects the data controller to be named.
  */
 export const OPERATOR = "";
-export const CONTACT_EMAIL = "";
+export const CONTACT_EMAIL = "pathwise.recourse@gmail.com";
 export const LEGAL_LAST_UPDATED = "10 October 2026";
+
+/** Opening line of /privacy and /terms; names the operator once OPERATOR is set. */
+export const WHO_RUNS_IT = OPERATOR ? `PathWise is run by ${OPERATOR}` : "PathWise is run by the PathWise team";
 
 /** Shared shell for the plain-text legal pages. */
 export function LegalPage({ title, children }: { title: string; children: ReactNode }) {

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ContactLink, LegalPage, OPERATOR } from "../pathwise/legal";
+import { ContactLink, LegalPage, WHO_RUNS_IT } from "../pathwise/legal";
 
 export const Route = createFileRoute("/_app/terms")({
   head: () => ({ meta: [{ title: "Terms of Use — PathWise" }] }),
@@ -10,7 +10,7 @@ function Terms() {
   return (
     <LegalPage title="Terms of Use">
       <p>
-        PathWise is run by {OPERATOR}. By creating an account you agree to these terms and to our{" "}
+        {WHO_RUNS_IT}. By creating an account you agree to these terms and to our{" "}
         <Link to="/privacy">Privacy Policy</Link>.
       </p>
 
