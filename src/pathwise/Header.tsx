@@ -20,6 +20,7 @@ const PW = {
   link: "label-caps px-1 py-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
   signOut: "label-caps text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
   signIn: pwCta,
+  menu: "border border-[var(--pw-border)] bg-[var(--pw-bg)]",
 };
 // Landing ("/") is always dark. `dark` on the header re-scopes --pw-* tokens so ThemeToggle,
 // NotificationBell and VerificationBadge (which read them) stay legible on the dark bar.
@@ -36,6 +37,7 @@ const QED = {
   link: "label-caps px-1 py-2 text-qed-ink-2 hover:text-qed-amber transition-colors",
   signOut: "label-caps text-qed-ink-2 hover:text-qed-amber transition-colors",
   signIn: cta,
+  menu: "border border-qed-hairline bg-qed-ground",
 };
 
 export function PWHeader() {
@@ -103,6 +105,45 @@ export function PWHeader() {
     navigate({ to: "/admin" });
   };
 
+  // Signed-in navigation, rendered inline on desktop and stacked in the phone menu.
+  const navLinks = (stacked: boolean) => {
+    if (!user) return null;
+    const primary = stacked ? `${c.link} px-2` : c.accent;
+    const secondary = stacked ? `${c.link} px-2` : `${c.link} hidden sm:inline-flex`;
+    const tutorSide = user.role === "tutor" || user.role === "both";
+    const studentSide = user.role === "student" || user.role === "both";
+    return (
+      <>
+        {tutorSide && (
+          <Link to="/dashboard" className={primary} activeProps={{ style: { background: "var(--pw-accent-soft)" } }}>
+            Dashboard
+          </Link>
+        )}
+        {studentSide && (
+          <>
+            <Link to="/roadmap" className={primary}>
+              My Roadmap
+            </Link>
+            <Link to="/find-tutor" className={secondary}>
+              Find a tutor
+            </Link>
+            <Link to="/sessions" className={secondary}>
+              My sessions
+            </Link>
+          </>
+        )}
+        <Link to="/messages" search={{ thread: undefined }} className={secondary}>
+          Messages
+        </Link>
+        {isAdmin(user.app_metadata) && (
+          <Link to="/admin" className={primary}>
+            Admin
+          </Link>
+        )}
+      </>
+    );
+  };
+
   return (
     <>
       {/* Impersonation Banner */}
@@ -145,44 +186,31 @@ export function PWHeader() {
             <>
               <span className={c.name}>{user.name}</span>
               <NotificationBell userId={user.id} />
-              {(user.role === "tutor" || user.role === "both") && profile ? (
-                <VerificationBadge tier={statusToTier(profile.verification_status)} size="sm" />
-              ) : (
-                <span className={c.role}>{user.role}</span>
-              )}
-              {(user.role === "tutor" || user.role === "both") && (
-                <Link
-                  to="/dashboard"
-                  className={c.accent}
-                  activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
-                >
-                  Dashboard
-                </Link>
-              )}
-              {(user.role === "student" || user.role === "both") && (
-                <>
-                  <Link to="/roadmap" className={c.accent}>
-                    My Roadmap
-                  </Link>
-                  <Link to="/find-tutor" className={`${c.link} hidden sm:inline-flex`}>
-                    Find a tutor
-                  </Link>
-                  <Link to="/sessions" className={`${c.link} hidden sm:inline-flex`}>
-                    My sessions
-                  </Link>
-                  <Link to="/messages" search={{ thread: undefined }} className={`${c.link} hidden sm:inline-flex`}>
-                    Messages
-                  </Link>
-                </>
-              )}
-              {isAdmin(user.app_metadata) && (
-                <Link to="/admin" className={c.accent}>
-                  Admin
-                </Link>
-              )}
-              <button onClick={handleSignOut} className={c.signOut}>
-                Sign Out
-              </button>
+              <span className="hidden sm:inline-flex">
+                {(user.role === "tutor" || user.role === "both") && profile ? (
+                  <VerificationBadge tier={statusToTier(profile.verification_status)} size="sm" />
+                ) : (
+                  <span className={c.role}>{user.role}</span>
+                )}
+              </span>
+              {/* Desktop: links inline. */}
+              <nav className="hidden sm:flex items-center gap-3">
+                {navLinks(false)}
+                <button onClick={handleSignOut} className={c.signOut}>
+                  Sign Out
+                </button>
+              </nav>
+              {/* Phone: one Menu button — the full row used to be wider than the screen.
+                  Keyed by path so it closes after navigating. */}
+              <details key={location.pathname} className="sm:hidden relative">
+                <summary className={`${c.link} list-none cursor-pointer select-none`}>Menu</summary>
+                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-1 ${c.menu}`}>
+                  {navLinks(true)}
+                  <button onClick={handleSignOut} className={`${c.signOut} text-left px-2 py-2`}>
+                    Sign Out
+                  </button>
+                </div>
+              </details>
             </>
           ) : (
             <button onClick={openLogin} className={c.signIn}>

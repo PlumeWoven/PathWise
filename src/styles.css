@@ -345,10 +345,13 @@ textarea.bg-white {
 }
 
 @layer base {
-  /* Whole-site scale: 120% of the user's default font size. Every size is rem-based (px → rem
-     converted), so text, spacing and components scale together; media-query breakpoints don't. */
-  html {
-    font-size: 120%;
+  /* Whole-site scale: 120% of the user's default font size from tablet width up. Every size is
+     rem-based, so text, spacing and components scale together; media-query breakpoints don't.
+     Phones stay at 100% — at 120% a 375px screen only fits ~312px worth of layout. */
+  @media (min-width: 48rem) {
+    html {
+      font-size: 120%;
+    }
   }
 
   /* Native range/checkbox/radio controls pick up the QED amber instead of browser blue. */
