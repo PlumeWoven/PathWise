@@ -617,16 +617,6 @@ function QuizPageInner() {
                   </div>
                 </div>
 
-                {/* The level id is the key everything downstream matches on. */}
-                {pw.band && pw.subject && (
-                  <div className="mt-4 font-mono-pw text-[0.6875rem] text-[var(--pw-ink-2)]">
-                    LEVEL ID ·{" "}
-                    <span style={{ color: "var(--pw-accent)" }}>
-                      {makeLevelId(pw.subject, pw.band)}
-                    </span>
-                  </div>
-                )}
-
                 <div
                   className="mt-3 font-mono-pw text-[0.875rem] flex items-center justify-center gap-1.5"
                   style={{ color: "var(--pw-accent)" }}
