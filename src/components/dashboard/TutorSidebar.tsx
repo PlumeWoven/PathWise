@@ -16,8 +16,7 @@ const TUTOR_ITEMS: Item[] = [
   { key: "courses", label: "My Courses", icon: "books", to: "/dashboard/courses" },
   { key: "calendar", label: "Calendar", icon: "calendar", to: "/dashboard/calendar" },
   { key: "messages", label: "Messages", icon: "messages", to: "/dashboard/messages" },
-  { key: "earnings", label: "Earnings", icon: "earnings", to: "/dashboard/earnings" },
-  { key: "analytics", label: "Analytics", icon: "growth", to: "/dashboard/analytics" },
+  // Earnings and Analytics are hidden until payments exist (pages are placeholders).
   { key: "settings", label: "Settings", icon: "settings", to: "/dashboard/settings" },
 ];
 

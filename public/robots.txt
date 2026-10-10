@@ -8,3 +8,5 @@ Disallow: /settings/
 Disallow: /reset-password
 Disallow: /tutor/courses
 Disallow: /tutor/settings
+
+Sitemap: https://path-wise-seven.vercel.app/sitemap.xml

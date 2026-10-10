@@ -53,6 +53,7 @@
     "@tanstack/router-plugin": "^1.168.42",
     "@tanstack/zod-adapter": "^1.167.0",
     "@types/canvas-confetti": "^1.9.0",
+    "@vercel/analytics": "^2.0.1",
     "@vercel/node": "^5.8.17",
     "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.1",

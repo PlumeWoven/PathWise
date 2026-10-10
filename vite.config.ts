@@ -101,6 +101,9 @@ const envDir = resolveEnvDir(import.meta.dirname);
 export default defineConfig({
   nitro: {
     preset: "vercel",
+    // Run server functions in Dublin, next to the Supabase database (eu-west-1);
+    // the default (iad1, US East) added a transatlantic hop to every query.
+    vercel: { functions: { regions: ["dub1"] } },
     output: {
       dir: ".vercel/output",
       serverDir: ".vercel/output/functions/__server.func",
