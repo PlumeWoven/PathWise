@@ -582,7 +582,11 @@ function UpcomingSessions({
                 <div className="flex gap-1.5">
                   <button
                     className="pw-btn-primary text-[0.75rem] px-3 py-1.5"
-                    onClick={() => toast.info("Joining session…")}
+                    onClick={() =>
+                      s.meeting_url
+                        ? window.open(s.meeting_url, "_blank", "noopener")
+                        : toast.info("This session has no lesson link yet")
+                    }
                   >
                     Join
                   </button>

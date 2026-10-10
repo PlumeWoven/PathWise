@@ -259,7 +259,6 @@ function BookPage() {
       for (let i = 0; i < recurrenceInstances.length; i++) {
         const start = recurrenceInstances[i];
         const end = new Date(start.getTime() + duration * 60 * 1000);
-        const meetingUrl = `https://meet.pathwise.app/${crypto.randomUUID().slice(0, 8)}`;
         const { data, error } = await supabase.rpc("book_session", {
           p_tutor_id: tutorId,
           p_scheduled_start: start.toISOString(),
@@ -268,7 +267,7 @@ function BookPage() {
           p_timezone: tz,
           p_session_type: type,
           p_amount: price,
-          p_meeting_url: meetingUrl,
+          p_meeting_url: null, // book_session uses the tutor's lesson link, or a Jitsi room
           p_recurrence_group_id: groupId,
           p_recurrence_index: groupId ? i : null,
         } as any);
@@ -300,28 +299,7 @@ function BookPage() {
           changed_by: user.id,
         });
       }
-      await supabase.from("notifications").insert([
-        {
-          user_id: user.id,
-          title:
-            recurring && createdIds.length > 1
-              ? `${createdIds.length} sessions booked`
-              : "Booking confirmed",
-          message: `Your ${type} session${createdIds.length > 1 ? "s" : ""} with ${tutor?.display_name ?? "your tutor"} ${createdIds.length > 1 ? "are" : "is"} set.`,
-          link: `/sessions/${createdIds[0]}`,
-          type: "confirmed",
-        },
-        {
-          user_id: tutorId,
-          title:
-            recurring && createdIds.length > 1
-              ? `${createdIds.length} new bookings`
-              : "New booking",
-          message: `You have ${createdIds.length > 1 ? `${createdIds.length} new ${type} sessions` : `a new ${type} session`} booked.`,
-          link: `/sessions/${createdIds[0]}`,
-          type: "scheduled",
-        },
-      ]);
+      // Both parties are notified by a trigger on sessions (M2).
       try {
         localStorage.removeItem("pathwise_pending_booking");
       } catch {
@@ -375,7 +353,7 @@ function BookPage() {
     const end = new Date(start.getTime() + duration * 60 * 1000);
     const ics = makeICS({
       title: `PathWise session with ${tutor?.display_name ?? "your tutor"}`,
-      description: `Join: https://meet.pathwise.app`,
+      description: `Lesson link: ${window.location.origin}/sessions/${createdSessionId}`,
       start,
       end,
     });

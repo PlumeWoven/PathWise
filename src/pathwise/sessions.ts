@@ -54,7 +54,6 @@ export interface TransitionInput {
   by: string; // user id
   reason?: string;
   patch?: Record<string, unknown>;
-  notify?: { studentId?: string | null; tutorId?: string | null; title: string; message?: string; link?: string };
 }
 
 /** Apply a state transition: validates, updates session, logs history, fires notification. */
@@ -83,21 +82,7 @@ export async function transitionSession(input: TransitionInput) {
     reason: input.reason ?? null,
   });
 
-  if (input.notify) {
-    const recipients = [input.notify.studentId ?? (current as any).student_id, input.notify.tutorId ?? (current as any).tutor_id]
-      .filter(Boolean) as string[];
-    if (recipients.length) {
-      await supabase.from("notifications").insert(
-        recipients.map((uid) => ({
-          user_id: uid,
-          title: input.notify!.title,
-          message: input.notify!.message ?? null,
-          link: input.notify!.link ?? `/sessions/${input.sessionId}`,
-          type: input.to,
-        })),
-      );
-    }
-  }
+  // The other party is notified by a trigger on sessions (M2).
 
   return { from, to: input.to };
 }
