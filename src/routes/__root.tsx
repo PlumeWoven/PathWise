@@ -4,6 +4,7 @@ import { AuthProvider } from "../pathwise/auth";
 import { DarkModeProvider } from "../pathwise/DarkMode";
 import { LoginModal } from "../pathwise/LoginModal";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import { MotionConfig } from "framer-motion";
 
 function NotFoundComponent() {
@@ -122,6 +123,7 @@ function RootComponent() {
           <Outlet />
           <LoginModal />
           <Toaster position="top-center" richColors />
+          <Analytics />
         </AuthProvider>
       </DarkModeProvider>
     </MotionConfig>

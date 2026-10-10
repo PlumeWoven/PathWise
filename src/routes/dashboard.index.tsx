@@ -810,12 +810,6 @@ function EarningsBreakdown({ earnings }: { earnings: EarningRow[] }) {
         <Row label="Sessions paid" value={String(last30.length)} />
         <Row label="Avg / session" value={formatPrice(avgPerSession)} />
       </div>
-      <button
-        className="mt-4 pw-btn-outline w-full text-[0.8125rem] px-4 py-2"
-        onClick={() => toast.info("Withdrawal flow coming soon")}
-      >
-        Withdraw earnings
-      </button>
     </div>
   );
 }
@@ -849,12 +843,6 @@ function QuickActionsBar() {
       >
         Create new course
       </Link>
-      <button
-        onClick={() => toast.info("Withdrawal flow coming soon")}
-        className="pw-btn-outline text-[0.8125rem] px-3 py-2"
-      >
-        Withdraw earnings
-      </button>
       <button onClick={shareLink} className="pw-btn-outline text-[0.8125rem] px-3 py-2">
         Share profile link
       </button>
