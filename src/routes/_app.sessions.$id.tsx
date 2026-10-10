@@ -138,7 +138,6 @@ function SessionDetail() {
         by: user.id,
         reason: opts.reason,
         patch: opts.patch,
-        notify: { title: opts.title, message: opts.message, link: `/sessions/${id}` },
       });
       toast.success(`Session ${to.replace("_", " ")}`);
       await load();

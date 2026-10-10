@@ -37,6 +37,7 @@ export function AvailabilityPage() {
   const [bufferMinutes, setBufferMinutes] = useState(15);
   const [minAdvanceHours, setMinAdvanceHours] = useState(24);
   const [instantBookings, setInstantBookings] = useState(false);
+  const [meetingUrl, setMeetingUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [tzMismatch, setTzMismatch] = useState<string | null>(null);
@@ -55,7 +56,7 @@ export function AvailabilityPage() {
       const [profileRes, availRes, sessionsRes] = await Promise.all([
         supabase
           .from("profiles")
-          .select("timezone, buffer_minutes, instant_bookings, min_advance_hours")
+          .select("timezone, buffer_minutes, instant_bookings, min_advance_hours, meeting_url")
           .eq("id", user.id)
           .maybeSingle(),
         supabase
@@ -78,6 +79,7 @@ export function AvailabilityPage() {
       }
       setBufferMinutes(p.buffer_minutes ?? 15);
       setInstantBookings(!!p.instant_bookings);
+      setMeetingUrl(p.meeting_url ?? "");
       setMinAdvanceHours(p.min_advance_hours ?? 24);
 
       const next: Record<string, CellState> = {};
@@ -194,6 +196,10 @@ export function AvailabilityPage() {
   }
 
   async function save() {
+    if (meetingUrl.trim() && !/^https:\/\/\S+$/.test(meetingUrl.trim())) {
+      toast.error("Your lesson link must start with https://");
+      return;
+    }
     if (!user) return;
     setSaving(true);
     try {
@@ -216,6 +222,7 @@ export function AvailabilityPage() {
           buffer_minutes: bufferMinutes,
           instant_bookings: instantBookings,
           min_advance_hours: minAdvanceHours,
+          meeting_url: meetingUrl.trim() || null,
         } as any)
         .eq("id", user.id);
       if (profErr) throw profErr;
@@ -336,6 +343,24 @@ export function AvailabilityPage() {
               {instantBookings ? "On — auto-confirm" : "Off — you confirm each one"}
             </button>
           </div>
+        </div>
+
+        <div className="pw-card mt-4 p-4">
+          <label htmlFor="meeting-url" className="label-caps text-[var(--pw-ink-2)]">
+            Your lesson link (Zoom, Google Meet…)
+          </label>
+          <input
+            id="meeting-url"
+            type="url"
+            inputMode="url"
+            value={meetingUrl}
+            onChange={(e) => setMeetingUrl(e.target.value)}
+            placeholder="https://meet.google.com/abc-defg-hij"
+            className="pw-input mt-1 text-[0.8125rem] w-full"
+          />
+          <p className="mt-1.5 text-[0.75rem] text-[var(--pw-ink-2)]">
+            Students get this link when they book. Leave it empty and each lesson gets its own Jitsi room.
+          </p>
         </div>
 
         <div className="mt-4 flex items-center gap-4 flex-wrap">
