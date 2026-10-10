@@ -29,7 +29,7 @@ import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
 import { Route as AppTermsRouteImport } from './routes/_app.terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
-import { Route as AdminReviewRouteImport } from './routes/admin.review'
+import { Route as AdminSessionsRouteImport } from './routes/admin.sessions'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AuthChooseRoleRouteImport } from './routes/auth.choose-role'
@@ -158,9 +158,9 @@ const AdminCoursesRoute = AdminCoursesRouteImport.update({
   path: '/courses',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminReviewRoute = AdminReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
+const AdminSessionsRoute = AdminSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -327,7 +327,7 @@ export interface FileRoutesByFullPath {
   '/roadmap': typeof AppRoadmapRoute
   '/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
-  '/admin/review': typeof AdminReviewRoute
+  '/admin/sessions': typeof AdminSessionsRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
@@ -374,7 +374,7 @@ export interface FileRoutesByTo {
   '/roadmap': typeof AppRoadmapRoute
   '/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
-  '/admin/review': typeof AdminReviewRoute
+  '/admin/sessions': typeof AdminSessionsRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
@@ -424,7 +424,7 @@ export interface FileRoutesById {
   '/_app/roadmap': typeof AppRoadmapRoute
   '/_app/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
-  '/admin/review': typeof AdminReviewRoute
+  '/admin/sessions': typeof AdminSessionsRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
@@ -477,7 +477,7 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/terms'
     | '/admin/courses'
-    | '/admin/review'
+    | '/admin/sessions'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/choose-role'
@@ -524,7 +524,7 @@ export interface FileRouteTypes {
     | '/roadmap'
     | '/terms'
     | '/admin/courses'
-    | '/admin/review'
+    | '/admin/sessions'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/choose-role'
@@ -573,7 +573,7 @@ export interface FileRouteTypes {
     | '/_app/roadmap'
     | '/_app/terms'
     | '/admin/courses'
-    | '/admin/review'
+    | '/admin/sessions'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/choose-role'
@@ -760,11 +760,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCoursesRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/review': {
-      id: '/admin/review'
-      path: '/review'
-      fullPath: '/admin/review'
-      preLoaderRoute: typeof AdminReviewRouteImport
+    '/admin/sessions': {
+      id: '/admin/sessions'
+      path: '/sessions'
+      fullPath: '/admin/sessions'
+      preLoaderRoute: typeof AdminSessionsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/users': {
@@ -1024,14 +1024,14 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AdminRouteChildren {
   AdminCoursesRoute: typeof AdminCoursesRoute
-  AdminReviewRoute: typeof AdminReviewRoute
+  AdminSessionsRoute: typeof AdminSessionsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCoursesRoute: AdminCoursesRoute,
-  AdminReviewRoute: AdminReviewRoute,
+  AdminSessionsRoute: AdminSessionsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }

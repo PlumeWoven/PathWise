@@ -53,6 +53,7 @@ function AdminSidebar() {
     { to: "/admin", label: "Dashboard", icon: "dashboard" },
     { to: "/admin/users", label: "Users", icon: "users" },
     { to: "/admin/courses", label: "Courses", icon: "books" },
+    { to: "/admin/sessions", label: "Sessions", icon: "calendar" },
   ];
 
   return (
