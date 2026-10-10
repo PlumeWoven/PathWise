@@ -147,7 +147,7 @@ function TutorProfilePage() {
     (async () => {
       const sb: any = supabase;
       const [pRes, aRes, cRes, rRes, sRes, threadsRes] = await Promise.all([
-        sb.from("profiles").select("*").eq("id", tutorId).eq("role", "tutor").maybeSingle(),
+        sb.from("profiles").select("*").eq("id", tutorId).in("role", ["tutor", "both"]).maybeSingle(),
         sb
           .from("tutor_availability")
           .select("day_of_week,start_hour,end_hour,is_blocked")

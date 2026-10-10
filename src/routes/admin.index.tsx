@@ -13,7 +13,7 @@ function AdminDashboard() {
     (async () => {
       const [users, tutors, students, courses, pending] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
-        supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "tutor"),
+        supabase.from("profiles").select("*", { count: "exact", head: true }).in("role", ["tutor", "both"]),
         supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "student"),
         supabase.from("courses").select("*", { count: "exact", head: true }),
         supabase

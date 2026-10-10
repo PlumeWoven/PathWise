@@ -150,7 +150,8 @@ export async function getMatchedTutors(
           "subject_specialties, specializations, superpowers, video_intro_url, " +
           "verification_status, free_discovery_call, first_session_free",
       )
-      .eq("role", "tutor")
+      .in("role", ["tutor", "both"])
+      .eq("verification_status", "verified")
       .limit(200),
     supabase.from("reviews").select("tutor_id, rating"),
     supabase.from("tutor_availability").select("user_id"),

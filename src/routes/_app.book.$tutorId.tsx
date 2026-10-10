@@ -137,7 +137,7 @@ function BookPage() {
           "id, display_name, avatar_url, headline, hourly_rate, first_session_free, free_discovery_call, timezone, buffer_minutes, min_advance_hours",
         )
         .eq("id", tutorId)
-        .eq("role", "tutor")
+        .in("role", ["tutor", "both"])
         .maybeSingle();
       setTutor(t as TutorRow | null);
       const { data: a } = await supabase
