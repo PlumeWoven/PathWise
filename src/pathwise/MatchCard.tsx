@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { StarIcon } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import type { TutorRow, MatchScore } from "./matching";
+import { formatPrice } from "./sessions";
 
 export interface MatchCardData {
   tutor: TutorRow;
@@ -156,7 +157,7 @@ export function MatchCard({
         <div className="sm:text-right sm:w-44 flex sm:flex-col items-start sm:items-end gap-2 justify-between">
           <div>
             <div className="font-display text-[1.375rem] leading-none">
-              ${Number(t.hourly_rate ?? 0).toFixed(0)}
+              {formatPrice(t.hourly_rate)}
               <span className="text-[0.75rem] text-[var(--pw-ink-2)]"> /hr</span>
             </div>
             {packageDiscount && packageDiscount > 0 && (

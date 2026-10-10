@@ -87,6 +87,11 @@ export async function transitionSession(input: TransitionInput) {
   return { from, to: input.to };
 }
 
+/** Session and hourly prices are in Moldovan lei. Course prices carry their own currency. */
+export function formatPrice(amount: number | null | undefined) {
+  return `${Math.round(Number(amount ?? 0))} MDL`;
+}
+
 /** Format price for a session type. */
 export function priceForType(hourlyRate: number, type: SessionType, packageDiscount = 0, packageSessions = 5) {
   if (type === "trial") return Math.max(0, Math.round(hourlyRate * 0.5));

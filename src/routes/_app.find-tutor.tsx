@@ -6,6 +6,7 @@ import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { RoleGate } from "../pathwise/RoleGate";
 import { Icon, type IconName } from "@/components/Icon";
+import { formatPrice } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/_app/find-tutor")({
   head: () => ({
@@ -221,7 +222,7 @@ function FindTutorPageInner() {
             )}
             {step === 7 && (
               <Q8
-                value={answers.budget_max ?? 50}
+                value={answers.budget_max ?? 300}
                 onChange={(v) => set("budget_max", v)}
                 onNext={next}
               />
@@ -599,15 +600,15 @@ function Q8({
       <Heading kicker="08" title="What's your budget per hour?" />
       <div className="mt-10 px-2">
         <div className="text-center font-display text-[3.5rem]" style={{ color: "var(--pw-accent)" }}>
-          ${value}
+          {formatPrice(value)}
           {value >= 150 ? "+" : ""}
           <span className="text-[1rem] text-[var(--pw-ink-2)] ml-1">/hr</span>
         </div>
         <input
           type="range"
-          min={15}
-          max={150}
-          step={5}
+          min={100}
+          max={1000}
+          step={50}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
           className="mt-6 w-full accent-[var(--pw-accent)]"
@@ -725,7 +726,7 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
                 <Field label="Frequency" value={freqLabel(answers.frequency)} />
                 <Field
                   label="Budget"
-                  value={answers.budget_max ? `Up to $${answers.budget_max}/hr` : "—"}
+                  value={answers.budget_max ? `Up to ${formatPrice(answers.budget_max)}/hr` : "—"}
                 />
               </div>
             </div>

@@ -12,6 +12,7 @@ import { Icon } from "@/components/Icon";
 import type { Subject } from "./data";
 import { BAND_META, type LevelBand } from "./levels";
 import { fetchMatchedTutors } from "./api";
+import { formatPrice } from "./sessions";
 
 type MatchedTutor = Awaited<ReturnType<typeof fetchMatchedTutors>>[number];
 
@@ -128,7 +129,7 @@ function TutorRow({ tutor }: { tutor: MatchedTutor }) {
             <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5 leading-snug">{tutor.headline}</div>
           )}
           <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-1.5">
-            ${Number(tutor.hourly_rate ?? 0).toFixed(0)}/hr
+            {formatPrice(tutor.hourly_rate)}/hr
             {tutor.first_session_free && <span style={{ color: "var(--pw-accent-2)" }}> · 1st free</span>}
           </div>
         </div>

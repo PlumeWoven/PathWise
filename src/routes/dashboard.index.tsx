@@ -17,6 +17,7 @@ import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { UnverifiedBanner } from "../pathwise/UnverifiedBanner";
 import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
+import { formatPrice } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardHome,
@@ -282,7 +283,7 @@ function DashboardHome() {
       <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           label="Earnings (MTD)"
-          value={`$${earningsMTD.toFixed(0)}`}
+          value={formatPrice(earningsMTD)}
           change={earningsChange}
           skeleton={dataLoading}
         />
@@ -507,7 +508,7 @@ function EarningsChart({ earnings }: { earnings: EarningRow[] }) {
               tick={{ fill: "var(--pw-ink-2)", fontSize: 11 }}
               axisLine={false}
               tickLine={false}
-              tickFormatter={(v) => `$${v}`}
+              tickFormatter={(v) => formatPrice(v)}
             />
             <Tooltip
               content={<EarningsTooltip />}
@@ -534,7 +535,7 @@ function EarningsTooltip({ active, payload, label }: any) {
   return (
     <div className="pw-card p-2.5 text-[0.75rem] shadow-lg">
       <div className="font-medium">{label}</div>
-      <div className="text-[var(--pw-accent)] font-display text-[1rem]">${p.amount.toFixed(0)}</div>
+      <div className="text-[var(--pw-accent)] font-display text-[1rem]">{formatPrice(p.amount)}</div>
       <div className="text-[var(--pw-ink-2)]">
         {p.count} session{p.count === 1 ? "" : "s"}
       </div>
@@ -805,9 +806,9 @@ function EarningsBreakdown({ earnings }: { earnings: EarningRow[] }) {
         At a glance
       </div>
       <div className="mt-4 space-y-3 text-[0.875rem]">
-        <Row label="Total earned" value={`$${total.toFixed(0)}`} />
+        <Row label="Total earned" value={formatPrice(total)} />
         <Row label="Sessions paid" value={String(last30.length)} />
-        <Row label="Avg / session" value={`$${avgPerSession.toFixed(0)}`} />
+        <Row label="Avg / session" value={formatPrice(avgPerSession)} />
       </div>
       <button
         className="mt-4 pw-btn-outline w-full text-[0.8125rem] px-4 py-2"

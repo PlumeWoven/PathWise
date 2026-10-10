@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  formatPrice,
   priceForType,
   durationForType,
   googleCalendarUrl,
@@ -458,7 +459,7 @@ function BookPage() {
                 {tutor.display_name ?? "Tutor"}
               </div>
               <div className="text-[0.75rem] text-[var(--pw-ink-2)] truncate">
-                {tutor.headline ?? `$${hourlyRate}/hr`}
+                {tutor.headline ?? `${formatPrice(hourlyRate)}/hr`}
               </div>
             </div>
           </div>
@@ -485,7 +486,7 @@ function BookPage() {
                   icon="wave"
                   title="Trial / discovery call"
                   subtitle="30 min · meet your tutor, set goals"
-                  price={isTrialFree ? "Free" : `$${priceForType(hourlyRate, "trial")}`}
+                  price={isTrialFree ? "Free" : formatPrice(priceForType(hourlyRate, "trial"))}
                 />
                 <TypeOption
                   active={type === "standard"}
@@ -493,7 +494,7 @@ function BookPage() {
                   icon="books"
                   title="Standard session"
                   subtitle="60 min · 1-on-1 lesson"
-                  price={`$${priceForType(hourlyRate, "standard")}`}
+                  price={formatPrice(priceForType(hourlyRate, "standard"))}
                 />
                 {pkg && (
                   <TypeOption
@@ -502,7 +503,7 @@ function BookPage() {
                     icon="package"
                     title={`${pkg.sessions}-session package`}
                     subtitle={`Save ${pkg.discount_percent}% — ${pkg.sessions} × 60 min`}
-                    price={`$${priceForType(hourlyRate, "package", pkg.discount_percent, pkg.sessions)}`}
+                    price={formatPrice(priceForType(hourlyRate, "package", pkg.discount_percent, pkg.sessions))}
                   />
                 )}
                 <NavBar onNext={next} disabled={false} />
@@ -775,7 +776,7 @@ function BookPage() {
                     <span>
                       {price === 0
                         ? "Free"
-                        : `$${price * (recurring && recurrenceInstances.length > 1 ? recurrenceInstances.length : 1)}`}
+                        : formatPrice(price * (recurring && recurrenceInstances.length > 1 ? recurrenceInstances.length : 1))}
                     </span>
                   </div>
                 </div>
@@ -810,18 +811,19 @@ function BookPage() {
                   ) : (
                     <>
                       <p className="text-sm text-[var(--pw-ink-2)]">
-                        Stripe checkout isn't enabled yet — for now we'll mark this as paid so you
-                        can test the full flow. Enable Stripe to charge real cards.
+                        PathWise is free during the beta: you pay your tutor directly, the way you
+                        agree with them (cash or bank transfer). Nothing is charged here.
                       </p>
                       <div className="mt-3 p-3 border border-[var(--pw-border)] bg-[var(--pw-surface-2)] text-[0.8125rem]">
                         <strong>
-                          $
-                          {price *
-                            (recurring && recurrenceInstances.length > 1
-                              ? recurrenceInstances.length
-                              : 1)}
+                          {formatPrice(
+                            price *
+                              (recurring && recurrenceInstances.length > 1
+                                ? recurrenceInstances.length
+                                : 1),
+                          )}
                         </strong>{" "}
-                        · charged on confirmation
+                        · paid to your tutor
                         {recurring && recurrenceInstances.length > 1
                           ? ` (${recurrenceInstances.length} sessions)`
                           : ""}
@@ -842,7 +844,7 @@ function BookPage() {
                       ? "Booking…"
                       : price === 0
                         ? "Confirm booking"
-                        : `Pay $${price} & confirm`}
+                        : "Book session"}
                   </button>
                 </div>
               </div>

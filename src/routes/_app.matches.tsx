@@ -11,6 +11,7 @@ import { Icon } from "@/components/Icon";
 import { computeMatch, VIBE_TAGS, type MatchPrefs, type TutorRow } from "../pathwise/matching";
 // ─── api.ts for lead event inserts ───────────────────────────────────────────
 import { recordProfileView } from "../pathwise/api";
+import { formatPrice } from "../pathwise/sessions";
 
 const SORTS = [
   { id: "best", label: "Best Match" },
@@ -31,7 +32,7 @@ const searchSchema = z.object({
   ),
   minRating: fallback(z.coerce.number().min(0).max(5), 0).default(0),
   priceMin: fallback(z.coerce.number().min(0), 0).default(0),
-  priceMax: fallback(z.coerce.number().min(0), 200).default(200),
+  priceMax: fallback(z.coerce.number().min(0), 1000).default(1000),
   vibes: fallback(z.string().array(), []).default([]),
   availableThisWeek: fallback(z.coerce.boolean(), false).default(false),
 });
@@ -316,8 +317,8 @@ function MatchesPage() {
   if (prefs.budget_max)
     chips.push({
       key: "budget",
-      label: `Budget ≤ $${prefs.budget_max}/hr`,
-      clear: () => updateSearch({ budget: undefined, priceMax: 200 }),
+      label: `Budget ≤ ${formatPrice(prefs.budget_max)}/hr`,
+      clear: () => updateSearch({ budget: undefined, priceMax: 1000 }),
     });
   if (prefs.experience_level)
     chips.push({
@@ -364,7 +365,7 @@ function MatchesPage() {
         sort: search.sort,
         minRating: 0,
         priceMin: 0,
-        priceMax: 200,
+        priceMax: 1000,
         vibes: [],
         availableThisWeek: false,
       },
@@ -507,13 +508,13 @@ function FilterSidebar({
 
       <Section title="Price range">
         <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
-          ${search.priceMin} – ${search.priceMax}/hr
+          {search.priceMin} – {formatPrice(search.priceMax)}/hr
         </div>
         <input
           type="range"
           min={0}
-          max={300}
-          step={5}
+          max={1000}
+          step={50}
           value={search.priceMax}
           onChange={(e) => update({ priceMax: Number(e.target.value) })}
           className="w-full mt-2"
