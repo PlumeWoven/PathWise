@@ -22,6 +22,7 @@ import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { formatPrice } from "../pathwise/sessions";
+import { useStartConversation } from "../pathwise/Inbox";
 
 export const Route = createFileRoute("/_app/tutor/$tutorId")({
   head: ({ params }) => ({
@@ -127,6 +128,7 @@ const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 function TutorProfilePage() {
   const { tutorId } = Route.useParams();
   const navigate = useNavigate();
+  const startConversation = useStartConversation();
   const [tutor, setTutor] = useState<TutorProfile | null | undefined>(undefined);
   const [availability, setAvailability] = useState<AvailabilityRow[]>([]);
   const [courses, setCourses] = useState<CourseCard[]>([]);
@@ -404,6 +406,9 @@ function TutorProfilePage() {
                   className="flex-1"
                 >
                   <Phone className="size-4 mr-1.5" /> Book a Call
+                </Button>
+                <Button variant="outline" onClick={() => startConversation(tutor.id)} className="flex-1">
+                  Message
                 </Button>
               </div>
             </div>
@@ -785,6 +790,9 @@ function TutorProfilePage() {
               className="w-full mt-3"
             >
               Book a Session
+            </Button>
+            <Button variant="outline" onClick={() => startConversation(tutor.id)} className="w-full mt-2">
+              Message
             </Button>
           </div>
 

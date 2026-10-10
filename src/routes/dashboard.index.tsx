@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { UnverifiedBanner } from "../pathwise/UnverifiedBanner";
 import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
 import { formatPrice } from "../pathwise/sessions";
+import { useStartConversation } from "../pathwise/Inbox";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardHome,
@@ -550,6 +551,7 @@ function UpcomingSessions({
   sessions: SessionRow[];
   studentMap: Map<string, ProfileLite>;
 }) {
+  const startConversation = useStartConversation();
   return (
     <div className="pw-card p-5">
       <div className="label-caps text-[var(--pw-ink-2)]">Upcoming sessions</div>
@@ -591,6 +593,14 @@ function UpcomingSessions({
                   >
                     Join
                   </button>
+                  {s.student_id && (
+                    <button
+                      className="pw-btn-outline text-[0.75rem] px-3 py-1.5"
+                      onClick={() => startConversation(s.student_id!)}
+                    >
+                      Message
+                    </button>
+                  )}
                   <Link
                     to="/sessions/$id"
                     params={{ id: s.id }}

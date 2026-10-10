@@ -170,6 +170,9 @@ export function PWHeader() {
                   <Link to="/sessions" className={`${c.link} hidden sm:inline-flex`}>
                     My sessions
                   </Link>
+                  <Link to="/messages" search={{ thread: undefined }} className={`${c.link} hidden sm:inline-flex`}>
+                    Messages
+                  </Link>
                 </>
               )}
               {isAdmin(user.app_metadata) && (

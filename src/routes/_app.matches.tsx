@@ -12,6 +12,7 @@ import { computeMatch, VIBE_TAGS, type MatchPrefs, type TutorRow } from "../path
 // ─── api.ts for lead event inserts ───────────────────────────────────────────
 import { recordProfileView } from "../pathwise/api";
 import { formatPrice } from "../pathwise/sessions";
+import { useStartConversation } from "../pathwise/Inbox";
 
 const SORTS = [
   { id: "best", label: "Best Match" },
@@ -70,6 +71,7 @@ function MatchesPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const startConversation = useStartConversation();
 
   const [tutors, setTutors] = useState<TutorRow[]>([]);
   const [reviewsByTutor, setReviewsByTutor] = useState<Map<string, { avg: number; count: number }>>(
@@ -470,6 +472,7 @@ function MatchesPage() {
                         course: s.course,
                       }}
                       onBook={handleBook}
+                      onMessage={startConversation}
                       onView={(id) => navigate({ to: "/tutor/$tutorId", params: { tutorId: id } })}
                     />
                   ))}
