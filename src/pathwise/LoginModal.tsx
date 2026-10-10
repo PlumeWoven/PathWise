@@ -1,11 +1,15 @@
 import { useEffect, useState, FormEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
-import { normalizeRole, postAuthDestination } from "./roles";
+import { normalizeRole, pendingBookingTutorId, postAuthDestination } from "./roles";
 import { supabase } from "@/integrations/supabase/client";
 import { signInWithGoogle } from "./oauth";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { toast } from "sonner";
+
+// Google sign-in is disabled in Supabase Auth and the set_profile_role RPC it
+// needs doesn't exist yet, so the button could only fail. Flip once both exist.
+const GOOGLE_ENABLED = false;
 import { Icon, type IconName } from "@/components/Icon";
 
 type Mode = "signin" | "signup" | "forgot";
@@ -79,7 +83,9 @@ export function LoginModal() {
       console.error("[auth] claim anonymous error", err);
     }
     closeLogin();
-    navigate({ to: postAuthDestination(r, onboarded) });
+    const pendingTutor = onboarded ? pendingBookingTutorId() : null;
+    if (pendingTutor) navigate({ to: "/book/$tutorId", params: { tutorId: pendingTutor } });
+    else navigate({ to: postAuthDestination(r, onboarded) });
   }
 
   /**
@@ -292,8 +298,12 @@ export function LoginModal() {
               <Field label="Password" type="password" value={password} onChange={setPassword} />
               {error && <ErrorLine msg={error} />}
               <SubmitButton submitting={submitting} label="Sign In →" />
-              <OrDivider />
-              <GoogleButton onClick={handleGoogle} submitting={submitting} />
+              {GOOGLE_ENABLED && (
+                <>
+                  <OrDivider />
+                  <GoogleButton onClick={handleGoogle} submitting={submitting} />
+                </>
+              )}
               <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
                 <button
                   type="button"
@@ -332,12 +342,16 @@ export function LoginModal() {
                 label="Create Free Account →"
                 disabled={!role}
               />
-              <OrDivider />
-              <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
-              {!role && (
-                <p className="text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
-                  Pick a role above to enable Google sign-up.
-                </p>
+              {GOOGLE_ENABLED && (
+                <>
+                  <OrDivider />
+                  <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
+                  {!role && (
+                    <p className="text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
+                      Pick a role above to enable Google sign-up.
+                    </p>
+                  )}
+                </>
               )}
               <div className="label-caps text-[var(--pw-ink-2)] text-center">
                 Already have an account?{" "}

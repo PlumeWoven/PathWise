@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../pathwise/auth";
+import { pendingBookingTutorId } from "../pathwise/roles";
 import { updateProfile } from "@/pathwise/api";
 import { toast } from "sonner";
 
@@ -41,7 +42,9 @@ function StudentOnboarding() {
     }
     setSubmitting(false);
     await refreshProfile();
-    navigate({ to: "/roadmap" });
+    const pendingTutor = pendingBookingTutorId();
+    if (pendingTutor) navigate({ to: "/book/$tutorId", params: { tutorId: pendingTutor } });
+    else navigate({ to: "/roadmap" });
   }
 
   if (loading || !profile) return null;

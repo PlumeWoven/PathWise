@@ -24,6 +24,21 @@ function AdminUsers() {
     })();
   }, []);
 
+  // Admin-only via RLS (is_admin); .select() so a blocked update isn't reported as success.
+  const setVerification = async (userId: string, status: "verified" | "unverified") => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({ verification_status: status })
+      .eq("id", userId)
+      .select("id");
+    if (error || !data?.length) {
+      toast.error(error?.message ?? "Not updated — are you signed in as an admin?");
+      return;
+    }
+    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, verification_status: status } : u)));
+    toast.success(status === "verified" ? "Tutor verified" : "Verification removed");
+  };
+
   const handleImpersonate = async (userId: string, userName: string) => {
     try {
       const {
@@ -122,7 +137,17 @@ function AdminUsers() {
                 <td className="py-4">{u.display_name || u.full_name || "—"}</td>
                 <td className="label-caps py-4 text-[var(--pw-ink-2)]">{u.role}</td>
                 <td className="label-caps py-4 text-[var(--pw-ink-2)]">{u.verification_status}</td>
-                <td className="py-4">
+                <td className="py-4 flex flex-wrap gap-2">
+                  {(u.role === "tutor" || u.role === "both") &&
+                    (u.verification_status === "verified" ? (
+                      <Button variant="outline" size="sm" onClick={() => setVerification(u.id, "unverified")}>
+                        Unverify
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => setVerification(u.id, "verified")}>
+                        Verify
+                      </Button>
+                    ))}
                   <Button
                     variant="outline"
                     size="sm"

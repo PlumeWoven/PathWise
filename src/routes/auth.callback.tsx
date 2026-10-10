@@ -25,7 +25,7 @@ export const Route = createFileRoute('/auth/callback')({
  */
 async function claimPendingRoadmap(userId: string): Promise<void> {
     const params = new URLSearchParams(window.location.search);
-    const claimId = params.get('claim') || localStorage.getItem('pendingRoadmapId');
+    const claimId = params.get('claim') || localStorage.getItem('pathwise_roadmap_id');
     if (!claimId) return;
 
     try {
@@ -39,7 +39,7 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
 
         if (roadmapError) {
             console.error('[claim] failed to claim roadmap', roadmapError.message);
-            localStorage.removeItem('pendingRoadmapId');
+            localStorage.removeItem('pathwise_roadmap_id');
             return;
         }
 
@@ -56,7 +56,7 @@ async function claimPendingRoadmap(userId: string): Promise<void> {
             if (diagError) console.error('[claim] diagnostic claim failed', diagError.message);
         }
 
-        localStorage.removeItem('pendingRoadmapId');
+        localStorage.removeItem('pathwise_roadmap_id');
     } catch (err) {
         console.error('[claim] error claiming roadmap', err);
     }

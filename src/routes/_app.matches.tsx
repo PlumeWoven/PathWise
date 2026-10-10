@@ -303,18 +303,6 @@ function MatchesPage() {
     navigate({ to: "/book/$tutorId", params: { tutorId } });
   };
 
-  // ── CHANGED: handleMessage records lead event consistently ─────────────────
-  const handleMessage = (tutorId: string) => {
-    if (!user) {
-      toast.info("Sign in to message tutors.");
-      return;
-    }
-    toast.success("Message thread opened.");
-    void supabase
-      .from("lead_events")
-      .insert({ tutor_id: tutorId, student_id: user.id, stage: "message" });
-  };
-
   // Active filter chips
   const chips: { key: string; label: ReactNode; clear: () => void }[] = [];
   if (prefs.subject)
@@ -479,7 +467,6 @@ function MatchesPage() {
                         course: s.course,
                       }}
                       onBook={handleBook}
-                      onMessage={handleMessage}
                       onView={(id) => navigate({ to: "/tutor/$tutorId", params: { tutorId: id } })}
                     />
                   ))}

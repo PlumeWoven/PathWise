@@ -175,9 +175,11 @@ export function MatchCard({
             <button onClick={() => onBook?.(t.id)} className="pw-btn-primary px-4 py-2 flex-1">
               Book trial
             </button>
-            <button onClick={() => onMessage?.(t.id)} className="pw-btn-outline px-4 py-2 flex-1">
-              Message
-            </button>
+            {onMessage && (
+              <button onClick={() => onMessage(t.id)} className="pw-btn-outline px-4 py-2 flex-1">
+                Message
+              </button>
+            )}
           </div>
         </div>
       </div>
