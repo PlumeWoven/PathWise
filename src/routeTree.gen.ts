@@ -16,14 +16,17 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StyleGuideRouteImport } from './routes/style-guide'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as AppConfirmEmailRouteImport } from './routes/_app.confirm-email'
+import { Route as AppContactRouteImport } from './routes/_app.contact'
 import { Route as AppCourseMatchRouteImport } from './routes/_app.course-match'
 import { Route as AppDemoRouteImport } from './routes/_app.demo'
 import { Route as AppFindTutorRouteImport } from './routes/_app.find-tutor'
 import { Route as AppLibraryRouteImport } from './routes/_app.library'
 import { Route as AppMatchesRouteImport } from './routes/_app.matches'
+import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
 import { Route as AppQuizRouteImport } from './routes/_app.quiz'
 import { Route as AppResetPasswordRouteImport } from './routes/_app.reset-password'
 import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
+import { Route as AppTermsRouteImport } from './routes/_app.terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
 import { Route as AdminReviewRouteImport } from './routes/admin.review'
@@ -90,6 +93,11 @@ const AppConfirmEmailRoute = AppConfirmEmailRouteImport.update({
   path: '/confirm-email',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContactRoute = AppContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCourseMatchRoute = AppCourseMatchRouteImport.update({
   id: '/course-match',
   path: '/course-match',
@@ -115,6 +123,11 @@ const AppMatchesRoute = AppMatchesRouteImport.update({
   path: '/matches',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPrivacyRoute = AppPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppQuizRoute = AppQuizRouteImport.update({
   id: '/quiz',
   path: '/quiz',
@@ -128,6 +141,11 @@ const AppResetPasswordRoute = AppResetPasswordRouteImport.update({
 const AppRoadmapRoute = AppRoadmapRouteImport.update({
   id: '/roadmap',
   path: '/roadmap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTermsRoute = AppTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => AppRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -297,14 +315,17 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/confirm-email': typeof AppConfirmEmailRoute
+  '/contact': typeof AppContactRoute
   '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
   '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
+  '/privacy': typeof AppPrivacyRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -341,14 +362,17 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/confirm-email': typeof AppConfirmEmailRoute
+  '/contact': typeof AppContactRoute
   '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
   '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
+  '/privacy': typeof AppPrivacyRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -388,14 +412,17 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/_app/confirm-email': typeof AppConfirmEmailRoute
+  '/_app/contact': typeof AppContactRoute
   '/_app/course-match': typeof AppCourseMatchRoute
   '/_app/demo': typeof AppDemoRoute
   '/_app/find-tutor': typeof AppFindTutorRoute
   '/_app/library': typeof AppLibraryRoute
   '/_app/matches': typeof AppMatchesRoute
+  '/_app/privacy': typeof AppPrivacyRoute
   '/_app/quiz': typeof AppQuizRoute
   '/_app/reset-password': typeof AppResetPasswordRoute
   '/_app/roadmap': typeof AppRoadmapRoute
+  '/_app/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
   '/admin/review': typeof AdminReviewRoute
   '/admin/users': typeof AdminUsersRoute
@@ -438,14 +465,17 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/confirm-email'
+    | '/contact'
     | '/course-match'
     | '/demo'
     | '/find-tutor'
     | '/library'
     | '/matches'
+    | '/privacy'
     | '/quiz'
     | '/reset-password'
     | '/roadmap'
+    | '/terms'
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
@@ -482,14 +512,17 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/confirm-email'
+    | '/contact'
     | '/course-match'
     | '/demo'
     | '/find-tutor'
     | '/library'
     | '/matches'
+    | '/privacy'
     | '/quiz'
     | '/reset-password'
     | '/roadmap'
+    | '/terms'
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
@@ -528,14 +561,17 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/_app/confirm-email'
+    | '/_app/contact'
     | '/_app/course-match'
     | '/_app/demo'
     | '/_app/find-tutor'
     | '/_app/library'
     | '/_app/matches'
+    | '/_app/privacy'
     | '/_app/quiz'
     | '/_app/reset-password'
     | '/_app/roadmap'
+    | '/_app/terms'
     | '/admin/courses'
     | '/admin/review'
     | '/admin/users'
@@ -633,6 +669,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfirmEmailRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/contact': {
+      id: '/_app/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof AppContactRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/course-match': {
       id: '/_app/course-match'
       path: '/course-match'
@@ -668,6 +711,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMatchesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/privacy': {
+      id: '/_app/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof AppPrivacyRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/quiz': {
       id: '/_app/quiz'
       path: '/quiz'
@@ -687,6 +737,13 @@ declare module '@tanstack/react-router' {
       path: '/roadmap'
       fullPath: '/roadmap'
       preLoaderRoute: typeof AppRoadmapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/terms': {
+      id: '/_app/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof AppTermsRouteImport
       parentRoute: typeof AppRoute
     }
     '/admin/': {
@@ -911,14 +968,17 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppConfirmEmailRoute: typeof AppConfirmEmailRoute
+  AppContactRoute: typeof AppContactRoute
   AppCourseMatchRoute: typeof AppCourseMatchRoute
   AppDemoRoute: typeof AppDemoRoute
   AppFindTutorRoute: typeof AppFindTutorRoute
   AppLibraryRoute: typeof AppLibraryRoute
   AppMatchesRoute: typeof AppMatchesRoute
+  AppPrivacyRoute: typeof AppPrivacyRoute
   AppQuizRoute: typeof AppQuizRoute
   AppResetPasswordRoute: typeof AppResetPasswordRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
+  AppTermsRoute: typeof AppTermsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppBookTutorIdRoute: typeof AppBookTutorIdRoute
   AppCoursesSlugRoute: typeof AppCoursesSlugRoute
@@ -935,14 +995,17 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppConfirmEmailRoute: AppConfirmEmailRoute,
+  AppContactRoute: AppContactRoute,
   AppCourseMatchRoute: AppCourseMatchRoute,
   AppDemoRoute: AppDemoRoute,
   AppFindTutorRoute: AppFindTutorRoute,
   AppLibraryRoute: AppLibraryRoute,
   AppMatchesRoute: AppMatchesRoute,
+  AppPrivacyRoute: AppPrivacyRoute,
   AppQuizRoute: AppQuizRoute,
   AppResetPasswordRoute: AppResetPasswordRoute,
   AppRoadmapRoute: AppRoadmapRoute,
+  AppTermsRoute: AppTermsRoute,
   AppIndexRoute: AppIndexRoute,
   AppBookTutorIdRoute: AppBookTutorIdRoute,
   AppCoursesSlugRoute: AppCoursesSlugRoute,

@@ -1,5 +1,5 @@
 import { useEffect, useState, FormEvent } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
 import { normalizeRole, pendingBookingTutorId, postAuthDestination } from "./roles";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ export function LoginModal() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -151,6 +152,10 @@ export function LoginModal() {
       setError("Please enter your name.");
       return;
     }
+    if (!consent) {
+      setError("Please confirm you're 18+ (or a parent/guardian) and accept the terms.");
+      return;
+    }
     setSubmitting(true);
     const redirectTo = `${window.location.origin}/confirm-email`; // explicit route
     const { data, error: err } = await supabase.auth.signUp({
@@ -158,7 +163,14 @@ export function LoginModal() {
       password,
       options: {
         emailRedirectTo: redirectTo,
-        data: { role, display_name: name.trim(), full_name: name.trim() },
+        data: {
+          role,
+          display_name: name.trim(),
+          full_name: name.trim(),
+          // Record of what the user agreed to and when.
+          terms_accepted_at: new Date().toISOString(),
+          age_confirmed: true,
+        },
       },
     });
     setSubmitting(false);
@@ -337,10 +349,29 @@ export function LoginModal() {
               <Field label="Email" type="email" value={email} onChange={setEmail} />
               <Field label="Password" type="password" value={password} onChange={setPassword} />
               {error && <ErrorLine msg={error} />}
+              <label className="flex items-start gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  I'm 18 or older (or a parent/guardian signing up for my child) and I accept the{" "}
+                  <Link to="/terms" target="_blank" className="underline">
+                    Terms
+                  </Link>{" "}
+                  and{" "}
+                  <Link to="/privacy" target="_blank" className="underline">
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
               <SubmitButton
                 submitting={submitting}
                 label="Create Free Account →"
-                disabled={!role}
+                disabled={!role || !consent}
               />
               {GOOGLE_ENABLED && (
                 <>

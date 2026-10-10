@@ -1,19 +1,26 @@
+import { Link } from "@tanstack/react-router";
 import { LandingCtas } from "./LandingCtas";
 
+// Only pages that exist — the old columns linked "About", "Blog", "Status"… to "#".
 const columns = [
   {
     heading: "Product",
-    links: ["Level check", "Roadmaps", "Find a tutor", "Pricing"],
+    links: [
+      { label: "Level check", to: "/quiz" },
+      { label: "Roadmaps", to: "/roadmap" },
+      { label: "Find a tutor", to: "/find-tutor" },
+      { label: "Course library", to: "/library" },
+    ],
   },
   {
     heading: "Company",
-    links: ["About", "Careers", "Blog", "Contact"],
+    links: [
+      { label: "Contact", to: "/contact" },
+      { label: "Privacy", to: "/privacy" },
+      { label: "Terms", to: "/terms" },
+    ],
   },
-  {
-    heading: "Resources",
-    links: ["Help center", "Community", "Tutor guide", "Status"],
-  },
-];
+] as const;
 
 export function Footer({ lit = false }: { lit?: boolean }) {
   return (
@@ -33,16 +40,16 @@ export function Footer({ lit = false }: { lit?: boolean }) {
           <LandingCtas />
         </div>
 
-        <div className="mt-20 grid grid-cols-2 gap-10 sm:grid-cols-3">
+        <div className="mt-20 grid grid-cols-2 gap-10">
           {columns.map((col) => (
             <nav key={col.heading} aria-label={col.heading}>
               <h3 className="label-caps text-qed-ink-2">{col.heading}</h3>
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-sm transition-colors hover:text-qed-amber">
-                      {link}
-                    </a>
+                  <li key={link.to}>
+                    <Link to={link.to} className="text-sm transition-colors hover:text-qed-amber">
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -56,13 +63,13 @@ export function Footer({ lit = false }: { lit?: boolean }) {
       <div className="flex items-center justify-between px-6 py-4 text-qed-ink-2 md:px-24">
         <span className="label-caps text-[0.5625rem]">
           © {new Date().getFullYear()} PathWise ·{" "}
-          <a href="#" className="hover:text-qed-amber">
+          <Link to="/privacy" className="hover:text-qed-amber">
             Privacy
-          </a>{" "}
+          </Link>{" "}
           /{" "}
-          <a href="#" className="hover:text-qed-amber">
+          <Link to="/terms" className="hover:text-qed-amber">
             Terms
-          </a>
+          </Link>
         </span>
         <span className="label-caps text-[0.5625rem]">
           Icons by{" "}
