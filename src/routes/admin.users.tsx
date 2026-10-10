@@ -39,6 +39,39 @@ function AdminUsers() {
     toast.success(status === "verified" ? "Tutor verified" : "Verification removed");
   };
 
+  // Ban/unban runs server-side (service role) in api/admin-user.js.
+  const setSuspended = async (userId: string, suspend: boolean) => {
+    if (suspend && !window.confirm("Suspend this user? They won't be able to sign in.")) return;
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const res = await fetch("/api/admin-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ userId, action: suspend ? "suspend" : "restore" }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      toast.error(body.error ?? `Failed (${res.status})`);
+      return;
+    }
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === userId
+          ? {
+              ...u,
+              suspended_at: suspend ? new Date().toISOString() : null,
+              verification_status: suspend ? "unverified" : u.verification_status,
+            }
+          : u,
+      ),
+    );
+    toast.success(suspend ? "User suspended" : "User restored");
+  };
+
   const handleImpersonate = async (userId: string, userName: string) => {
     try {
       const {
@@ -136,7 +169,13 @@ function AdminUsers() {
               <tr key={u.id}>
                 <td className="py-4">{u.display_name || u.full_name || "—"}</td>
                 <td className="label-caps py-4 text-[var(--pw-ink-2)]">{u.role}</td>
-                <td className="label-caps py-4 text-[var(--pw-ink-2)]">{u.verification_status}</td>
+                <td className="label-caps py-4 text-[var(--pw-ink-2)]">
+                  {u.suspended_at ? (
+                    <span style={{ color: "var(--pw-danger)" }}>suspended</span>
+                  ) : (
+                    u.verification_status
+                  )}
+                </td>
                 <td className="py-4 flex flex-wrap gap-2">
                   {(u.role === "tutor" || u.role === "both") &&
                     (u.verification_status === "verified" ? (
@@ -148,6 +187,9 @@ function AdminUsers() {
                         Verify
                       </Button>
                     ))}
+                  <Button variant="outline" size="sm" onClick={() => setSuspended(u.id, !u.suspended_at)}>
+                    {u.suspended_at ? "Restore" : "Suspend"}
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

@@ -58,6 +58,8 @@ function SessionDetail() {
   const [reviewRating, setReviewRating] = useState(5);
   const [cancelReason, setCancelReason] = useState("");
   const [showCancel, setShowCancel] = useState(false);
+  // The cancel form doubles as "Report a problem" (→ disputed, for an admin).
+  const [reportMode, setReportMode] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -174,6 +176,16 @@ function SessionDetail() {
         }),
       600,
     );
+  }
+
+  async function handleReport() {
+    if (!cancelReason.trim()) {
+      toast.error("Tell us what went wrong");
+      return;
+    }
+    await doTransition("disputed", { reason: cancelReason, title: "" });
+    setShowCancel(false);
+    setReportMode(false);
   }
 
   async function handleCancel() {
@@ -309,28 +321,53 @@ function SessionDetail() {
               Cancel
             </button>
           )}
+          {(isTutor || isStudent) &&
+            !showCancel &&
+            !["cancelled", "disputed"].includes(session.status_v2) && (
+              <button
+                onClick={() => {
+                  setReportMode(true);
+                  setShowCancel(true);
+                }}
+                className="pw-btn-outline px-4 py-2"
+              >
+                Report a problem
+              </button>
+            )}
         </div>
 
         {showCancel && (
           <div className="mt-3 pw-card p-4">
-            <label className="label-caps text-[var(--pw-ink-2)]">Reason</label>
+            <label className="label-caps text-[var(--pw-ink-2)]">
+              {reportMode ? "What went wrong?" : "Reason"}
+            </label>
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={3}
               className="mt-1 w-full pw-border px-3 py-2 text-sm bg-[var(--pw-surface)]"
-              placeholder="Schedule conflict, no longer needed, etc."
+              placeholder={
+                reportMode
+                  ? "No-show, behaviour, lesson link didn't work… PathWise will contact you both."
+                  : "Schedule conflict, no longer needed, etc."
+              }
             />
             <div className="flex gap-2 mt-2">
               <button
-                onClick={handleCancel}
+                onClick={reportMode ? handleReport : handleCancel}
                 className="pw-btn-primary px-4 py-2"
                 style={{ background: "var(--pw-danger)" }}
               >
-                Confirm cancel
+                {reportMode ? "Send report" : "Confirm cancel"}
               </button>
-              <button onClick={() => setShowCancel(false)} className="pw-btn-outline px-4 py-2">
-                Keep session
+              <button
+                onClick={() => {
+                  setShowCancel(false);
+                  setReportMode(false);
+                }}
+                className="pw-btn-outline px-4 py-2"
+              >
+                {reportMode ? "Never mind" : "Keep session"}
               </button>
             </div>
           </div>

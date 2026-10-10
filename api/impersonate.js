@@ -7,10 +7,7 @@
 // real user, and that user must carry `app_metadata.role === "admin"`. The role
 // lives in app_metadata specifically because users cannot edit it themselves
 // (unlike user_metadata or the profiles table).
-import { createClient } from '@supabase/supabase-js';
-
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+import { requireAdminForTarget } from './_admin.js';
 
 /**
  * Absolute origin to send the magic link back to.
@@ -29,56 +26,12 @@ function resolveOrigin(req) {
 }
 
 export default async function handler(req, res) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-        console.error('[Impersonate] Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
-        return res.status(500).json({ error: 'Server is not configured for impersonation' });
-    }
+    const ctx = await requireAdminForTarget(req, res, 'Impersonate');
+    if (!ctx) return;
+    const { supabaseAdmin, admin, target } = ctx;
 
     try {
-        const { userId } = req.body ?? {};
-        if (!userId) {
-            return res.status(400).json({ error: 'Missing userId' });
-        }
-
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'Missing or invalid Authorization header' });
-        }
-        const adminToken = authHeader.split(' ')[1];
-
-        const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-            auth: { autoRefreshToken: false, persistSession: false },
-        });
-
-        const { data: adminUser, error: adminError } = await supabaseAdmin.auth.getUser(adminToken);
-        if (adminError || !adminUser?.user) {
-            console.error('[Impersonate] Admin validation error:', adminError);
-            return res.status(401).json({ error: 'Invalid admin token' });
-        }
-
-        // Mirrors isAdmin() in src/pathwise/roles.ts.
-        if (adminUser.user.app_metadata?.role !== 'admin') {
-            console.error('[Impersonate] Caller is not an admin:', adminUser.user.id);
-            return res.status(403).json({ error: 'Not authorized' });
-        }
-
-        const { data: targetUser, error: targetError } = await supabaseAdmin.auth.admin.getUserById(userId);
-        if (targetError || !targetUser?.user) {
-            console.error('[Impersonate] Target user error:', targetError);
-            return res.status(404).json({ error: 'Target user not found' });
-        }
-
-        // Refuse to impersonate another admin — that would let one admin take over
-        // another's account without it showing up as a sign-in they performed.
-        if (targetUser.user.app_metadata?.role === 'admin') {
-            return res.status(403).json({ error: 'Cannot impersonate another admin' });
-        }
-
-        const email = targetUser.user.email;
+        const email = target.email;
         if (!email) {
             return res.status(400).json({ error: 'Target user has no email' });
         }
@@ -98,7 +51,12 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'Failed to generate magic link' });
         }
 
-        console.warn(`[Impersonate] admin=${adminUser.user.id} target=${userId} origin=${origin}`);
+        // Audit trail (service role bypasses RLS; admins can read it).
+        const { error: logError } = await supabaseAdmin
+            .from('impersonation_logs')
+            .insert({ admin_id: admin.id, target_id: target.id, origin });
+        if (logError) console.error('[Impersonate] Audit log failed:', logError);
+        console.warn(`[Impersonate] admin=${admin.id} target=${target.id} origin=${origin}`);
         // Return the token hash, not the action_link: the browser client uses the
         // PKCE flow, which rejects the #access_token fragment the link redirects with.
         // The client exchanges this hash with supabase.auth.verifyOtp instead.

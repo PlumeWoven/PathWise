@@ -6,8 +6,15 @@
 - `user` includes `app_metadata` (for admin claim).
 
 ## Roles
-- `student`, `tutor`, `both`, `admin` (stored in `profiles.role`).
+- `student`, `tutor`, `both` are stored in `profiles.role`. `admin` is not a profile role.
 - Admin authorization is based on **JWT claim** (`user.app_metadata.role === 'admin'`), not `profile.role`, to avoid infinite recursion in RLS.
+- Making someone an admin (Supabase SQL Editor), then have them sign out and back in so the new JWT carries the claim:
+
+  ```sql
+  update auth.users
+  set raw_app_meta_data = raw_app_meta_data || '{"role": "admin"}'
+  where id = '<user uuid>';
+  ```
 
 ## Route Protection
 - `RequireOnboarding` checks `onboarding_completed`.

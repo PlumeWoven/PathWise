@@ -24,7 +24,7 @@
 ## Enums
 - `session_status`: scheduled, confirmed, reminder_sent, in_progress, completed, awaiting_review, closed, cancelled, disputed
 - `session_payment_status`: unpaid, pending, paid, refunded, failed
-- `profiles.role`: student, tutor, both, admin
+- `profiles.role`: student, tutor, both (admin is **not** a profile role — see below)
 
 ## Key Functions
 - `book_session()` – atomic booking with conflict detection.
@@ -38,5 +38,5 @@
 - Courses: public read published; tutors manage own.
 - Reviews: public read; students insert.
 - Message threads/messages: participants only.
-- Admin access: based on `auth.jwt() ->> 'role' = 'admin'` (JWT claim).
+- Admin access: `public.is_admin()` → `auth.jwt() -> 'app_metadata' ->> 'role' = 'admin'`. (The old `auth.jwt() ->> 'role'` check never matched — that claim is always `authenticated`; fixed in M1.)
 - Availability: tutors manage own.
