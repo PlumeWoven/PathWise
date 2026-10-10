@@ -17,11 +17,11 @@ import {
   X,
   Plus,
   Clock,
-  DollarSign,
   Eye,
 } from "lucide-react";
 import { AvailabilityGrid, type CellState } from "@/pathwise/AvailabilityGrid";
 import { detectTimezone } from "@/pathwise/scheduling";
+import { formatPrice } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/_app/onboarding/tutor")({
   head: () => ({ meta: [{ title: "Tutor onboarding — PathWise" }] }),
@@ -358,6 +358,17 @@ function TutorWizard() {
 
   const publish = async () => {
     if (!profile) return;
+    // With no subjects a tutor never matches; with no rate every session books at 0.
+    if (state.subject_ids.length === 0) {
+      toast.error("Pick at least one subject you teach.");
+      setState((p) => ({ ...p, step: 2 }));
+      return;
+    }
+    if (!(Number(state.hourly_rate) > 0)) {
+      toast.error("Set your hourly rate before publishing.");
+      setState((p) => ({ ...p, step: 5 }));
+      return;
+    }
     const ok = await saveStep(STEPS.length);
     if (!ok) return;
     const { error } = await supabase
@@ -1265,14 +1276,14 @@ function Step5({
   const rate = Number(state.hourly_rate) || 0;
   const selectedSubjects = subjects.filter((s) => state.subject_ids.includes(s.id));
   const marketRates: Record<string, [number, number]> = {
-    STEM: [40, 90],
-    "Test Prep": [60, 120],
-    Languages: [30, 70],
-    Humanities: [35, 75],
+    STEM: [250, 500],
+    "Test Prep": [300, 600],
+    Languages: [200, 400],
+    Humanities: [200, 400],
   };
   const suggestion = selectedSubjects[0]?.category
     ? marketRates[selectedSubjects[0].category!]
-    : [40, 80];
+    : [250, 450];
 
   function updPkg(i: number, patch: Partial<PackageRow>) {
     const next = state.packages.map((p, idx) => (idx === i ? { ...p, ...patch } : p));
@@ -1282,20 +1293,19 @@ function Step5({
   return (
     <div className="space-y-6">
       <div>
-        <Label>Default hourly rate (USD)</Label>
+        <Label>Default hourly rate (MDL)</Label>
         <div className="mt-1 relative">
-          <DollarSign className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--pw-ink-2)]" />
           <input
             type="number"
             min={0}
             value={state.hourly_rate}
             onChange={(e) => update("hourly_rate", e.target.value)}
-            className="w-full pw-border pl-9 pr-3 py-2.5 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
-            placeholder="50"
+            className="w-full pw-border px-3 py-2.5 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
+            placeholder="300"
           />
         </div>
         <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-1">
-          Suggested for your subjects: ${suggestion?.[0]}–${suggestion?.[1]}/hr
+          Suggested for your subjects: {suggestion?.[0]}–{suggestion?.[1]} MDL/hr
         </p>
       </div>
 
@@ -1354,7 +1364,7 @@ function Step5({
       <div className="pw-border p-4 bg-[var(--pw-surface-2)]">
         <div className="label-caps text-[var(--pw-ink-2)]">Search preview</div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="font-display text-[1.5rem]">${rate || "—"}</span>
+          <span className="font-display text-[1.5rem]">{rate ? formatPrice(rate) : "—"}</span>
           <span className="text-[0.75rem] text-[var(--pw-ink-2)]">/ hour</span>
           {state.first_session_free && (
             <span className="ml-auto pw-pill px-2 py-0.5">First free</span>

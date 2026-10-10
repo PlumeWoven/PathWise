@@ -21,6 +21,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { formatPrice } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/_app/tutor/$tutorId")({
   head: ({ params }) => ({
@@ -770,7 +771,7 @@ function TutorProfilePage() {
           {/* Pricing snapshot */}
           <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-5">
             <div className="font-display text-2xl">
-              ${Number(tutor.hourly_rate ?? 0).toFixed(0)}
+              {formatPrice(tutor.hourly_rate)}
               <span className="text-[0.75rem] text-[var(--pw-ink-2)] font-sans"> /hr</span>
             </div>
             {tutor.first_session_free && (

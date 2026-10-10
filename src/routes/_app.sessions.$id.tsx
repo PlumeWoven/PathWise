@@ -9,6 +9,7 @@ import {
   transitionSession,
   type SessionStatus,
   type SessionPaymentStatus,
+  formatPrice,
 } from "../pathwise/sessions";
 import { SessionStateTracker } from "../pathwise/SessionStateTracker";
 
@@ -248,7 +249,7 @@ function SessionDetail() {
           <Row label="Duration" value={`${session.duration_minutes ?? 60} min`} />
           <Row
             label="Amount"
-            value={Number(session.amount ?? 0) === 0 ? "Free" : `$${session.amount}`}
+            value={Number(session.amount ?? 0) === 0 ? "Free" : formatPrice(session.amount)}
           />
           <Row label="Payment" value={session.payment_status} />
           {session.cancellation_reason && (
