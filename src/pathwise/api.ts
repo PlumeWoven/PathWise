@@ -402,7 +402,7 @@ export async function dropEnrollment(enrollmentId: string) {
  * Fetches real tutors from the database matching a subject and level.
  *
  * Matching logic:
- *  - Tutor role = 'tutor'
+ *  - Tutor role = 'tutor' or 'both'
  *  - verification_status = 'verified' (only show verified tutors)
  *  - subject_specialties contains the requested subject
  *  - Falls back to subject_proficiency JSON if specialties is empty
@@ -410,16 +410,14 @@ export async function dropEnrollment(enrollmentId: string) {
  * Returns up to 6 tutors ordered by hourly_rate ASC (cheapest first).
  * The UI can re-sort however it wants.
  */
-export async function fetchMatchedTutors(subject: Subject, _level: Level) {
+export async function fetchMatchedTutors(subject: Subject) {
     const { data, error } = await supabase
         .from("profiles")
+        // One string literal so supabase-js can type the rows.
         .select(
-            "id, display_name, full_name, avatar_url, headline, bio, hourly_rate, " +
-            "subject_specialties, years_experience, rating, verification_status, " +
-            "instant_bookings, first_session_free, free_discovery_call, timezone, " +
-            "superpowers"
+            "id, display_name, full_name, avatar_url, headline, bio, hourly_rate, subject_specialties, years_experience, verification_status, instant_bookings, first_session_free, free_discovery_call, timezone, superpowers"
         )
-        .eq("role", "tutor")
+        .in("role", ["tutor", "both"])
         .eq("verification_status", "verified")
         .contains("subject_specialties", [subject])
         .order("hourly_rate", { ascending: true })
@@ -427,25 +425,7 @@ export async function fetchMatchedTutors(subject: Subject, _level: Level) {
 
     if (error) throw error;
 
-    // If no verified tutors yet (early stage), fall back to all tutors
-    // Remove this fallback once real tutors are onboarded
-    if (!data || data.length === 0) {
-        const { data: fallback, error: fallbackErr } = await supabase
-            .from("profiles")
-            .select(
-                "id, display_name, full_name, avatar_url, headline, bio, hourly_rate, " +
-                "subject_specialties, years_experience, verification_status, " +
-                "instant_bookings, first_session_free, free_discovery_call, timezone"
-            )
-            .eq("role", "tutor")
-            .order("created_at", { ascending: false })
-            .limit(6);
-
-        if (fallbackErr) throw fallbackErr;
-        return fallback ?? [];
-    }
-
-    return data;
+    return data ?? [];
 }
 
 /**

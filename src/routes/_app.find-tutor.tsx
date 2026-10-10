@@ -584,7 +584,8 @@ function Q8({
       const { count: c } = await supabase
         .from("profiles")
         .select("id", { count: "exact", head: true })
-        .eq("role", "tutor")
+        .in("role", ["tutor", "both"])
+        .eq("verification_status", "verified")
         .lte("hourly_rate", value);
       if (!cancelled) setCount(c ?? 0);
     })();

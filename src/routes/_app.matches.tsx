@@ -126,7 +126,8 @@ function MatchesPage() {
               "subject_specialties, specializations, superpowers, video_intro_url, " +
               "verification_status, free_discovery_call, first_session_free",
           )
-          .eq("role", "tutor")
+          .in("role", ["tutor", "both"])
+          .eq("verification_status", "verified")
           .limit(200);
 
         // Apply subject filter when we know the subject
@@ -170,7 +171,8 @@ function MatchesPage() {
                 "subject_specialties, specializations, superpowers, video_intro_url, " +
                 "verification_status, free_discovery_call, first_session_free",
             )
-            .eq("role", "tutor")
+            .in("role", ["tutor", "both"])
+            .eq("verification_status", "verified")
             .limit(200);
           tutorRows = (fallback ?? []) as unknown as TutorRow[];
         }

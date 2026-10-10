@@ -1,4 +1,3 @@
-import { supabase } from '@/integrations/supabase/client';
 
 // ---------- Existing types (unchanged) ----------
 export interface TutorRow {
@@ -146,56 +145,6 @@ export function computeMatch(
   return { total, parts };
 }
 // ---------- NEW: Database RPC for matching ----------
-export interface TutorMatchResult extends TutorRow {
-  match_score: number;  // total score from SQL (0-1)
-}
-
-/**
- * Fetch matched tutors using the database `match_tutors` RPC.
- * @param studentId - current student's UUID (used for some internal logic, but the RPC may ignore it)
- * @param prefs - matching preferences (subject, dayOfWeek, hour, level)
- * @returns Array of tutors with their pre‑computed match_score (mapped to 0-1)
- */
-export async function fetchTutorMatches(
-  studentId: string,
-  prefs: MatchPrefs
-): Promise<TutorMatchResult[]> {
-  // Map frontend preferences to RPC parameters
-  const dayOfWeek = prefs.availableThisWeek ? new Date().getDay() : null; // 0=Sunday? adjust as needed
-  const hour = prefs.availableThisWeek ? new Date().getHours() : null;
-
-  // @ts-ignore: match_tutors RPC might not be in generated types
-  const { data, error } = await supabase.rpc('match_tutors', {
-    student_id: studentId,
-    subject_filter: prefs.subject ?? null,
-    level_filter: prefs.experience_level ?? null,
-    day_of_week_filter: dayOfWeek,
-    hour_filter: hour,
-  });
-
-  if (error) {
-    console.error('Match RPC error:', error);
-    throw new Error(error.message);
-  }
-
-  // Transform the RPC result into our TutorRow + match_score
-  return ((data as unknown as any[]) || []).map((row: any) => ({
-    id: row.tutor_id,
-    display_name: row.full_name,
-    avatar_url: row.avatar_url,
-    headline: null,        // RPC doesn't return this; adjust if you add to SQL
-    bio: null,
-    hourly_rate: row.hourly_rate,
-    subject_specialties: [row.subject], // SQL returns only one subject; adapt
-    specializations: null,
-    superpowers: null,
-    video_intro_url: null,
-    verification_status: null,
-    free_discovery_call: null,
-    first_session_free: null,
-    match_score: row.match_score,
-  }));
-}
 
 /**
  * Optional: If you still want to compute scores client‑side (e.g., for a single tutor),
