@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_app/library")({
 
 function LibraryPage() {
   return (
-    <RoleGate allow={["student", "both"]}>
+    <RoleGate allow={["student", "both"]} allowAnonymous>
       <LibraryPageInner />
     </RoleGate>
   );
@@ -75,17 +75,26 @@ function LibraryPageInner() {
   // ── Gate 2: you need a roadmap, which only exists once you've taken the quiz ──
   useEffect(() => {
     if (authLoading) return;
-    if (!supabaseUser) return;
     let cancelled = false;
 
     (async () => {
-      const { data, error: rErr } = await supabase
-        .from("roadmaps")
-        .select("id, subject, level_band")
-        .eq("user_id", supabaseUser.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Signed out: the guest roadmap the quiz saved in this browser (anon can
+      // read unclaimed roadmaps). Signed in: the user's latest roadmap.
+      let guestId: string | null = null;
+      try {
+        guestId = localStorage.getItem("pathwise_roadmap_id");
+      } catch {
+        /* storage blocked */
+      }
+      if (!supabaseUser && !guestId) {
+        setLoading(false);
+        return;
+      }
+      const base = supabase.from("roadmaps").select("id, subject, level_band");
+      const { data, error: rErr } = await (supabaseUser
+        ? base.eq("user_id", supabaseUser.id).order("created_at", { ascending: false }).limit(1)
+        : base.eq("id", guestId!)
+      ).maybeSingle();
 
       if (cancelled) return;
       if (rErr) {
