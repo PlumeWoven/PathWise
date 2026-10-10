@@ -22,6 +22,7 @@ import { Route as AppDemoRouteImport } from './routes/_app.demo'
 import { Route as AppFindTutorRouteImport } from './routes/_app.find-tutor'
 import { Route as AppLibraryRouteImport } from './routes/_app.library'
 import { Route as AppMatchesRouteImport } from './routes/_app.matches'
+import { Route as AppMessagesRouteImport } from './routes/_app.messages'
 import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
 import { Route as AppQuizRouteImport } from './routes/_app.quiz'
 import { Route as AppResetPasswordRouteImport } from './routes/_app.reset-password'
@@ -121,6 +122,11 @@ const AppLibraryRoute = AppLibraryRouteImport.update({
 const AppMatchesRoute = AppMatchesRouteImport.update({
   id: '/matches',
   path: '/matches',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPrivacyRoute = AppPrivacyRouteImport.update({
@@ -321,6 +327,7 @@ export interface FileRoutesByFullPath {
   '/find-tutor': typeof AppFindTutorRoute
   '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
+  '/messages': typeof AppMessagesRoute
   '/privacy': typeof AppPrivacyRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
@@ -368,6 +375,7 @@ export interface FileRoutesByTo {
   '/find-tutor': typeof AppFindTutorRoute
   '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
+  '/messages': typeof AppMessagesRoute
   '/privacy': typeof AppPrivacyRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
@@ -418,6 +426,7 @@ export interface FileRoutesById {
   '/_app/find-tutor': typeof AppFindTutorRoute
   '/_app/library': typeof AppLibraryRoute
   '/_app/matches': typeof AppMatchesRoute
+  '/_app/messages': typeof AppMessagesRoute
   '/_app/privacy': typeof AppPrivacyRoute
   '/_app/quiz': typeof AppQuizRoute
   '/_app/reset-password': typeof AppResetPasswordRoute
@@ -471,6 +480,7 @@ export interface FileRouteTypes {
     | '/find-tutor'
     | '/library'
     | '/matches'
+    | '/messages'
     | '/privacy'
     | '/quiz'
     | '/reset-password'
@@ -518,6 +528,7 @@ export interface FileRouteTypes {
     | '/find-tutor'
     | '/library'
     | '/matches'
+    | '/messages'
     | '/privacy'
     | '/quiz'
     | '/reset-password'
@@ -567,6 +578,7 @@ export interface FileRouteTypes {
     | '/_app/find-tutor'
     | '/_app/library'
     | '/_app/matches'
+    | '/_app/messages'
     | '/_app/privacy'
     | '/_app/quiz'
     | '/_app/reset-password'
@@ -709,6 +721,13 @@ declare module '@tanstack/react-router' {
       path: '/matches'
       fullPath: '/matches'
       preLoaderRoute: typeof AppMatchesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/messages': {
+      id: '/_app/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/privacy': {
@@ -974,6 +993,7 @@ interface AppRouteChildren {
   AppFindTutorRoute: typeof AppFindTutorRoute
   AppLibraryRoute: typeof AppLibraryRoute
   AppMatchesRoute: typeof AppMatchesRoute
+  AppMessagesRoute: typeof AppMessagesRoute
   AppPrivacyRoute: typeof AppPrivacyRoute
   AppQuizRoute: typeof AppQuizRoute
   AppResetPasswordRoute: typeof AppResetPasswordRoute
@@ -1001,6 +1021,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppFindTutorRoute: AppFindTutorRoute,
   AppLibraryRoute: AppLibraryRoute,
   AppMatchesRoute: AppMatchesRoute,
+  AppMessagesRoute: AppMessagesRoute,
   AppPrivacyRoute: AppPrivacyRoute,
   AppQuizRoute: AppQuizRoute,
   AppResetPasswordRoute: AppResetPasswordRoute,

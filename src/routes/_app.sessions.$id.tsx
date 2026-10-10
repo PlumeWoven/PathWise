@@ -12,6 +12,7 @@ import {
   formatPrice,
 } from "../pathwise/sessions";
 import { SessionStateTracker } from "../pathwise/SessionStateTracker";
+import { useStartConversation } from "../pathwise/Inbox";
 
 export const Route = createFileRoute("/_app/sessions/$id")({
   head: () => ({ meta: [{ title: "Session — PathWise" }] }),
@@ -43,6 +44,7 @@ interface SessionRow {
 function SessionDetail() {
   const { id } = Route.useParams();
   const { user } = useAuth();
+  const startConversation = useStartConversation();
   const navigate = useNavigate();
   const [session, setSession] = useState<SessionRow | null>(null);
   const [tutor, setTutor] = useState<{
@@ -275,6 +277,17 @@ function SessionDetail() {
 
         {/* Actions */}
         <div className="mt-4 flex flex-wrap gap-2">
+          {(isTutor || isStudent) && (
+            <button
+              onClick={() => {
+                const other = isStudent ? session.tutor_id : session.student_id;
+                if (other) startConversation(other);
+              }}
+              className="pw-btn-outline px-4 py-2 order-last"
+            >
+              Message {isStudent ? "tutor" : "student"}
+            </button>
+          )}
           <button
             onClick={handleJoin}
             disabled={!canJoin}
