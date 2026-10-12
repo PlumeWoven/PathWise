@@ -256,8 +256,9 @@ function BookPage() {
       }
     }
 
+    // Outside the try so the catch can undo a series that failed part-way.
+    const createdIds: string[] = [];
     try {
-      const createdIds: string[] = [];
       for (let i = 0; i < recurrenceInstances.length; i++) {
         const start = recurrenceInstances[i];
         const end = new Date(start.getTime() + duration * 60 * 1000);
@@ -332,7 +333,25 @@ function BookPage() {
           toast.info("Your original session is unchanged.");
         }
       }
-      toast.error(err instanceof Error ? err.message : "Could not complete booking");
+      if (createdIds.length) {
+        // A series is all-or-nothing: cancel the sessions already created, so a
+        // retry doesn't leave duplicates the student never saw confirmed.
+        const { error: undoErr } = await supabase
+          .from("sessions")
+          .update({
+            status_v2: "cancelled",
+            cancellation_reason: "Series booking failed",
+            cancelled_by: user.id,
+          })
+          .in("id", createdIds);
+        toast.error(
+          undoErr
+            ? `Session ${createdIds.length + 1} of ${recurrenceInstances.length} couldn't be booked, and ${createdIds.length} earlier one${createdIds.length === 1 ? " is" : "s are"} still booked. Please check My sessions.`
+            : `Session ${createdIds.length + 1} of ${recurrenceInstances.length} couldn't be booked, so none of the series was booked. Pick another start time.`,
+        );
+      } else {
+        toast.error(err instanceof Error ? err.message : "Could not complete booking");
+      }
       // Refresh availability after a slot collision
       const { data: booked } = await supabase
         .from("sessions")
