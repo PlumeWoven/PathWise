@@ -21,7 +21,7 @@ export function DemoBanner() {
             No signup. Explore the full tutor & student experience with sample data.
           </p>
           <div className="mt-2 flex gap-2 sm:mt-3">
-            <Link to="/pathwise/demo" className="pw-btn-primary px-3 py-1.5">
+            <Link to="/pathwise/demo" className="pw-btn-primary px-3 py-1.5 max-sm:min-h-11">
               Try Demo Mode →
             </Link>
             <button
@@ -29,7 +29,7 @@ export function DemoBanner() {
                 localStorage.setItem("pw-demo-banner-hidden", "1");
                 setHidden(true);
               }}
-              className="label-caps text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors px-2"
+              className="label-caps min-h-11 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors px-2"
             >
               Dismiss
             </button>

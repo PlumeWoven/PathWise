@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../pathwise/auth";
@@ -7,9 +7,12 @@ import { VerificationBadge, statusToTier } from "../pathwise/VerificationBadge";
 import { supabase } from "@/integrations/supabase/client";
 import { Icon } from "@/components/Icon";
 
+// Verification renders inside DashboardShell at /dashboard/settings/verification.
+// Kept as a redirect so existing links and bookmarks still land there.
 export const Route = createFileRoute("/_app/settings/verification")({
-  head: () => ({ meta: [{ title: "Verification Center — PathWise" }] }),
-  component: VerificationCenter,
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard/settings/verification", replace: true });
+  },
 });
 
 /**
@@ -29,9 +32,9 @@ export function VerificationCenter() {
   if (loading || !profile) {
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <main className="px-5 sm:px-8 py-20 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
+        <div className="py-20 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
           Loading…
-        </main>
+        </div>
       </div>
     );
   }
@@ -60,7 +63,7 @@ export function VerificationCenter() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="max-w-3xl mx-auto px-5 sm:px-8 py-10">
+      <div className="max-w-3xl mx-auto py-10">
         <div className="label-caps text-[var(--pw-ink-2)]">Settings</div>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="font-display text-[2.25rem] uppercase tracking-[-0.025em] leading-none">
@@ -118,7 +121,7 @@ export function VerificationCenter() {
             ← Back to dashboard
           </Link>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

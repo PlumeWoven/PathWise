@@ -137,7 +137,7 @@ export function MatchCard({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="mt-3 label-caps text-pw-accent hover:underline underline-offset-2"
+            className="mt-1 min-h-11 inline-flex items-center label-caps text-pw-accent hover:underline underline-offset-2"
             aria-expanded={open}
           >
             {open ? "Hide" : "Show"} match breakdown
@@ -154,7 +154,8 @@ export function MatchCard({
         </div>
 
         {/* Right column */}
-        <div className="sm:text-right sm:w-44 flex sm:flex-col items-start sm:items-end gap-2 justify-between">
+        {/* Phones: price above a 2-column button grid (the 3 buttons beside the price overflowed 375px). */}
+        <div className="sm:text-right sm:w-44 flex flex-col sm:items-end gap-2 justify-between">
           <div>
             <div className="font-display text-[1.375rem] leading-none">
               {formatPrice(t.hourly_rate)}
@@ -169,7 +170,7 @@ export function MatchCard({
               <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-0.5">First session free</div>
             )}
           </div>
-          <div className="flex sm:flex-col gap-2 w-full sm:w-auto">
+          <div className="grid grid-cols-2 sm:flex sm:flex-col gap-2 w-full sm:w-auto">
             <button onClick={() => onView?.(t.id)} className="pw-btn-outline px-4 py-2 flex-1">
               View profile
             </button>
@@ -177,7 +178,10 @@ export function MatchCard({
               Book trial
             </button>
             {onMessage && (
-              <button onClick={() => onMessage(t.id)} className="pw-btn-outline px-4 py-2 flex-1">
+              <button
+                onClick={() => onMessage(t.id)}
+                className="pw-btn-outline px-4 py-2 flex-1 col-span-2"
+              >
                 Message
               </button>
             )}

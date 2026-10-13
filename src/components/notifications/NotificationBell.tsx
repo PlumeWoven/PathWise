@@ -165,7 +165,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
                 {notif.message && (
                   <div className="text-xs text-[var(--pw-ink-2)] mt-0.5">{notif.message}</div>
                 )}
-                <div className="text-[0.625rem] text-[var(--pw-ink-3)] mt-1">
+                <div className="text-xs text-[var(--pw-ink-3)] mt-1">
                   {formatDistanceToNow(new Date(notif.created_at), {
                     addSuffix: true,
                   })}

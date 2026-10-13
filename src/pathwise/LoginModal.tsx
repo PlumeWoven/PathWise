@@ -317,7 +317,7 @@ export function LoginModal() {
                     setError("");
                     setInfo("");
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -328,7 +328,7 @@ export function LoginModal() {
                     setError("");
                     setInfo("");
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Create account
                 </button>
@@ -393,7 +393,7 @@ export function LoginModal() {
                     setInfo("");
                     setShowConfirmation(false);
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Sign in
                 </button>
@@ -419,7 +419,7 @@ export function LoginModal() {
                     setError("");
                     setInfo("");
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Back to sign in
                 </button>

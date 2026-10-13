@@ -69,7 +69,7 @@ export function ThemeToggle() {
           : "Turn the lights off (switch to dark mode)"
       }
       aria-pressed={!isDark}
-      className="relative grid h-9 w-9 place-items-center border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+      className="relative grid h-9 w-9 place-items-center border after:absolute after:-inset-1 after:content-[''] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       style={{
         borderColor: "var(--pw-border)",
         backgroundColor: "var(--pw-surface)",

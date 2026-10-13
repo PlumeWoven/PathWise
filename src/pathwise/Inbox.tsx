@@ -244,7 +244,7 @@ function Conversation({
                 }}
               >
                 {m.body}
-                <div className="text-[0.625rem] text-[var(--pw-ink-2)] mt-1">
+                <div className="text-xs text-[var(--pw-ink-2)] mt-1">
                   {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
                 </div>
               </div>

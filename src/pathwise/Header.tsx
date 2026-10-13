@@ -10,32 +10,32 @@ import { Icon } from "@/components/Icon";
 // Class strings per look. Markup is shared; only these swap. PW is theme-aware (--pw-* tokens);
 // QED is the always-dark landing look (fixed qed-* tokens).
 const pwCta =
-  "label-caps inline-flex items-center border border-[var(--pw-border)] px-3 sm:px-4 py-2 text-[var(--pw-ink)] hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors";
+  "label-caps inline-flex items-center border border-[var(--pw-border)] px-3 sm:px-4 py-2 max-sm:min-h-11 text-[var(--pw-ink)] hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors";
 const PW = {
   brand:
-    "font-syne text-[0.9375rem] font-bold uppercase leading-none text-[var(--pw-ink)] after:content-['.'] after:text-pw-accent",
+    "inline-flex min-h-11 items-center font-syne text-[0.9375rem] font-bold uppercase leading-none text-[var(--pw-ink)] after:content-['.'] after:text-pw-accent",
   name: "hidden sm:inline text-[0.8125rem] text-[var(--pw-ink-2)]",
   role: "label-caps inline-flex items-center rounded-full border border-[var(--pw-border)] px-2.5 py-1 text-[var(--pw-ink-2)]",
   accent: pwCta,
-  link: "label-caps px-1 py-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
-  signOut: "label-caps text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  link: "label-caps inline-flex items-center min-h-11 px-1 py-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  signOut: "label-caps inline-flex items-center min-h-11 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
   signIn: pwCta,
   menu: "border border-[var(--pw-border)] bg-[var(--pw-bg)]",
 };
 // Landing ("/") is always dark. `dark` on the header re-scopes --pw-* tokens so ThemeToggle,
 // NotificationBell and VerificationBadge (which read them) stay legible on the dark bar.
 const cta =
-  "label-caps inline-flex items-center border border-qed-hairline px-3 sm:px-4 py-2 text-qed-ink hover:bg-qed-ink hover:text-qed-ground transition-colors";
+  "label-caps inline-flex items-center border border-qed-hairline px-3 sm:px-4 py-2 max-sm:min-h-11 text-qed-ink hover:bg-qed-ink hover:text-qed-ground transition-colors";
 const QED = {
   header:
-    "dark sticky top-0 z-40 w-full h-[3.625rem] px-5 sm:px-8 flex items-center justify-between gap-3 border-b border-qed-hairline bg-qed-ground",
+    "dark sticky top-0 z-40 w-full min-h-(--pw-header-h) px-5 sm:px-8 flex flex-wrap items-center justify-between gap-3 border-b border-qed-hairline bg-qed-ground",
   brand:
-    "font-syne text-[0.9375rem] font-bold uppercase leading-none text-qed-ink after:content-['.'] after:text-qed-amber",
+    "inline-flex min-h-11 items-center font-syne text-[0.9375rem] font-bold uppercase leading-none text-qed-ink after:content-['.'] after:text-qed-amber",
   name: "hidden sm:inline text-[0.8125rem] text-qed-ink-2",
   role: "label-caps inline-flex items-center rounded-full border border-qed-hairline px-2.5 py-1 text-qed-ink-2",
   accent: cta,
-  link: "label-caps px-1 py-2 text-qed-ink-2 hover:text-qed-amber transition-colors",
-  signOut: "label-caps text-qed-ink-2 hover:text-qed-amber transition-colors",
+  link: "label-caps inline-flex items-center min-h-11 px-1 py-2 text-qed-ink-2 hover:text-qed-amber transition-colors",
+  signOut: "label-caps inline-flex items-center min-h-11 text-qed-ink-2 hover:text-qed-amber transition-colors",
   signIn: cta,
   menu: "border border-qed-hairline bg-qed-ground",
 };
@@ -132,7 +132,12 @@ export function PWHeader() {
             </Link>
           </>
         )}
-        <Link to="/messages" search={{ thread: undefined }} className={secondary}>
+        {/* Tutors read messages inside the dashboard, same as the sidebar's link. */}
+        <Link
+          to={tutorSide ? "/dashboard/messages" : "/messages"}
+          search={{ thread: undefined }}
+          className={secondary}
+        >
           Messages
         </Link>
         {isAdmin(user.app_metadata) && (
@@ -169,7 +174,7 @@ export function PWHeader() {
         className={
           qed
             ? QED.header
-            : `sticky top-0 z-40 w-full h-[3.625rem] px-5 sm:px-8 flex items-center justify-between gap-3 border-b border-[var(--pw-border)] ${
+            : `sticky top-0 z-40 w-full min-h-(--pw-header-h) px-5 sm:px-8 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--pw-border)] ${
                 scrolled ? "bg-[var(--pw-bg)]/95 backdrop-blur-md" : "bg-[var(--pw-bg)]"
               }`
         }

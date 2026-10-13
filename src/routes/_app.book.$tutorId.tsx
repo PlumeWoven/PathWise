@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { AnimatedStepper } from "@/components/AnimatedStepper";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -440,24 +441,8 @@ function BookPage() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto">
-        {/* Progress */}
-        <div className="mt-4 flex items-center gap-2 label-caps text-[var(--pw-ink-2)]">
-          {STEPS.map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <span
-                className="rounded-full w-6 h-6 flex items-center justify-center font-mono-pw text-[0.6875rem]"
-                style={{
-                  background: i <= step ? "var(--pw-accent-fill)" : "var(--pw-surface-2)",
-                  color: i <= step ? "var(--pw-on-accent)" : "var(--pw-ink-2)",
-                }}
-              >
-                {i + 1}
-              </span>
-              <span className={i === step ? "text-[var(--pw-ink)]" : ""}>{s}</span>
-              {i < STEPS.length - 1 && <span className="w-4 h-px bg-[var(--pw-border)]" />}
-            </div>
-          ))}
-        </div>
+        {/* Progress — the shared stepper shows only the current label on phones, so it fits 375px. */}
+        <AnimatedStepper steps={[...STEPS]} currentStep={step + 1} className="mt-4" />
 
         {/* Tutor header */}
         {tutor && (

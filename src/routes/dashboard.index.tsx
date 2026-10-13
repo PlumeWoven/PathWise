@@ -645,7 +645,7 @@ function LeadFunnel({ leads }: { leads: LeadRow[] }) {
           return (
             <div key={s.key}>
               {conv != null && (
-                <div className="text-[0.625rem] text-[var(--pw-ink-2)] text-center mb-0.5">
+                <div className="text-xs text-[var(--pw-ink-2)] text-center mb-0.5">
                   ↓ {conv.toFixed(0)}% conv
                 </div>
               )}

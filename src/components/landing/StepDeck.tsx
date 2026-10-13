@@ -231,7 +231,7 @@ export function StepDeck() {
             />
           </div>
           <div className="mt-4 flex items-center justify-between">
-            <span className="label-caps text-[0.5625rem] text-qed-ink-2" aria-live="polite">
+            <span className="label-caps text-qed-ink-2" aria-live="polite">
               Step {front + 1} of {steps.length} ·{" "}
               {/* CSS, not useReducedMotion, so server and client render the same text. */}
               <span className="motion-reduce:hidden">hover to pause</span>
@@ -241,7 +241,7 @@ export function StepDeck() {
               type="button"
               onClick={() => void swap()}
               aria-label="Next step"
-              className="grid h-8 w-8 place-items-center border border-qed-hairline transition-colors hover:border-qed-amber"
+              className="relative grid h-8 w-8 place-items-center border border-qed-hairline after:absolute after:-inset-1.5 after:content-[''] transition-colors hover:border-qed-amber"
             >
               <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
             </button>

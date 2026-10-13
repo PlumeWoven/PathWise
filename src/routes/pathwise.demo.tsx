@@ -529,7 +529,7 @@ function StudentDemo() {
                   )}
                 </button>
               </div>
-              <p className="mt-2 text-[0.625rem] text-[var(--pw-ink-2)]">
+              <p className="mt-2 text-xs text-[var(--pw-ink-2)]">
                 Demo mode — payment disabled
               </p>
             </div>

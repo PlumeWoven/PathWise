@@ -44,10 +44,13 @@ export function Footer({ lit = false }: { lit?: boolean }) {
           {columns.map((col) => (
             <nav key={col.heading} aria-label={col.heading}>
               <h3 className="label-caps text-qed-ink-2">{col.heading}</h3>
-              <ul className="mt-4 space-y-3">
+              <ul className="mt-3 space-y-1">
                 {col.links.map((link) => (
                   <li key={link.to}>
-                    <Link to={link.to} className="text-sm transition-colors hover:text-qed-amber">
+                    <Link
+                      to={link.to}
+                      className="inline-flex min-h-11 items-center text-sm transition-colors hover:text-qed-amber"
+                    >
                       {link.label}
                     </Link>
                   </li>
@@ -61,23 +64,23 @@ export function Footer({ lit = false }: { lit?: boolean }) {
       <div className="h-px w-full bg-qed-hairline" />
 
       <div className="flex items-center justify-between px-6 py-4 text-qed-ink-2 md:px-24">
-        <span className="label-caps text-[0.5625rem]">
+        <span className="label-caps">
           © {new Date().getFullYear()} PathWise ·{" "}
-          <Link to="/privacy" className="hover:text-qed-amber">
+          <Link to="/privacy" className="inline-block py-3.5 -my-3.5 hover:text-qed-amber">
             Privacy
           </Link>{" "}
           /{" "}
-          <Link to="/terms" className="hover:text-qed-amber">
+          <Link to="/terms" className="inline-block py-3.5 -my-3.5 hover:text-qed-amber">
             Terms
           </Link>
         </span>
-        <span className="label-caps text-[0.5625rem]">
+        <span className="label-caps">
           Icons by{" "}
           <a
             href="https://www.streamlinehq.com"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-qed-amber"
+            className="inline-block py-3.5 -my-3.5 hover:text-qed-amber"
           >
             Streamline
           </a>

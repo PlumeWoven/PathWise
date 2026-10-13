@@ -363,7 +363,7 @@ function MatchesPage() {
       <main className="px-5 sm:px-8 pb-24 max-w-6xl mx-auto">
         <div className="mt-2">
           <div className="label-caps text-[var(--pw-ink-2)]">
-            <Link to="/find-tutor" className="underline-offset-2 hover:underline">
+            <Link to="/find-tutor" className="inline-block py-3.5 -my-3.5 underline-offset-2 hover:underline">
               Find a tutor
             </Link>
             <span className="mx-2">→</span>
@@ -401,7 +401,7 @@ function MatchesPage() {
             <select
               value={search.sort}
               onChange={(e) => updateSearch({ sort: e.target.value as SortId })}
-              className="pw-border px-3 py-1.5 text-[0.8125rem] bg-[var(--pw-surface)]"
+              className="pw-border px-3 py-1.5 max-sm:min-h-11 text-[0.8125rem] bg-[var(--pw-surface)]"
             >
               {SORTS.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -491,7 +491,7 @@ function FilterSidebar({
   onClear: () => void;
 }) {
   return (
-    <div className="pw-card p-5 space-y-5 sticky top-4">
+    <div className="pw-card p-5 space-y-5 sticky top-[calc(var(--pw-header-h)+1rem)]">
       <div className="font-display text-[1.125rem] uppercase tracking-[-0.025em]">Filters</div>
 
       <Section title="Price range">
