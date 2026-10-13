@@ -58,6 +58,10 @@ function SessionDetail() {
   const [loading, setLoading] = useState(true);
   const [reviewBody, setReviewBody] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
+  const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  // Set once the insert succeeds, so a retry after a failed close doesn't post twice.
+  const [reviewSaved, setReviewSaved] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showCancel, setShowCancel] = useState(false);
   // The cancel form doubles as "Report a problem" (→ disputed, for an admin).
@@ -209,18 +213,26 @@ function SessionDetail() {
 
   async function handleSubmitReview() {
     const s = session;
-    if (!user || !s?.tutor_id) return;
-    try {
-      await supabase.from("reviews").insert({
+    if (!user || !s?.tutor_id || reviewBusy) return;
+    setReviewBusy(true);
+    setReviewError("");
+    if (!reviewSaved) {
+      // supabase-js returns errors instead of throwing.
+      const { error } = await supabase.from("reviews").insert({
         student_id: user.id,
         tutor_id: s.tutor_id,
         rating: reviewRating,
         body: reviewBody || null,
       });
-      await doTransition("closed", { title: "Thanks for your review!" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not submit review");
+      if (error) {
+        setReviewBusy(false);
+        setReviewError("Your review wasn't saved. Your text is still here, so try again.");
+        return;
+      }
+      setReviewSaved(true);
     }
+    await doTransition("closed", { title: "Thanks for your review!" });
+    setReviewBusy(false);
   }
 
   return (
@@ -418,8 +430,17 @@ function SessionDetail() {
               className="mt-3 w-full pw-border px-3 py-2 text-sm bg-[var(--pw-surface)]"
               placeholder="Tell other students about this tutor"
             />
-            <button onClick={handleSubmitReview} className="pw-btn-primary px-4 py-2 mt-3">
-              Submit review
+            {reviewError && (
+              <p role="alert" className="mt-2 text-[0.75rem] text-[var(--pw-danger)]">
+                {reviewError}
+              </p>
+            )}
+            <button
+              onClick={handleSubmitReview}
+              disabled={reviewBusy}
+              className="pw-btn-primary px-4 py-2 mt-3 disabled:opacity-50"
+            >
+              {reviewBusy ? "Posting..." : "Submit review"}
             </button>
           </div>
         )}

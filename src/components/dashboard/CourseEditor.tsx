@@ -674,9 +674,17 @@ function Step2Content({
                   updateSection(sec.id, patch).catch((e) => toast.error(e.message));
                 }}
                 onDelete={async () => {
-                  await deleteSection(sec.id).catch((e) => toast.error(e.message));
-                  setSections((arr) => arr.filter((s) => s.id !== sec.id));
-                  setLessons((arr) => arr.filter((l) => l.section_id !== sec.id));
+                  // Deleting a section cascades to its lessons, so confirm first.
+                  const n = lessons.filter((l) => l.section_id === sec.id).length;
+                  const what = n ? ` and its ${n} lesson${n === 1 ? "" : "s"}` : "";
+                  if (!window.confirm(`Delete "${sec.title}"${what}? This can't be undone.`)) return;
+                  try {
+                    await deleteSection(sec.id);
+                    setSections((arr) => arr.filter((s) => s.id !== sec.id));
+                    setLessons((arr) => arr.filter((l) => l.section_id !== sec.id));
+                  } catch {
+                    toast.error("Couldn't delete the section. Nothing was removed.");
+                  }
                 }}
                 onAddLesson={async () => {
                   const lessonsInSec = lessons.filter((l) => l.section_id === sec.id);
@@ -692,8 +700,14 @@ function Step2Content({
                   updateLesson(id, patch).catch((e) => toast.error(e.message));
                 }}
                 onLessonDelete={async (id) => {
-                  await deleteLesson(id).catch((e) => toast.error(e.message));
-                  setLessons((arr) => arr.filter((l) => l.id !== id));
+                  const title = lessons.find((l) => l.id === id)?.title || "this lesson";
+                  if (!window.confirm(`Delete "${title}"? This can't be undone.`)) return;
+                  try {
+                    await deleteLesson(id);
+                    setLessons((arr) => arr.filter((l) => l.id !== id));
+                  } catch {
+                    toast.error("Couldn't delete the lesson. Nothing was removed.");
+                  }
                 }}
                 onLessonsReorder={async (next) => {
                   setLessons((arr) => {
@@ -782,6 +796,7 @@ function SectionCard({
         />
         <button
           onClick={onDelete}
+          aria-label={`Delete section ${section.title}`}
           className="text-[var(--pw-danger)] p-1.5 hover:bg-[var(--pw-danger)]/10"
         >
           <Trash2 className="size-4" />
@@ -897,6 +912,7 @@ function LessonCard({
         </button>
         <button
           onClick={onDelete}
+          aria-label={`Delete lesson ${lesson.title}`}
           className="text-[var(--pw-danger)] p-1 hover:bg-[var(--pw-danger)]/10"
         >
           <Trash2 className="size-3.5" />

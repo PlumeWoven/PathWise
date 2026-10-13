@@ -1,6 +1,7 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { Icon, type IconName } from "@/components/Icon";
+import { useAuth } from "@/pathwise/auth";
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/).slice(0, 2);
@@ -53,6 +54,8 @@ export function DashboardShell({
   const [open, setOpen] = useState(false);
   const items = role === "tutor" ? TUTOR_ITEMS : STUDENT_ITEMS;
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)] flex">
@@ -150,12 +153,15 @@ export function DashboardShell({
               ← Exit Demo
             </button>
           ) : (
-            <Link
-              to="/"
-              className="block text-center label-caps py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)] transition-colors"
+            <button
+              onClick={async () => {
+                await logout();
+                navigate({ to: "/" });
+              }}
+              className="block w-full text-center label-caps py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)] transition-colors"
             >
               Sign out
-            </Link>
+            </button>
           )}
         </div>
       </aside>

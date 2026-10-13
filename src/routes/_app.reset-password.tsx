@@ -21,18 +21,38 @@ function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // The link can fail: expired, already used, or opened in a different
+  // browser than the one that requested it (PKCE keeps the verifier there).
+  const [linkFailed, setLinkFailed] = useState(false);
+  const [email, setEmail] = useState("");
 
-  // Supabase parses the recovery token from the URL hash and emits a
-  // PASSWORD_RECOVERY event. We just wait until a session is available.
+  // Supabase exchanges the recovery code from the URL and emits a
+  // PASSWORD_RECOVERY event. getSession() resolves only after that exchange,
+  // so "no session" there means the link didn't work.
   useEffect(() => {
+    if (/[?&#]error(_code)?=/.test(window.location.href)) setLinkFailed(true);
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) setReady(true);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setReady(true);
+      else setLinkFailed(true);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  async function handleResend(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    setSubmitting(true);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (err) setError(err.message);
+    else setInfo("New link sent. Open it in this browser.");
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -66,7 +86,45 @@ function ResetPasswordPage() {
           Choose a new password for your PathWise account.
         </p>
 
-        {!ready ? (
+        {!ready && linkFailed ? (
+          <form onSubmit={handleResend} className="mt-6 space-y-3">
+            <p role="alert" className="text-[0.875rem]">
+              This reset link has expired, was already used, or was opened in a different
+              browser. Enter your email and we'll send a new one.
+            </p>
+            <div>
+              <label htmlFor="reset-email" className="label-caps text-[var(--pw-ink-2)]">
+                Email
+              </label>
+              <input
+                id="reset-email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pw-input mt-1 text-[0.875rem]"
+              />
+            </div>
+            {error && (
+              <div className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
+                {error}
+              </div>
+            )}
+            {info && (
+              <div className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
+                {info}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 disabled:opacity-50"
+            >
+              {submitting ? "Sending..." : "Send a new link"}
+            </button>
+          </form>
+        ) : !ready ? (
           <div className="mt-8 text-[0.875rem] text-[var(--pw-ink-2)]">
             Verifying your reset link...
           </div>

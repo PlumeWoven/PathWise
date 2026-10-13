@@ -98,3 +98,12 @@ Every node in the graph has:
 - **DFS** (`--dfs`): Best for "trace the flow from X to Y" — deep path
 - **Budget** (`--budget 500`): Cap answer length for quick responses
 - **Path**: `graphify path "ComponentA" "ComponentB"` — shortest path between two nodes
+
+## 🎨 Design skills (UI work)
+
+Vendored in `.agents/skills/`, linked into `.claude/skills/` so Claude Code loads them:
+
+- **apple-hig**: design review against Apple's HIG. Its 5 lenses and report format are used for audits. PathWise is a web app, so it applies principles + foundations, not native conventions.
+- **apple-design**: Apple's fluid-interface rules for the web (springs, response, materials, type, reduced motion). Use when building or changing motion and interaction.
+
+Latest audit: `docs/audits/apple-design-2026-10-12/`.
