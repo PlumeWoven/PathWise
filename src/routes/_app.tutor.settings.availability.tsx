@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -7,14 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES, detectTimezone } from "../pathwise/scheduling";
 import { Globe, Clock, Copy, Save, AlertTriangle } from "lucide-react";
 
+// Availability renders inside DashboardShell at /dashboard/calendar.
+// Kept as a redirect so existing links and bookmarks still land there.
 export const Route = createFileRoute("/_app/tutor/settings/availability")({
-  head: () => ({
-    meta: [
-      { title: "Availability — PathWise" },
-      { name: "description", content: "Set your weekly availability, buffer time, and time off." },
-    ],
-  }),
-  component: AvailabilityPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard/calendar", replace: true });
+  },
 });
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -237,7 +235,7 @@ export function AvailabilityPage() {
   if (!isLoggedIn) {
     return (
       <div className="bg-[var(--pw-bg)]">
-        <main className="max-w-md mx-auto px-5 py-12 text-center">
+        <div className="max-w-md mx-auto py-12 text-center">
           <h1 className="font-display text-2xl uppercase tracking-[-0.025em] leading-none">
             Sign in required
           </h1>
@@ -245,7 +243,7 @@ export function AvailabilityPage() {
           <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline mt-4 px-4 py-2">
             Home
           </button>
-        </main>
+        </div>
       </div>
     );
   }
@@ -256,7 +254,7 @@ export function AvailabilityPage() {
       onMouseUp={() => (dragMode.current = null)}
       onMouseLeave={() => (dragMode.current = null)}
     >
-      <main className="px-5 sm:px-8 py-6 max-w-5xl mx-auto pb-24">
+      <div className="py-6 max-w-5xl mx-auto pb-24">
         <div className="flex items-baseline justify-between flex-wrap gap-3">
           <div>
             <h1 className="font-display text-3xl uppercase tracking-[-0.025em] leading-none">
@@ -415,7 +413,7 @@ export function AvailabilityPage() {
         </motion.div>
 
         {loading && <p className="text-sm text-[var(--pw-ink-2)] mt-4">Loading…</p>}
-      </main>
+      </div>
     </div>
   );
 }

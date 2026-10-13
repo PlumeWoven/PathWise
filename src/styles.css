@@ -128,7 +128,7 @@ body,
 @utility label-caps {
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  font-size: 0.6562rem;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -139,6 +139,8 @@ body,
 
 :root {
   --radius: 0px;
+  /* Height of the sticky site header; sticky bars below it offset by this. */
+  --pw-header-h: 3.625rem;
   /* QED light variant: paper ground, ink #0a0c0e, same amber/teal.
      Every token used as TEXT is >= 4.5:1 on bg, surface and surface-2 (checked with a WCAG
      script). --pw-accent / --pw-accent-2 / --pw-secondary are therefore darker here than the
@@ -474,7 +476,7 @@ textarea.bg-white {
   background-color: var(--pw-ink);
   color: var(--pw-bg);
   border-radius: 0;
-  font-size: 0.7188rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -497,7 +499,7 @@ textarea.bg-white {
   padding: 0.875rem 1.75rem;
   border: 1px solid var(--pw-border);
   border-radius: 0;
-  font-size: 0.7188rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -516,7 +518,7 @@ textarea.bg-white {
    and padding live in `@layer components`; only radius + type are forced here. */
 .pw-pill {
   border-radius: 9999px;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -531,7 +533,7 @@ textarea.bg-white {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0;
-  font-size: 0.7188rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -580,7 +582,7 @@ textarea.bg-white {
   padding: 0.25rem 0.625rem;
   border: 1px solid var(--pw-border);
   border-radius: 9999px;
-  font-size: 0.6562rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -695,13 +697,23 @@ textarea.bg-white {
     border: 1px solid var(--pw-accent);
   }
 
+  /* Phones: every PathWise button is at least a 44px tap target (HIG default; it was ~38px). */
+  @media (width < 40rem) {
+    .pw-btn-primary,
+    .pw-btn-secondary,
+    .pw-btn-outline {
+      min-height: 2.75rem;
+      align-content: center; /* centers text in non-flex (inline-block) links too */
+    }
+  }
+
   /* Outline button = QED secondary: square, hairline, ink text, label-caps; border to ink on hover. */
   .pw-btn-outline {
     background: transparent;
     color: var(--pw-ink);
     border: 1px solid var(--pw-border);
     border-radius: 0;
-    font-size: 0.7188rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;

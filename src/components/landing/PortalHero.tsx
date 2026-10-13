@@ -37,7 +37,7 @@ export function PortalHero() {
   return (
     <section ref={ref} className="relative h-[250vh] motion-reduce:h-[calc(100svh_-_3.625rem)]">
       {/* 58px = sticky site header; the stage sits below it so nothing is cut off. */}
-      <div className="sticky top-[3.625rem] h-[calc(100svh_-_3.625rem)] w-full overflow-hidden isolate">
+      <div className="sticky top-(--pw-header-h) h-[calc(100svh-var(--pw-header-h))] w-full overflow-hidden isolate">
         <motion.img
           src={HERO_IMG}
           srcSet={HERO_SRCSET}

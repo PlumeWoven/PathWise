@@ -22,7 +22,7 @@ export function UnverifiedBanner() {
           Verification takes 1–2 minutes. Upload a government ID and a quick selfie.
         </div>
       </div>
-      <Link to="/settings/verification" className="pw-btn-primary px-4 py-2">
+      <Link to="/dashboard/settings/verification" className="pw-btn-primary px-4 py-2">
         Get verified →
       </Link>
     </div>

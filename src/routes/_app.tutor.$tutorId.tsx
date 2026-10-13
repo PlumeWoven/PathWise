@@ -759,7 +759,7 @@ function TutorProfilePage() {
         </div>
 
         {/* Sticky right rail */}
-        <aside className="space-y-5 lg:sticky lg:top-6 self-start">
+        <aside className="space-y-5 lg:sticky lg:top-[calc(var(--pw-header-h)+1.5rem)] self-start">
           {/* Social proof */}
           {studentCount > 0 && (
             <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-5 text-center">
@@ -885,7 +885,8 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`label-caps px-2.5 py-1 rounded-full border transition-colors ${
+      aria-pressed={active}
+      className={`label-caps px-2.5 py-1 max-sm:min-h-11 max-sm:px-3 rounded-full border transition-colors ${
         active
           ? "bg-[var(--pw-ink)] text-[var(--pw-bg)] border-[var(--pw-ink)]"
           : "border-[var(--pw-border)] text-[var(--pw-ink-2)] hover:border-[var(--pw-ink)] hover:text-[var(--pw-ink)]"

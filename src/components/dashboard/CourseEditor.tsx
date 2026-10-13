@@ -255,7 +255,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="max-w-5xl mx-auto px-5 sm:px-8 pb-20">
+      <div className="max-w-5xl mx-auto pb-20">
         <div className="flex items-center justify-between gap-3 mb-4">
           <Link
             to="/dashboard/courses"
@@ -361,7 +361,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
             ) : null}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

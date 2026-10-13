@@ -345,11 +345,11 @@ function PublicCoursePage() {
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-8 pb-12 text-[var(--pw-ink)]">
           {/* Breadcrumb */}
           <nav className="text-[0.75rem] text-[var(--pw-ink-2)] flex items-center gap-1.5 flex-wrap">
-            <Link to="/" className="hover:text-pw-accent transition-colors">
+            <Link to="/" className="inline-block py-3.5 -my-3.5 hover:text-pw-accent transition-colors">
               Home
             </Link>
             <ChevronRight className="size-3" />
-            <Link to="/find-tutor" className="hover:text-pw-accent transition-colors">
+            <Link to="/find-tutor" className="inline-block py-3.5 -my-3.5 hover:text-pw-accent transition-colors">
               Courses
             </Link>
             {course.category && (
@@ -390,7 +390,7 @@ function PublicCoursePage() {
                 <Link
                   to="/tutor/$tutorId"
                   params={{ tutorId: tutor.id }}
-                  className="mt-4 inline-flex items-center gap-2 text-[0.8125rem] text-[var(--pw-ink)] hover:text-pw-accent transition-colors"
+                  className="mt-4 inline-flex min-h-11 items-center gap-2 text-[0.8125rem] text-[var(--pw-ink)] hover:text-pw-accent transition-colors"
                 >
                   {tutor.avatar_url ? (
                     <img
@@ -432,7 +432,8 @@ function PublicCoursePage() {
                 <button
                   onClick={toggleWishlist}
                   aria-label="Add to wishlist"
-                  className="size-10 grid place-items-center border border-[var(--pw-border)] hover:border-[var(--pw-ink)] transition-colors"
+                  aria-pressed={wishlisted}
+                  className="size-10 max-sm:size-11 grid place-items-center border border-[var(--pw-border)] hover:border-[var(--pw-ink)] transition-colors"
                 >
                   <Heart
                     className={`size-4 ${wishlisted ? "fill-[var(--pw-accent)] text-[var(--pw-accent)]" : ""}`}
@@ -442,7 +443,7 @@ function PublicCoursePage() {
             </div>
 
             {/* Sidebar card (desktop sticky) */}
-            <aside className="hidden lg:block sticky top-6">
+            <aside className="hidden lg:block sticky top-[calc(var(--pw-header-h)+1.5rem)]">
               <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] text-[var(--pw-ink)] overflow-hidden">
                 {course.thumbnail_url ? (
                   <img
@@ -616,7 +617,7 @@ function PublicCoursePage() {
                         <Link
                           to="/tutor/$tutorId"
                           params={{ tutorId: tutor.id }}
-                          className="label-caps text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors mt-2 inline-block"
+                          className="label-caps text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors mt-2 inline-flex min-h-11 items-center"
                         >
                           View full profile →
                         </Link>
@@ -873,14 +874,15 @@ function PublicCoursePage() {
               </span>
             )}
           </div>
-          <div className="text-[0.625rem] text-[var(--pw-ink-2)] mt-1 flex items-center gap-1">
+          <div className="text-xs text-[var(--pw-ink-2)] mt-1 flex items-center gap-1">
             <ShieldCheck className="size-3 text-[var(--pw-accent-2)]" /> 14-day refund
           </div>
         </div>
         <button
           onClick={toggleWishlist}
-          aria-label="Wishlist"
-          className="size-10 grid place-items-center border border-[var(--pw-border)]"
+          aria-label="Add to wishlist"
+          aria-pressed={wishlisted}
+          className="size-10 max-sm:size-11 grid place-items-center border border-[var(--pw-border)]"
         >
           <Heart
             className={`size-4 ${wishlisted ? "fill-[var(--pw-accent)] text-[var(--pw-accent)]" : ""}`}

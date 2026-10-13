@@ -1,5 +1,5 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Icon, type IconName } from "@/components/Icon";
 import { useAuth } from "@/pathwise/auth";
 
@@ -56,18 +56,24 @@ export function DashboardShell({
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const isActive = (item: Item) =>
+    activeKey
+      ? activeKey === item.key
+      : item.to
+        ? pathname === item.to || pathname.startsWith(item.to + "/")
+        : false;
+  const current = items.find(isActive)?.label ?? "Dashboard";
+
+  // Below lg the sidebar is a drawer: Esc closes it, like the backdrop and the × button.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
   return (
     <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)] flex">
-      {/* Mobile toggle */}
-      <button
-        aria-label="Open menu"
-        onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-50 w-10 h-10 pw-card p-0 flex items-center justify-center"
-      >
-        <Icon name="menu" label="Toggle menu" />
-      </button>
-
       {/* Backdrop */}
       {open && (
         <div
@@ -77,9 +83,11 @@ export function DashboardShell({
       )}
 
       {/* Sidebar – removed duplicate logo, solid background */}
+      {/* Closed below lg it is also invisible, so its links leave the Tab order. */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-[16.25rem] shrink-0 flex flex-col border-r border-[var(--pw-border)] bg-[var(--pw-bg)] transition-transform ${
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        id="dashboard-nav"
+        className={`fixed lg:sticky top-0 left-0 z-40 h-screen w-[16.25rem] shrink-0 flex flex-col border-r border-[var(--pw-border)] bg-[var(--pw-bg)] transition-[transform,visibility] ${
+          open ? "translate-x-0" : "-translate-x-full max-lg:invisible lg:translate-x-0"
         }`}
       >
         {/* User profile (now at the top) */}
@@ -96,20 +104,23 @@ export function DashboardShell({
               <div className="text-[0.6875rem] text-[var(--pw-ink-2)] truncate">{user.subtitle}</div>
             )}
           </div>
+          <button
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+            className="lg:hidden ml-auto -mr-2 grid size-11 shrink-0 place-items-center text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)]"
+          >
+            <Icon name="close" className="h-3.5 w-3.5" />
+          </button>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto">
           {items.map((item) => {
-            const isActive = activeKey
-              ? activeKey === item.key
-              : item.to
-                ? pathname === item.to || pathname.startsWith(item.to + "/")
-                : false;
-            const className = `pw-nav-item relative border-b border-[var(--pw-border)] ${isActive ? "is-active" : ""}`;
+            const active = isActive(item);
+            const className = `pw-nav-item relative border-b border-[var(--pw-border)] ${active ? "is-active" : ""}`;
             const inner = (
               <>
-                {isActive && (
+                {active && (
                   <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-[var(--pw-accent)]" />
                 )}
                 <Icon name={item.icon} className="h-4 w-4" />
@@ -169,7 +180,21 @@ export function DashboardShell({
       {/* Main */}
       <div className="flex-1 min-w-0">
         {banner}
-        <main className="px-5 sm:px-8 pt-14 lg:pt-6 pb-24 max-w-7xl mx-auto">{children}</main>
+        {/* Below lg: the drawer opens from here, in the page flow (it used to be a fixed
+            button covering the header's logo). Its label says which section you're in. */}
+        <div className="lg:hidden px-5 sm:px-8 pt-4">
+          <button
+            onClick={() => setOpen(true)}
+            aria-expanded={open}
+            aria-controls="dashboard-nav"
+            className="pw-pill min-h-11 px-3 inline-flex items-center gap-2"
+          >
+            <Icon name="menu" className="h-4 w-4" />
+            {current}
+            <span className="sr-only">, open dashboard menu</span>
+          </button>
+        </div>
+        <main className="px-5 sm:px-8 pt-6 pb-24 max-w-7xl mx-auto">{children}</main>
       </div>
     </div>
   );

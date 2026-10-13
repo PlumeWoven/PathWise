@@ -140,7 +140,7 @@ function FindTutorPageInner() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       {/* Progress bar */}
-      <div className="sticky top-0 z-30 bg-[var(--pw-bg)]/90 backdrop-blur border-b border-[var(--pw-border)]">
+      <div className="sticky top-(--pw-header-h) z-30 bg-[var(--pw-bg)]/90 backdrop-blur border-b border-[var(--pw-border)]">
         <div className="max-w-2xl mx-auto px-5 py-3">
           <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
             <span>{isResults ? "Your profile" : `Question ${step + 1} of ${totalQ}`}</span>
