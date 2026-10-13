@@ -591,7 +591,8 @@ function Q8({
         .select("id", { count: "exact", head: true })
         .in("role", ["tutor", "both"])
         .eq("verification_status", "verified")
-        .lte("hourly_rate", value);
+        // The top stop means "1000 MDL or more", so it has no upper bound.
+        .lte("hourly_rate", value >= 1000 ? Number.MAX_SAFE_INTEGER : value);
       if (!cancelled) setCount(c ?? 0);
     })();
     return () => {
@@ -604,8 +605,9 @@ function Q8({
       <Heading kicker="08" title="What's your budget per hour?" />
       <div className="mt-10 px-2">
         <div className="text-center font-display text-[3.5rem]" style={{ color: "var(--pw-accent)" }}>
+          <span className="text-[1rem] text-[var(--pw-ink-2)] mr-1">up to</span>
           {formatPrice(value)}
-          {value >= 150 ? "+" : ""}
+          {value >= 1000 ? "+" : ""}
           <span className="text-[1rem] text-[var(--pw-ink-2)] ml-1">/hr</span>
         </div>
         <input
@@ -620,8 +622,8 @@ function Q8({
           className="mt-6 w-full accent-[var(--pw-accent)]"
         />
         <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
-          <span>$15</span>
-          <span>$150+</span>
+          <span>{formatPrice(100)}</span>
+          <span>{formatPrice(1000)}+</span>
         </div>
         <motion.div
           key={count ?? -1}

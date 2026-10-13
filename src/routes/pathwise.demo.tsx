@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { StarIcon } from "lucide-react";
 import { Icon } from "@/components/Icon";
+import { formatPrice } from "../pathwise/sessions";
 import { DashboardShell } from "../components/dashboard/TutorSidebar";
 import { DemoProvider, useDemo } from "../pathwise/DemoContext";
 import { ExitDemoModal } from "../pathwise/ExitDemoModal";
@@ -279,7 +280,7 @@ function TutorDemo() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi label="Total earnings" value={`€${totalEarnings.toLocaleString()}`} delta="+18% MoM" />
+        <Kpi label="Total earnings" value={formatPrice(totalEarnings)} delta="+18% MoM" />
         <Kpi label="Active students" value={String(tutor.students)} delta="+12 this month" />
         <Kpi
           label="Avg rating"
@@ -295,7 +296,7 @@ function TutorDemo() {
           <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">
             Earnings · last 12 months
           </h2>
-          <span className="text-[0.75rem] text-[var(--pw-ink-2)]">€ MDL equivalent</span>
+          <span className="text-[0.75rem] text-[var(--pw-ink-2)]">MDL</span>
         </div>
         <div className="mt-5 flex items-end gap-2 h-40">
           {earnings.map((v, i) => (
@@ -303,7 +304,7 @@ function TutorDemo() {
               <div
                 className="w-full bg-pw-accent-fill transition-opacity hover:opacity-80"
                 style={{ height: `${(v / max) * 100}%` }}
-                title={`€${v}`}
+                title={formatPrice(v)}
               />
               <span className="label-caps text-[var(--pw-ink-2)]">
                 {["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"][i]}
@@ -502,13 +503,13 @@ function StudentDemo() {
                 <div className="flex items-baseline gap-2">
                   {c.discount ? (
                     <>
-                      <span className="font-display text-[1.25rem]">€{c.discount}</span>
+                      <span className="font-display text-[1.25rem]">{formatPrice(c.discount)}</span>
                       <span className="text-[0.75rem] text-[var(--pw-ink-2)] line-through">
-                        €{c.price}
+                        {formatPrice(c.price)}
                       </span>
                     </>
                   ) : (
-                    <span className="font-display text-[1.25rem]">€{c.price}</span>
+                    <span className="font-display text-[1.25rem]">{formatPrice(c.price)}</span>
                   )}
                 </div>
                 <button

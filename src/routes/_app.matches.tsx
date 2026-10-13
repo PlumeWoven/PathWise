@@ -74,6 +74,9 @@ function MatchesPage() {
   const startConversation = useStartConversation();
 
   const [tutors, setTutors] = useState<TutorRow[]>([]);
+  // Set when no tutor teaches the chosen subject and we show every verified tutor instead,
+  // so the heading can say so rather than claim they matched the learning profile.
+  const [fallbackSubject, setFallbackSubject] = useState<string | null>(null);
   const [reviewsByTutor, setReviewsByTutor] = useState<Map<string, { avg: number; count: number }>>(
     new Map(),
   );
@@ -151,7 +154,9 @@ function MatchesPage() {
         // If the subject filter returns nothing (no tutors have that specialty yet),
         // re-fetch without the filter so the page is never empty during early growth.
         let tutorRows = (tutorsRes.data ?? []) as unknown as TutorRow[];
+        setFallbackSubject(null);
         if (tutorRows.length === 0 && effectiveSubject) {
+          setFallbackSubject(effectiveSubject);
           const { data: fallback } = await supabase
             .from("profiles")
             .select(
@@ -370,9 +375,19 @@ function MatchesPage() {
             Your matches
           </div>
           <h1 className="font-display text-[1.75rem] sm:text-[2.125rem] leading-tight mt-2">
-            We found{" "}
-            <span style={{ color: "var(--pw-accent)" }}>{loading ? "…" : sorted.length}</span>{" "}
-            {sorted.length === 1 ? "tutor" : "tutors"} based on your learning profile
+            {fallbackSubject && !loading ? (
+              <>
+                No {fallbackSubject} tutors yet. Here are all{" "}
+                <span style={{ color: "var(--pw-accent)" }}>{sorted.length}</span> verified{" "}
+                {sorted.length === 1 ? "tutor" : "tutors"}
+              </>
+            ) : (
+              <>
+                We found{" "}
+                <span style={{ color: "var(--pw-accent)" }}>{loading ? "…" : sorted.length}</span>{" "}
+                {sorted.length === 1 ? "tutor" : "tutors"} based on your learning profile
+              </>
+            )}
           </h1>
           <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-2xl">
             Each card shows a match score (Learning Style 30%, Subject 25%, Availability 20%, Budget

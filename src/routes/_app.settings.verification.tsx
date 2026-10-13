@@ -72,7 +72,7 @@ export function VerificationCenter() {
           <VerificationBadge tier={tier} size="lg" />
         </div>
         <p className="mt-2 text-[0.9375rem] text-[var(--pw-ink-2)]">
-          Only verified tutors appear in search and can be booked by new students.
+          Only verified tutors appear in student matches and can take bookings.
         </p>
 
         <div className="mt-8 space-y-4">

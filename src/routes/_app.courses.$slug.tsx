@@ -34,22 +34,22 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
+// Shown on every course and published as FAQ structured data, so every answer must
+// match the Terms ("Payments during the beta"): PathWise takes no payments and refunds
+// are agreed between student and tutor. (It used to promise a 14-day refund, lifetime
+// access and automatic certificates.)
 const DEFAULT_FAQ = [
   {
-    q: "Do I get lifetime access?",
-    a: "Yes — once enrolled you can revisit any lesson at any time.",
+    q: "How do I pay?",
+    a: "You pay your tutor directly, in whatever way you agree together. PathWise doesn't take payments during the beta.",
   },
   {
-    q: "Is there a money-back guarantee?",
-    a: "We offer a 14-day no-questions-asked refund on every paid course.",
-  },
-  {
-    q: "Will I receive a certificate?",
-    a: "Certificates are issued automatically when the certificate option is enabled by the tutor.",
+    q: "What if I need a refund?",
+    a: "You and your tutor agree any refund between you. See the Terms for details.",
   },
   {
     q: "Can I message the tutor?",
-    a: "Yes — enrolled students can start a thread directly with their tutor from the dashboard.",
+    a: "Yes. Open the tutor's profile and tap Message.",
   },
 ];
 
@@ -426,9 +426,11 @@ function PublicCoursePage() {
 
               {/* CTAs (mobile-visible duplicates) */}
               <div className="mt-6 flex items-center gap-3 lg:hidden">
-                <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }} className="flex-1">
-                  <Button className="w-full">Enroll Now</Button>
-                </Link>
+                <Button asChild className="flex-1">
+                  <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }}>
+                    Book a session
+                  </Link>
+                </Button>
                 <button
                   onClick={toggleWishlist}
                   aria-label="Add to wishlist"
@@ -476,9 +478,11 @@ function PublicCoursePage() {
                       </>
                     )}
                   </div>
-                  <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }}>
-                    <Button className="w-full mt-4">Enroll Now</Button>
-                  </Link>
+                  <Button asChild className="w-full mt-4">
+                    <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }}>
+                      Book a session
+                    </Link>
+                  </Button>
                   <button
                     onClick={toggleWishlist}
                     className="w-full mt-2 inline-flex items-center justify-center gap-2 h-10 border border-[var(--pw-border)] label-caps hover:border-[var(--pw-ink)] transition-colors"
@@ -490,7 +494,7 @@ function PublicCoursePage() {
                   </button>
                   <div className="mt-4 flex items-center gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
                     <ShieldCheck className="size-4 text-[var(--pw-accent-2)]" />
-                    14-day money-back guarantee
+                    Pay your tutor directly
                   </div>
                   {course.certificate_enabled && (
                     <div className="mt-2 flex items-center gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
@@ -875,7 +879,7 @@ function PublicCoursePage() {
             )}
           </div>
           <div className="text-xs text-[var(--pw-ink-2)] mt-1 flex items-center gap-1">
-            <ShieldCheck className="size-3 text-[var(--pw-accent-2)]" /> 14-day refund
+            <ShieldCheck className="size-3 text-[var(--pw-accent-2)]" /> Pay your tutor directly
           </div>
         </div>
         <button
@@ -888,9 +892,11 @@ function PublicCoursePage() {
             className={`size-4 ${wishlisted ? "fill-[var(--pw-accent)] text-[var(--pw-accent)]" : ""}`}
           />
         </button>
-        <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }} className="flex-1">
-          <Button className="w-full">Enroll Now</Button>
-        </Link>
+        <Button asChild className="flex-1">
+          <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }}>
+            Book a session
+          </Link>
+        </Button>
       </div>
     </div>
   );
