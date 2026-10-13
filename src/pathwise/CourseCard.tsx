@@ -73,39 +73,39 @@ export function CourseCard({ course }: { course: CourseCardData }) {
       {/* Top badges */}
       <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2 pointer-events-none">
         {course.category && (
-          <span className="pw-pill px-2 py-0.5 bg-[rgba(10,12,14,0.7)] text-qed-ink border border-qed-hairline">
+          <span className="pw-pill px-2 py-0 bg-[rgba(10,12,14,0.7)] text-qed-ink border border-qed-hairline">
             {course.category}
           </span>
         )}
         {course.priceFromPerHour != null && (
-          <span className="pw-pill px-2 py-0.5 bg-qed-ink text-qed-ground border border-qed-ink">
+          <span className="pw-pill px-2 py-0 bg-qed-ink text-qed-ground border border-qed-ink">
             {course.multipleFormats ? "From " : ""}${course.priceFromPerHour}/hr
           </span>
         )}
       </div>
 
       {/* Bottom gradient + content */}
-      <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-[rgba(10,12,14,0.9)] via-[rgba(10,12,14,0.6)] to-transparent text-qed-ink">
+      <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-[rgba(10,12,14,0.9)] via-[rgba(10,12,14,0.6)] to-transparent text-qed-ink">
         <h3 className="font-display font-bold uppercase text-[0.9375rem] leading-tight line-clamp-2 transition-colors group-hover:text-qed-amber">
           {course.title}
         </h3>
-        <div className="mt-1.5 flex items-center gap-2 label-caps text-qed-ink-2">
+        <div className="mt-2 flex items-center gap-2 label-caps text-qed-ink-2">
           <Avatar name={course.tutorName} src={course.tutorAvatarUrl} />
           <span className="truncate">{course.tutorName}</span>
         </div>
-        <div className="mt-1.5 flex items-center gap-3 label-caps text-qed-ink-2">
-          <span className="inline-flex items-center gap-1">
+        <div className="mt-2 flex items-center gap-4 label-caps text-qed-ink-2">
+          <span className="inline-flex items-center gap-2">
             <Star className="size-3 fill-qed-amber text-qed-amber" />
             {rating ? rating.toFixed(1) : "New"}
             {reviews > 0 && <span className="text-qed-ink-2">({reviews})</span>}
           </span>
           {course.durationMinutes && (
-            <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center gap-2">
               <Clock className="size-3" /> {course.durationMinutes}m
             </span>
           )}
           {course.studentsTaught != null && (
-            <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center gap-2">
               <Users className="size-3" /> {course.studentsTaught}
             </span>
           )}
@@ -113,11 +113,11 @@ export function CourseCard({ course }: { course: CourseCardData }) {
 
         {/* Outcomes pills */}
         {course.outcomes && course.outcomes.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="mt-2 flex flex-wrap gap-2">
             {course.outcomes.slice(0, 3).map((o, i) => (
               <span
                 key={i}
-                className="label-caps px-2 py-0.5 rounded-full border border-qed-hairline bg-[rgba(10,12,14,0.5)] text-qed-ink truncate max-w-[7.5rem]"
+                className="label-caps px-2 py-0 rounded-full border border-qed-hairline bg-[rgba(10,12,14,0.5)] text-qed-ink truncate max-w-[7.5rem]"
               >
                 {o}
               </span>
@@ -131,7 +131,7 @@ export function CourseCard({ course }: { course: CourseCardData }) {
             hover ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
           }`}
         >
-          <button className="label-caps w-full mt-1 bg-qed-ink text-qed-ground py-2 hover:bg-qed-amber transition-colors">
+          <button className="label-caps w-full mt-2 bg-qed-ink text-qed-ground py-2 hover:bg-qed-amber transition-colors">
             View Details
           </button>
         </div>

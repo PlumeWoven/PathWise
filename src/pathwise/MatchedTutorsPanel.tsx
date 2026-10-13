@@ -48,7 +48,7 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
         <div className="label-caps text-[var(--pw-ink-2)]">Your matched tutors</div>
         <h2
           id="matched-tutors-heading"
-          className="font-display font-bold uppercase tracking-[-0.025em] text-[1.25rem] leading-none mt-1"
+          className="font-display font-bold uppercase tracking-[-0.025em] text-[1.25rem] leading-none mt-2"
         >
           {tutors === null
             ? "Matching…"
@@ -57,9 +57,9 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
               : `No verified ${subject} tutors yet`}
         </h2>
         {tutors && tutors.length > 0 && (
-          <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1.5">
+          <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">
             For your next step at{" "}
-            <span className="inline-flex items-center gap-1 align-middle">
+            <span className="inline-flex items-center gap-2 align-middle">
               <Icon name={requiredMeta.icon} className="h-4 w-4" />
               {requiredMeta.label}
             </span>
@@ -69,7 +69,7 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
       </header>
 
       {tutors === null && (
-        <div className="mt-4 space-y-3" aria-hidden="true">
+        <div className="mt-4 space-y-4" aria-hidden="true">
           {[0, 1].map((i) => (
             <div key={i} className="h-16 animate-pulse" style={{ background: "var(--pw-surface-2)" }} />
           ))}
@@ -77,7 +77,7 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
       )}
 
       {tutors && tutors.length > 0 && (
-        <ul className="mt-4 space-y-3" role="list">
+        <ul className="mt-4 space-y-4" role="list">
           {tutors.map((t) => (
             <TutorRow key={t.id} tutor={t} />
           ))}
@@ -92,7 +92,7 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
           <Link
             to="/matches"
             search={{} as never}
-            className="pw-btn-outline inline-flex justify-center w-full mt-4 px-5 py-2.5"
+            className="pw-btn-outline inline-flex justify-center w-full mt-4 px-6 py-2"
           >
             See all tutors
           </Link>
@@ -105,8 +105,8 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
 function TutorRow({ tutor }: { tutor: MatchedTutor }) {
   const name = tutor.display_name || tutor.full_name || "Tutor";
   return (
-    <li className="pw-border p-3.5" style={{ background: "var(--pw-surface-2)" }}>
-      <div className="flex items-start gap-3">
+    <li className="pw-border p-4" style={{ background: "var(--pw-surface-2)" }}>
+      <div className="flex items-start gap-4">
         {tutor.avatar_url ? (
           <img src={tutor.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover shrink-0" />
         ) : (
@@ -119,33 +119,33 @@ function TutorRow({ tutor }: { tutor: MatchedTutor }) {
           </span>
         )}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <span className="font-display font-bold uppercase text-[0.875rem]">{name}</span>
             <span style={{ color: "var(--pw-accent-2)" }} title="Verified tutor" aria-label="Verified tutor">
               <Icon name="check" className="h-3 w-3 text-inherit" />
             </span>
           </div>
           {tutor.headline && (
-            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5 leading-snug">{tutor.headline}</div>
+            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0 leading-snug">{tutor.headline}</div>
           )}
-          <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-1.5">
+          <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-2">
             {formatPrice(tutor.hourly_rate)}/hr
             {tutor.first_session_free && <span style={{ color: "var(--pw-accent-2)" }}> · 1st free</span>}
           </div>
         </div>
       </div>
-      <div className="mt-3 flex gap-2">
+      <div className="mt-4 flex gap-2">
         <Link
           to="/tutor/$tutorId"
           params={{ tutorId: tutor.id }}
-          className="pw-btn-outline flex-1 text-center px-3 py-1.5"
+          className="pw-btn-outline flex-1 text-center px-4 py-2"
         >
           View profile
         </Link>
         <Link
           to="/book/$tutorId"
           params={{ tutorId: tutor.id }}
-          className="pw-btn-primary flex-1 text-center px-3 py-1.5"
+          className="pw-btn-outline flex-1 text-center px-4 py-2"
         >
           Book
         </Link>

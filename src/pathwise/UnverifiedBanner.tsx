@@ -15,7 +15,7 @@ export function UnverifiedBanner() {
 
   return (
     <div
-      className="unverified-banner mt-4 pw-card p-4 flex flex-wrap items-center gap-3 border-l-4"
+      className="unverified-banner mt-4 pw-card p-4 flex flex-wrap items-center gap-4 border-l-4"
       style={{ borderLeftColor: "var(--pw-accent)" }}
     >
       <div className="flex-1 min-w-[12.5rem]">

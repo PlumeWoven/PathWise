@@ -32,7 +32,7 @@ export function VerificationCenter() {
   if (loading || !profile) {
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <div className="py-20 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
+        <div className="py-24 max-w-md mx-auto text-center text-[0.875rem] text-[var(--pw-ink-2)]">
           Loading…
         </div>
       </div>
@@ -63,9 +63,9 @@ export function VerificationCenter() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <div className="max-w-3xl mx-auto py-10">
+      <div className="max-w-3xl mx-auto py-12">
         <div className="label-caps text-[var(--pw-ink-2)]">Settings</div>
-        <div className="mt-2 flex flex-wrap items-center gap-3">
+        <div className="mt-2 flex flex-wrap items-center gap-4">
           <h1 className="font-display text-[2.25rem] uppercase tracking-[-0.025em] leading-none">
             Verification Center
           </h1>
@@ -84,7 +84,7 @@ export function VerificationCenter() {
             actionLabel={null}
           >
             {supabaseUser?.email && (
-              <div className="text-[0.8125rem] text-[var(--pw-ink-2)] inline-flex items-center gap-1.5">
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)] inline-flex items-center gap-2">
                 {emailVerified && <Icon name="check" className="h-4 w-4" />}
                 <span className="text-[var(--pw-ink)] font-medium">{supabaseUser.email}</span>
               </div>
@@ -113,10 +113,10 @@ export function VerificationCenter() {
           </TierCard>
         </div>
 
-        <div className="mt-10">
+        <div className="mt-12">
           <Link
             to="/dashboard"
-            className="label-caps text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
+            className="text-[0.8125rem] font-semibold text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
           >
             ← Back to dashboard
           </Link>
@@ -153,7 +153,7 @@ function TierCard({
           : "var(--pw-accent)";
 
   return (
-    <div className="pw-card p-5 sm:p-6" style={{ borderLeft: `3px solid ${accent}` }}>
+    <div className="pw-card p-6 sm:p-6" style={{ borderLeft: `3px solid ${accent}` }}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -161,7 +161,7 @@ function TierCard({
               {title}
             </h3>
             <span
-              className="pw-pill px-2 py-0.5"
+              className="pw-pill px-2 py-0"
               style={{
                 color: accent,
                 background:
@@ -176,8 +176,8 @@ function TierCard({
               {statusLabel}
             </span>
           </div>
-          <p className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">{subtitle}</p>
-          {children ? <div className="mt-3">{children}</div> : null}
+          <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">{subtitle}</p>
+          {children ? <div className="mt-4">{children}</div> : null}
         </div>
         {actionLabel && onAction && (
           <button onClick={onAction} className="pw-btn-primary px-4 py-2 whitespace-nowrap">

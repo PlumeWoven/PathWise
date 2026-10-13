@@ -201,7 +201,7 @@ function AuthCallback() {
     }, [navigate]);
 
     return (
-        <div className="min-h-screen bg-[var(--pw-bg)] flex items-center justify-center px-5">
+        <div className="min-h-screen bg-[var(--pw-bg)] flex items-center justify-center px-6">
             <div className="text-center">
                 <div className="relative w-12 h-12 mx-auto">
                     <svg
@@ -224,7 +224,7 @@ function AuthCallback() {
                         />
                     </svg>
                 </div>
-                <p className="mt-5 text-[0.875rem] text-[var(--pw-ink-2)]" role="status" aria-live="polite">
+                <p className="mt-6 text-[0.875rem] text-[var(--pw-ink-2)]" role="status" aria-live="polite">
                     {message}
                 </p>
             </div>

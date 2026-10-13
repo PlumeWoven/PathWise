@@ -328,7 +328,7 @@ function MatchesPage() {
     chips.push({
       key: "rating",
       label: (
-        <span className="inline-flex items-center gap-1">
+        <span className="inline-flex items-center gap-2">
           Min {search.minRating}
           <StarIcon className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
           <span className="sr-only">stars</span>
@@ -365,10 +365,10 @@ function MatchesPage() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-6xl mx-auto">
+      <main className="px-6 sm:px-8 pb-24 max-w-6xl mx-auto">
         <div className="mt-2">
           <div className="label-caps text-[var(--pw-ink-2)]">
-            <Link to="/find-tutor" className="inline-block py-3.5 -my-3.5 underline-offset-2 hover:underline">
+            <Link to="/find-tutor" className="inline-block py-4 -my-4 underline-offset-2 hover:underline">
               Find a tutor
             </Link>
             <span className="mx-2">→</span>
@@ -395,16 +395,21 @@ function MatchesPage() {
           </p>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link to="/find-tutor" className="pw-btn-primary inline-flex items-center px-5 py-2.5">
-            Find my tutor →
+        <div className="mt-6 flex flex-wrap gap-4">
+          {/* A text link, not a filled button: the top match's "Book trial" is this view's one
+              prominent action, and this sends people back to a quiz. */}
+          <Link
+            to="/find-tutor"
+            className="inline-flex min-h-11 items-center text-[0.8125rem] font-semibold text-pw-accent underline-offset-4 hover:underline"
+          >
+            Refine matches →
           </Link>
           <span className="text-[0.75rem] text-[var(--pw-ink-2)] self-center">
             Take a 60-second quiz to refine your matches
           </span>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center gap-4">
           <button
             onClick={() => setFilterOpen((v) => !v)}
             className="lg:hidden pw-btn-outline px-4 py-2"
@@ -416,7 +421,7 @@ function MatchesPage() {
             <select
               value={search.sort}
               onChange={(e) => updateSearch({ sort: e.target.value as SortId })}
-              className="pw-border px-3 py-1.5 max-sm:min-h-11 text-[0.8125rem] bg-[var(--pw-surface)]"
+              className="pw-border px-4 py-2 max-sm:min-h-11 text-[0.8125rem] bg-[var(--pw-surface)]"
             >
               {SORTS.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -433,12 +438,12 @@ function MatchesPage() {
               <button
                 key={c.key}
                 onClick={c.clear}
-                className="pw-pill px-3 py-1 inline-flex items-center gap-1.5"
+                className="pw-pill px-4 py-2 inline-flex items-center gap-2"
               >
                 {c.label} <span className="text-[var(--pw-ink-2)]">×</span>
               </button>
             ))}
-            <button onClick={clearAll} className="label-caps text-pw-accent hover:underline ml-1">
+            <button onClick={clearAll} className="text-[0.8125rem] font-semibold text-pw-accent hover:underline ml-2">
               Clear all
             </button>
           </div>
@@ -461,8 +466,9 @@ function MatchesPage() {
             ) : (
               <>
                 <div className="space-y-4">
-                  {visibleList.map((s) => (
+                  {visibleList.map((s, i) => (
                     <MatchCard
+                      primary={i === 0}
                       key={s.tutor.id}
                       data={{
                         tutor: s.tutor,
@@ -481,7 +487,7 @@ function MatchesPage() {
                   <div className="mt-6 text-center">
                     <button
                       onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                      className="pw-btn-outline px-6 py-2.5"
+                      className="pw-btn-outline px-6 py-2"
                     >
                       Load more ({sorted.length - visible} remaining)
                     </button>
@@ -506,7 +512,7 @@ function FilterSidebar({
   onClear: () => void;
 }) {
   return (
-    <div className="pw-card p-5 space-y-5 sticky top-[calc(var(--pw-header-h)+1rem)]">
+    <div className="pw-card p-6 space-y-6 sticky top-[calc(var(--pw-header-h)+1rem)]">
       <div className="font-display text-[1.125rem] uppercase tracking-[-0.025em]">Filters</div>
 
       <Section title="Price range">
@@ -536,17 +542,17 @@ function FilterSidebar({
       </Section>
 
       <Section title="Minimum rating">
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           {[0, 3, 4, 4.5].map((r) => (
             <button
               key={r}
               onClick={() => update({ minRating: r })}
-              className={`pw-pill px-3 py-1 ${search.minRating === r ? "is-active" : ""}`}
+              className={`pw-pill px-4 py-2 ${search.minRating === r ? "is-active" : ""}`}
             >
               {r === 0 ? (
                 "Any"
               ) : (
-                <span className="inline-flex items-center gap-0.5">
+                <span className="inline-flex items-center gap-0">
                   {r}
                   <StarIcon className="h-3.5 w-3.5 fill-current" aria-hidden="true" />+
                   <span className="sr-only"> stars</span>
@@ -558,7 +564,7 @@ function FilterSidebar({
       </Section>
 
       <Section title="Vibe">
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {VIBE_TAGS.map((v) => {
             const vibes = search.vibes as string[];
             const active = vibes.includes(v);
@@ -568,7 +574,7 @@ function FilterSidebar({
                 onClick={() =>
                   update({ vibes: active ? vibes.filter((x) => x !== v) : [...vibes, v] })
                 }
-                className={`pw-pill px-3 py-1 ${active ? "is-active" : ""}`}
+                className={`pw-pill px-4 py-2 ${active ? "is-active" : ""}`}
               >
                 {v}
               </button>
@@ -599,13 +605,13 @@ function NoResults({ onClear }: { onClear: () => void }) {
       <div className="flex justify-center">
         <Icon name="search" className="h-12 w-12" />
       </div>
-      <h2 className="font-display text-[1.375rem] uppercase tracking-[-0.025em] mt-3">
+      <h2 className="font-display text-[1.375rem] uppercase tracking-[-0.025em] mt-4">
         No exact matches found
       </h2>
       <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-2 max-w-md mx-auto">
         But here's what we can do to widen your search:
       </p>
-      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md mx-auto">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md mx-auto">
         <button onClick={onClear} className="pw-btn-outline px-4 py-2">
           Clear all filters
         </button>
@@ -627,7 +633,7 @@ function NoResults({ onClear }: { onClear: () => void }) {
       </div>
       <button
         onClick={() => toast.success("Alert created — we'll notify you when matching tutors join.")}
-        className="pw-btn-primary mt-5 px-6 py-2.5"
+        className="pw-btn-primary mt-6 px-6 py-2"
       >
         Notify me when matching tutors join
       </button>

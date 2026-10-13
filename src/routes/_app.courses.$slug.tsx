@@ -342,14 +342,14 @@ function PublicCoursePage() {
           />
         )}
         <div className="absolute inset-0 bg-[var(--pw-surface-2)]" aria-hidden />
-        <div className="relative max-w-6xl mx-auto px-5 sm:px-8 pt-8 pb-12 text-[var(--pw-ink)]">
+        <div className="relative max-w-6xl mx-auto px-6 sm:px-8 pt-8 pb-12 text-[var(--pw-ink)]">
           {/* Breadcrumb */}
-          <nav className="text-[0.75rem] text-[var(--pw-ink-2)] flex items-center gap-1.5 flex-wrap">
-            <Link to="/" className="inline-block py-3.5 -my-3.5 hover:text-pw-accent transition-colors">
+          <nav className="text-[0.75rem] text-[var(--pw-ink-2)] flex items-center gap-2 flex-wrap">
+            <Link to="/" className="inline-block py-4 -my-4 hover:text-pw-accent transition-colors">
               Home
             </Link>
             <ChevronRight className="size-3" />
-            <Link to="/find-tutor" className="inline-block py-3.5 -my-3.5 hover:text-pw-accent transition-colors">
+            <Link to="/find-tutor" className="inline-block py-4 -my-4 hover:text-pw-accent transition-colors">
               Courses
             </Link>
             {course.category && (
@@ -362,25 +362,25 @@ function PublicCoursePage() {
             <span className="text-[var(--pw-ink)] truncate max-w-[40ch]">{course.title}</span>
           </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_22.5rem] gap-10 mt-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_22.5rem] gap-12 mt-6 items-start">
             <div>
               <h1 className="font-display text-3xl sm:text-5xl uppercase tracking-[-0.025em] leading-[1.1]">
                 {course.title}
               </h1>
               {course.subtitle && (
-                <p className="text-[var(--pw-ink-2)] text-[1rem] sm:text-[1.125rem] mt-3 max-w-2xl">
+                <p className="text-[var(--pw-ink-2)] text-[1rem] sm:text-[1.125rem] mt-4 max-w-2xl">
                   {course.subtitle}
                 </p>
               )}
 
               {/* Rating + students */}
               <div className="flex flex-wrap items-center gap-4 mt-4 text-[0.8125rem]">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <Stars value={ratingAvg} />
                   <span className="font-medium">{ratingAvg ? ratingAvg.toFixed(1) : "—"}</span>
                   <span className="text-[var(--pw-ink-2)]">({reviews.length} reviews)</span>
                 </div>
-                <span className="flex items-center gap-1.5 text-[var(--pw-ink-2)]">
+                <span className="flex items-center gap-2 text-[var(--pw-ink-2)]">
                   <Users className="size-3.5" /> {studentCount} students
                 </span>
               </div>
@@ -425,7 +425,7 @@ function PublicCoursePage() {
               </div>
 
               {/* CTAs (mobile-visible duplicates) */}
-              <div className="mt-6 flex items-center gap-3 lg:hidden">
+              <div className="mt-6 flex items-center gap-4 lg:hidden">
                 <Button asChild className="flex-1">
                   <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }}>
                     Book a session
@@ -458,8 +458,8 @@ function PublicCoursePage() {
                     <BookOpen className="size-10" />
                   </div>
                 )}
-                <div className="p-5">
-                  <div className="flex items-baseline gap-3">
+                <div className="p-6">
+                  <div className="flex items-baseline gap-4">
                     {finalPrice != null ? (
                       <span className="font-display text-3xl">
                         {finalPrice} {course.currency}
@@ -472,7 +472,7 @@ function PublicCoursePage() {
                         <span className="line-through text-[var(--pw-ink-2)] text-[0.875rem]">
                           {course.price}
                         </span>
-                        <span className="label-caps text-[var(--pw-accent)] bg-[var(--pw-accent-soft)] px-2 py-0.5 rounded-full">
+                        <span className="label-caps text-[var(--pw-accent)] bg-[var(--pw-accent-soft)] px-2 py-0 rounded-full">
                           -{discountPct}%
                         </span>
                       </>
@@ -485,12 +485,12 @@ function PublicCoursePage() {
                   </Button>
                   <button
                     onClick={toggleWishlist}
-                    className="w-full mt-2 inline-flex items-center justify-center gap-2 h-10 border border-[var(--pw-border)] label-caps hover:border-[var(--pw-ink)] transition-colors"
+                    className="w-full mt-2 inline-flex items-center justify-center gap-2 h-10 border border-[var(--pw-border)] text-[0.8125rem] font-semibold hover:border-[var(--pw-ink)] transition-colors"
                   >
                     <Heart
                       className={`size-4 ${wishlisted ? "fill-[var(--pw-accent)] text-[var(--pw-accent)]" : ""}`}
                     />
-                    {wishlisted ? "Wishlisted" : "Add to Wishlist"}
+                    {wishlisted ? "Wishlisted" : "Add to wishlist"}
                   </button>
                   <div className="mt-4 flex items-center gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
                     <ShieldCheck className="size-4 text-[var(--pw-accent-2)]" />
@@ -503,7 +503,7 @@ function PublicCoursePage() {
                     </div>
                   )}
                   <div className="mt-4 pt-4 border-t border-[var(--pw-border)]">
-                    <div className="label-caps text-[var(--pw-ink-2)] mb-2 flex items-center gap-1.5">
+                    <div className="label-caps text-[var(--pw-ink-2)] mb-2 flex items-center gap-2">
                       <Share2 className="size-3" /> Share
                     </div>
                     <div className="flex gap-2">
@@ -528,8 +528,8 @@ function PublicCoursePage() {
         </div>
       </section>
 
-      <main className="max-w-6xl mx-auto px-5 sm:px-8 pb-32 lg:pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_22.5rem] gap-10 mt-10">
+      <main className="max-w-6xl mx-auto px-6 sm:px-8 pb-32 lg:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_22.5rem] gap-12 mt-12">
           {/* Tabs */}
           <div className="min-w-0">
             <Tabs value={tab} onValueChange={setTab}>
@@ -544,7 +544,7 @@ function PublicCoursePage() {
               <TabsContent value="overview" className="mt-6 space-y-8">
                 {course.description && (
                   <section>
-                    <h2 className="font-display text-2xl uppercase tracking-[-0.025em] mb-3">
+                    <h2 className="font-display text-2xl uppercase tracking-[-0.025em] mb-4">
                       About this course
                     </h2>
                     <div
@@ -555,13 +555,13 @@ function PublicCoursePage() {
                 )}
                 {(course.learning_outcomes ?? []).length > 0 && (
                   <section className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
-                    <h2 className="font-display text-xl uppercase tracking-[-0.025em] mb-3">
+                    <h2 className="font-display text-xl uppercase tracking-[-0.025em] mb-4">
                       What you'll learn
                     </h2>
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[0.875rem]">
                       {(course.learning_outcomes ?? []).filter(Boolean).map((o, i) => (
                         <li key={i} className="flex gap-2">
-                          <Check className="size-4 text-[var(--pw-accent-2)] mt-1 shrink-0" />
+                          <Check className="size-4 text-[var(--pw-accent-2)] mt-2 shrink-0" />
                           {o}
                         </li>
                       ))}
@@ -572,9 +572,9 @@ function PublicCoursePage() {
                   (course.target_audience ?? []).length > 0) && (
                   <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {(course.prerequisites ?? []).length > 0 && (
-                      <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-5">
-                        <h3 className="label-caps text-[var(--pw-ink-2)] mb-3">Prerequisites</h3>
-                        <ul className="text-[0.8125rem] space-y-1 text-[var(--pw-ink-2)]">
+                      <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
+                        <h3 className="label-caps text-[var(--pw-ink-2)] mb-4">Prerequisites</h3>
+                        <ul className="text-[0.8125rem] space-y-2 text-[var(--pw-ink-2)]">
                           {(course.prerequisites ?? []).map((p) => (
                             <li key={p}>• {p}</li>
                           ))}
@@ -582,9 +582,9 @@ function PublicCoursePage() {
                       </div>
                     )}
                     {(course.target_audience ?? []).length > 0 && (
-                      <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-5">
-                        <h3 className="label-caps text-[var(--pw-ink-2)] mb-3">Who this is for</h3>
-                        <ul className="text-[0.8125rem] space-y-1 text-[var(--pw-ink-2)]">
+                      <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
+                        <h3 className="label-caps text-[var(--pw-ink-2)] mb-4">Who this is for</h3>
+                        <ul className="text-[0.8125rem] space-y-2 text-[var(--pw-ink-2)]">
                           {(course.target_audience ?? []).map((a) => (
                             <li key={a}>• {a}</li>
                           ))}
@@ -595,7 +595,7 @@ function PublicCoursePage() {
                 )}
                 {tutor && (
                   <section className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
-                    <h2 className="font-display text-xl uppercase tracking-[-0.025em] mb-3">
+                    <h2 className="font-display text-xl uppercase tracking-[-0.025em] mb-4">
                       About the tutor
                     </h2>
                     <div className="flex items-start gap-4">
@@ -621,7 +621,7 @@ function PublicCoursePage() {
                         <Link
                           to="/tutor/$tutorId"
                           params={{ tutorId: tutor.id }}
-                          className="label-caps text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors mt-2 inline-flex min-h-11 items-center"
+                          className="text-[0.8125rem] font-semibold text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors mt-2 inline-flex min-h-11 items-center"
                         >
                           View full profile →
                         </Link>
@@ -633,7 +633,7 @@ function PublicCoursePage() {
 
               {/* Curriculum */}
               <TabsContent value="curriculum" className="mt-6">
-                <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mb-3">
+                <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mb-4">
                   {sections.length} sections · {lessons.length} lessons · {totalMin} min total
                 </div>
                 {previewLesson && (
@@ -652,7 +652,7 @@ function PublicCoursePage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center justify-between p-3 bg-[var(--pw-surface)] text-[0.8125rem]">
+                    <div className="flex items-center justify-between p-4 bg-[var(--pw-surface)] text-[0.8125rem]">
                       <span>Preview · {previewLesson.title}</span>
                       <button
                         onClick={() => setPreviewLesson(null)}
@@ -670,7 +670,7 @@ function PublicCoursePage() {
                     return (
                       <AccordionItem key={s.id} value={s.id}>
                         <AccordionTrigger>
-                          <div className="flex-1 flex items-center justify-between pr-3">
+                          <div className="flex-1 flex items-center justify-between pr-4">
                             <span className="font-medium text-left">{s.title}</span>
                             <span className="text-[0.75rem] text-[var(--pw-ink-2)] font-normal">
                               {sLessons.length} lessons · {sMin} min
@@ -682,7 +682,7 @@ function PublicCoursePage() {
                             {sLessons.map((l) => (
                               <li
                                 key={l.id}
-                                className="py-2.5 flex items-center justify-between border-b border-[var(--pw-border)] last:border-0 text-[0.8125rem]"
+                                className="py-2 flex items-center justify-between border-b border-[var(--pw-border)] last:border-0 text-[0.8125rem]"
                               >
                                 <span className="flex items-center gap-2 min-w-0">
                                   {l.is_free_preview ? (
@@ -712,7 +712,7 @@ function PublicCoursePage() {
                               </li>
                             ))}
                             {sLessons.length === 0 && (
-                              <li className="py-3 text-[0.75rem] text-[var(--pw-ink-2)]">
+                              <li className="py-4 text-[0.75rem] text-[var(--pw-ink-2)]">
                                 No lessons yet.
                               </li>
                             )}
@@ -736,18 +736,18 @@ function PublicCoursePage() {
                     <div className="font-display text-5xl">
                       {ratingAvg ? ratingAvg.toFixed(1) : "—"}
                     </div>
-                    <Stars value={ratingAvg} className="justify-center mt-1" />
-                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-1">
+                    <Stars value={ratingAvg} className="justify-center mt-2" />
+                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
                       {reviews.length} reviews
                     </div>
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     {[5, 4, 3, 2, 1].map((n) => {
                       const count = ratingDist[n - 1];
                       const pct = reviews.length ? (count / reviews.length) * 100 : 0;
                       return (
-                        <div key={n} className="flex items-center gap-3 text-[0.75rem]">
-                          <span className="w-8 flex items-center gap-0.5 text-[var(--pw-ink-2)]">
+                        <div key={n} className="flex items-center gap-4 text-[0.75rem]">
+                          <span className="w-8 flex items-center gap-0 text-[var(--pw-ink-2)]">
                             {n}
                             <Star className="h-3 w-3 fill-current" aria-hidden="true" />
                             <span className="sr-only"> stars</span>
@@ -766,9 +766,9 @@ function PublicCoursePage() {
                 </div>
 
                 {me && (
-                  <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-5">
+                  <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
                     <div className="font-medium mb-2">Write a review</div>
-                    <div className="flex items-center gap-1 mb-2">
+                    <div className="flex items-center gap-2 mb-2">
                       {[1, 2, 3, 4, 5].map((n) => (
                         <button key={n} onClick={() => setDraftRating(n)} aria-label={`${n} stars`}>
                           <Star
@@ -833,7 +833,7 @@ function PublicCoursePage() {
             <h2 className="font-display text-2xl uppercase tracking-[-0.025em] mb-4">
               Students also viewed
             </h2>
-            <div className="flex gap-4 overflow-x-auto pb-3 -mx-1 px-1 snap-x">
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 snap-x">
               {related.map((r) => (
                 <Link
                   key={r.id}
@@ -852,11 +852,11 @@ function PublicCoursePage() {
                       <BookOpen className="size-8" />
                     </div>
                   )}
-                  <div className="p-3">
+                  <div className="p-4">
                     <div className="font-medium text-[0.875rem] line-clamp-2 transition-colors group-hover:text-pw-accent">
                       {r.title}
                     </div>
-                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-1">
+                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
                       {r.discount_price ?? r.price ?? "—"} {r.currency}
                     </div>
                   </div>
@@ -868,7 +868,7 @@ function PublicCoursePage() {
       </main>
 
       {/* Mobile sticky bottom bar */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--pw-surface)] border-t border-[var(--pw-border)] p-3 flex items-center gap-3">
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--pw-surface)] border-t border-[var(--pw-border)] p-4 flex items-center gap-4">
         <div className="flex-1 min-w-0">
           <div className="text-[0.9375rem] font-semibold leading-none">
             {finalPrice != null ? `${finalPrice} ${course.currency}` : "—"}
@@ -878,7 +878,7 @@ function PublicCoursePage() {
               </span>
             )}
           </div>
-          <div className="text-xs text-[var(--pw-ink-2)] mt-1 flex items-center gap-1">
+          <div className="text-xs text-[var(--pw-ink-2)] mt-2 flex items-center gap-2">
             <ShieldCheck className="size-3 text-[var(--pw-accent-2)]" /> Pay your tutor directly
           </div>
         </div>
@@ -904,7 +904,7 @@ function PublicCoursePage() {
 
 function Stat({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5">
+    <span className="inline-flex items-center gap-2">
       {icon}
       {label}
     </span>
@@ -913,7 +913,7 @@ function Stat({ icon, label }: { icon: React.ReactNode; label: string }) {
 
 function Stars({ value, className = "" }: { value: number; className?: string }) {
   return (
-    <span className={`inline-flex items-center gap-0.5 ${className}`}>
+    <span className={`inline-flex items-center gap-0 ${className}`}>
       {[1, 2, 3, 4, 5].map((n) => (
         <Star
           key={n}
@@ -965,7 +965,7 @@ function ReviewCard({ review }: { review: ReviewRow }) {
   }, [review.student_id]);
   return (
     <li className="py-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {author?.avatar ? (
           <img src={author.avatar} alt="" className="size-9 rounded-full object-cover" />
         ) : (

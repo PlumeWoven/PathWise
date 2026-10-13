@@ -255,11 +255,11 @@ export function CourseEditor({ courseId }: { courseId: string }) {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <div className="max-w-5xl mx-auto pb-20">
-        <div className="flex items-center justify-between gap-3 mb-4">
+      <div className="max-w-5xl mx-auto pb-24">
+        <div className="flex items-center justify-between gap-4 mb-4">
           <Link
             to="/dashboard/courses"
-            className="label-caps text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)] transition-colors inline-flex items-center gap-1"
+            className="text-[0.8125rem] font-semibold text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)] transition-colors inline-flex items-center gap-2"
           >
             <ArrowLeft className="size-3.5" /> All courses
           </Link>
@@ -279,14 +279,14 @@ export function CourseEditor({ courseId }: { courseId: string }) {
         </div>
 
         {/* Stepper / progress */}
-        <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-4 mb-5">
-          <div className="pw-progress mb-3">
+        <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-4 mb-6">
+          <div className="pw-progress mb-4">
             <div
               className="pw-progress-fill transition-all"
               style={{ width: `${(step / STEPS.length) * 100}%` }}
             />
           </div>
-          <div className="flex items-center justify-between gap-1 overflow-x-auto">
+          <div className="flex items-center justify-between gap-2 overflow-x-auto">
             {STEPS.map((s) => {
               const active = s.id === step;
               const done = s.id < step;
@@ -294,7 +294,7 @@ export function CourseEditor({ courseId }: { courseId: string }) {
                 <button
                   key={s.id}
                   onClick={() => setStep(s.id)}
-                  className={`flex-1 min-w-[6.875rem] text-left text-[0.75rem] px-2 py-1 transition-colors hover:text-[var(--pw-accent)] ${
+                  className={`flex-1 min-w-[6.875rem] text-left text-[0.75rem] px-2 py-2 transition-colors hover:text-[var(--pw-accent)] ${
                     active
                       ? "text-[var(--pw-accent)] font-medium"
                       : done
@@ -441,7 +441,7 @@ function Step1Basic({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Category">
           <select
-            className="h-9 w-full border border-[var(--pw-border)] bg-transparent px-3 text-sm"
+            className="h-9 w-full border border-[var(--pw-border)] bg-transparent px-4 text-sm"
             value={course.category ?? ""}
             onChange={(e) => patch({ category: e.target.value })}
           >
@@ -455,7 +455,7 @@ function Step1Basic({
         </Field>
         <Field label="Language of instruction">
           <select
-            className="h-9 w-full border border-[var(--pw-border)] bg-transparent px-3 text-sm"
+            className="h-9 w-full border border-[var(--pw-border)] bg-transparent px-4 text-sm"
             value={course.language ?? ""}
             onChange={(e) => patch({ language: e.target.value })}
           >
@@ -470,11 +470,11 @@ function Step1Basic({
       </div>
 
       <Field label="Subcategory tags" hint="e.g. Python, React, Calculus">
-        <div className="flex flex-wrap gap-1.5 mb-2">
+        <div className="flex flex-wrap gap-2 mb-2">
           {(course.subcategory_tags ?? []).map((t) => (
             <span
               key={t}
-              className="inline-flex items-center gap-1 label-caps px-2.5 py-1 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]"
+              className="inline-flex items-center gap-2 label-caps px-2 py-2 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]"
             >
               {t}
               <button
@@ -518,7 +518,7 @@ function Step1Basic({
               <button
                 key={d}
                 onClick={() => patch({ difficulty: d })}
-                className={`px-3 py-2 border label-caps transition-colors ${
+                className={`px-4 py-2 border text-[0.8125rem] font-semibold transition-colors ${
                   active
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
@@ -534,7 +534,7 @@ function Step1Basic({
       {/* The band is what the roadmap matches on — a student placed at Spark
           only sees Spark courses in their "perfect match" tier. */}
       <Field label="Roadmap level band" hint="Drives roadmap matching">
-        <p className="text-[0.75rem] text-[var(--pw-ink-2)] -mt-0.5 mb-1">
+        <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0 mb-2">
           Students are placed into these bands by the diagnostic quiz. A stage only unlocks against
           a course at its band, so this decides who finds your course.
         </p>
@@ -551,7 +551,7 @@ function Step1Basic({
                     level_id: subject ? makeLevelId(subject, b) : null,
                   })
                 }
-                className={`px-3 py-2 border label-caps transition-colors ${
+                className={`px-4 py-2 border text-[0.8125rem] font-semibold transition-colors ${
                   active
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
@@ -560,12 +560,12 @@ function Step1Basic({
                 <span className="block">
                   <Icon name={BAND_META[b].icon} className="h-4 w-4" />
                 </span>
-                <span className="block mt-0.5">{BAND_META[b].label}</span>
+                <span className="block mt-0">{BAND_META[b].label}</span>
               </button>
             );
           })}
         </div>
-        <div className="mt-2 flex flex-wrap items-center gap-3 text-[0.75rem] text-[var(--pw-ink-2)]">
+        <div className="mt-2 flex flex-wrap items-center gap-4 text-[0.75rem] text-[var(--pw-ink-2)]">
           <button
             onClick={() => patch({ level_band: null, level_id: null })}
             className="underline underline-offset-2 hover:text-[var(--pw-ink)]"
@@ -679,7 +679,7 @@ function Step2Content({
         onDragEnd={handleSectionDragEnd}
       >
         <SortableContext items={sections.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {sections.map((sec) => (
               <SectionCard
                 key={sec.id}
@@ -745,7 +745,7 @@ function Step2Content({
       </DndContext>
 
       <Button variant="outline" onClick={handleAddSection} className="mt-4">
-        <Plus className="size-4" /> Add Section
+        <Plus className="size-4" /> Add section
       </Button>
     </Panel>
   );
@@ -803,7 +803,7 @@ function SectionCard({
       style={style}
       className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-4"
     >
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <button
           {...attributes}
           {...listeners}
@@ -821,7 +821,7 @@ function SectionCard({
         <button
           onClick={onDelete}
           aria-label={`Delete section ${section.title}`}
-          className="text-[var(--pw-danger)] p-1.5 hover:bg-[var(--pw-danger)]/10"
+          className="text-[var(--pw-danger)] p-2 hover:bg-[var(--pw-danger)]/10"
         >
           <Trash2 className="size-4" />
         </button>
@@ -938,20 +938,20 @@ function LessonCard({
           onClick={() => setOpen(!open)}
           aria-label={open ? "Collapse lesson details" : "Expand lesson details"}
           aria-expanded={open}
-          className="text-[var(--pw-ink-2)] p-1"
+          className="text-[var(--pw-ink-2)] p-2"
         >
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </button>
         <button
           onClick={onDelete}
           aria-label={`Delete lesson ${lesson.title}`}
-          className="text-[var(--pw-danger)] p-1 hover:bg-[var(--pw-danger)]/10"
+          className="text-[var(--pw-danger)] p-2 hover:bg-[var(--pw-danger)]/10"
         >
           <Trash2 className="size-3.5" />
         </button>
       </div>
       {open && (
-        <div className="p-3 pt-0 space-y-3 border-t border-[var(--pw-border)]">
+        <div className="p-4 pt-0 space-y-4 border-t border-[var(--pw-border)]">
           <Textarea
             value={lesson.description ?? ""}
             onChange={(e) => onUpdate({ description: e.target.value })}
@@ -967,7 +967,7 @@ function LessonCard({
               aria-label="Lesson video URL"
               className="text-[0.8125rem] h-8"
             />
-            <label className="inline-flex items-center gap-1 text-[0.75rem] cursor-pointer px-2 py-1.5 border border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
+            <label className="inline-flex items-center gap-2 text-[0.75rem] cursor-pointer px-2 py-2 border border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
               {uploading ? (
                 <Loader2 className="size-3 animate-spin" />
               ) : (
@@ -990,9 +990,9 @@ function LessonCard({
             Free preview
           </label>
           <div>
-            <div className="label-caps text-[var(--pw-ink-2)] mb-1.5">Resources</div>
+            <div className="label-caps text-[var(--pw-ink-2)] mb-2">Resources</div>
             {lesson.resources.map((r, i) => (
-              <div key={i} className="flex gap-1.5 mb-1.5">
+              <div key={i} className="flex gap-2 mb-2">
                 <select
                   aria-label="Resource type"
                   value={r.type}
@@ -1022,7 +1022,7 @@ function LessonCard({
                 <button
                   onClick={() => removeResource(i)}
                   aria-label={`Remove resource ${i + 1}`}
-                  className="text-[var(--pw-danger)] p-1"
+                  className="text-[var(--pw-danger)] p-2"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -1078,7 +1078,7 @@ function Step3Description({
     <Panel title="Description & Details" subtitle="Tell students what they'll get out of it.">
       <Field label="Course description">
         <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)]">
-          <div className="flex gap-1 p-1.5 border-b border-[var(--pw-border)]">
+          <div className="flex gap-2 p-2 border-b border-[var(--pw-border)]">
             <ToolBtn label="Bold" onClick={() => exec("bold")}>
               <Bold className="size-3.5" />
             </ToolBtn>
@@ -1102,7 +1102,7 @@ function Step3Description({
             aria-multiline="true"
             aria-label="Course description"
             onInput={(e) => patch({ description: (e.target as HTMLDivElement).innerHTML })}
-            className="min-h-[9.375rem] p-3 text-[0.875rem] focus:outline-none prose prose-sm max-w-none"
+            className="min-h-[9.375rem] p-4 text-[0.875rem] focus:outline-none prose prose-sm max-w-none"
             suppressContentEditableWarning
           />
         </div>
@@ -1140,11 +1140,11 @@ function Step3Description({
       </Field>
 
       <Field label="Prerequisites">
-        <div className="flex flex-wrap gap-1.5 mb-2">
+        <div className="flex flex-wrap gap-2 mb-2">
           {(course.prerequisites ?? []).map((p) => (
             <span
               key={p}
-              className="inline-flex items-center gap-1 label-caps px-2.5 py-1 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]"
+              className="inline-flex items-center gap-2 label-caps px-2 py-2 rounded-full bg-[var(--pw-surface-2)] border border-[var(--pw-border)]"
             >
               {p}
               <button
@@ -1186,7 +1186,7 @@ function Step3Description({
               <button
                 key={a}
                 onClick={() => toggleAudience(a)}
-                className={`px-3 py-1.5 rounded-full border label-caps transition-colors ${
+                className={`px-4 py-2 rounded-full border label-caps transition-colors ${
                   on
                     ? "border-[var(--pw-accent)] bg-[var(--pw-accent-soft)] text-[var(--pw-accent)]"
                     : "border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]"
@@ -1228,7 +1228,7 @@ function ToolBtn({
       // preventDefault keeps the editor's selection; click (not mousedown) also fires on Enter/Space.
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
-      className="px-2 py-1 hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"
+      className="px-2 py-2 hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"
     >
       {children}
     </button>
@@ -1259,7 +1259,7 @@ function Step4Pricing({
               placeholder="0"
             />
             <select
-              className="h-9 border border-[var(--pw-border)] bg-transparent px-3 text-sm"
+              className="h-9 border border-[var(--pw-border)] bg-transparent px-4 text-sm"
               value={course.currency}
               onChange={(e) => patch({ currency: e.target.value })}
             >
@@ -1293,7 +1293,7 @@ function Step4Pricing({
         />
       </Field>
 
-      <label className="flex items-center gap-3 text-[0.875rem]">
+      <label className="flex items-center gap-4 text-[0.875rem]">
         <Switch
           checked={course.certificate_enabled}
           onCheckedChange={(v) => patch({ certificate_enabled: v })}
@@ -1366,24 +1366,24 @@ function Step5Review({
         {course.thumbnail_url && (
           <img src={course.thumbnail_url} alt="" className="w-full aspect-[16/9] object-cover" />
         )}
-        <div className="p-5">
+        <div className="p-6">
           <h2 className="font-display text-2xl uppercase tracking-[-0.025em] leading-[1.1]">
             {course.title}
           </h2>
-          {course.subtitle && <p className="text-[var(--pw-ink-2)] mt-1">{course.subtitle}</p>}
-          <div className="flex flex-wrap gap-2 mt-3 text-[0.75rem]">
+          {course.subtitle && <p className="text-[var(--pw-ink-2)] mt-2">{course.subtitle}</p>}
+          <div className="flex flex-wrap gap-2 mt-4 text-[0.75rem]">
             {course.category && (
-              <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">
+              <span className="pw-pill px-2 py-0 border border-[var(--pw-border)]">
                 {course.category}
               </span>
             )}
             {course.difficulty && (
-              <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">
+              <span className="pw-pill px-2 py-0 border border-[var(--pw-border)]">
                 {course.difficulty}
               </span>
             )}
             {course.language && (
-              <span className="pw-pill px-2 py-0.5 border border-[var(--pw-border)]">
+              <span className="pw-pill px-2 py-0 border border-[var(--pw-border)]">
                 {course.language}
               </span>
             )}
@@ -1397,10 +1397,10 @@ function Step5Review({
           {(course.learning_outcomes ?? []).length > 0 && (
             <>
               <h3 className="label-caps text-[var(--pw-ink-2)] mt-6 mb-2">What you'll learn</h3>
-              <ul className="space-y-1 text-[0.8125rem]">
+              <ul className="space-y-2 text-[0.8125rem]">
                 {(course.learning_outcomes ?? []).filter(Boolean).map((o, i) => (
                   <li key={i} className="flex gap-2">
-                    <Check className="size-4 text-[var(--pw-accent-2)] mt-0.5" /> {o}
+                    <Check className="size-4 text-[var(--pw-accent-2)] mt-0" /> {o}
                   </li>
                 ))}
               </ul>
@@ -1410,7 +1410,7 @@ function Step5Review({
           <div className="space-y-2">
             {sections.map((s) => (
               <div key={s.id} className="border border-[var(--pw-border)]">
-                <div className="px-3 py-2 bg-[var(--pw-surface-2)] text-[0.8125rem] font-medium">
+                <div className="px-4 py-2 bg-[var(--pw-surface-2)] text-[0.8125rem] font-medium">
                   {s.title}
                 </div>
                 <ul className="text-[0.8125rem]">
@@ -1419,12 +1419,12 @@ function Step5Review({
                     .map((l) => (
                       <li
                         key={l.id}
-                        className="px-3 py-1.5 flex justify-between border-t border-[var(--pw-border)]"
+                        className="px-4 py-2 flex justify-between border-t border-[var(--pw-border)]"
                       >
                         <span>
                           {l.title}{" "}
                           {l.is_free_preview && (
-                            <span className="ml-1 label-caps text-[var(--pw-accent)]">PREVIEW</span>
+                            <span className="ml-2 label-caps text-[var(--pw-accent)]">PREVIEW</span>
                           )}
                         </span>
                         <span className="text-[var(--pw-ink-2)]">{l.duration_minutes} min</span>
@@ -1438,8 +1438,8 @@ function Step5Review({
       </div>
 
       <div className="border border-[var(--pw-border)] p-4 mt-4">
-        <h3 className="label-caps text-[var(--pw-ink-2)] mb-3">Publish checklist</h3>
-        <ul className="space-y-1 text-[0.8125rem]">
+        <h3 className="label-caps text-[var(--pw-ink-2)] mb-4">Publish checklist</h3>
+        <ul className="space-y-2 text-[0.8125rem]">
           {validation.checks.map((c) => (
             <li key={c.label} className="flex items-center gap-2">
               {c.ok ? (
@@ -1455,10 +1455,10 @@ function Step5Review({
 
       <div className="flex gap-2 mt-4">
         <Button variant="outline" onClick={onSaveDraft}>
-          Save as Draft
+          Save as draft
         </Button>
         <Button onClick={onSubmit} disabled={!validation.ok || course.status === "under_review"}>
-          {course.status === "under_review" ? "Already submitted" : "Submit for Review"}
+          {course.status === "under_review" ? "Already submitted" : "Submit for review"}
         </Button>
       </div>
     </Panel>
@@ -1477,10 +1477,10 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6 space-y-5">
+    <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6 space-y-6">
       <div>
         <h2 className="font-display text-xl uppercase tracking-[-0.025em]">{title}</h2>
-        {subtitle && <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">{subtitle}</p>}
       </div>
       {children}
     </div>
@@ -1506,7 +1506,7 @@ function Field({
       : null;
   return (
     <div
-      className="space-y-1.5"
+      className="space-y-2"
       {...(control ? {} : { role: "group", "aria-labelledby": `${id}-label` })}
     >
       <div className="flex items-center justify-between">

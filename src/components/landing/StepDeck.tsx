@@ -136,7 +136,7 @@ export function StepDeck() {
   }, [reduced, paused, inView, swap]);
 
   return (
-    <section className="relative grid min-h-screen grid-cols-1 items-center gap-20 overflow-hidden bg-qed-ground-2 px-6 py-32 md:px-24 lg:grid-cols-2">
+    <section className="relative grid min-h-screen grid-cols-1 items-center gap-24 overflow-hidden bg-qed-ground-2 px-6 py-32 md:px-24 lg:grid-cols-2">
       <div data-journey="deck-copy" className="relative z-[2]">
         <p className="label-caps mb-6 text-qed-teal-ink">How it works</p>
         <h2 className="mb-8 font-syne text-[length:clamp(1.75rem,7.5vw,3rem)] uppercase leading-none tracking-[-0.025em] lg:text-[length:clamp(2.25rem,4.4vw,4.5rem)]">
@@ -144,20 +144,20 @@ export function StepDeck() {
           <br />
           deliberately.
         </h2>
-        <p className="mb-10 max-w-md text-lg leading-relaxed text-qed-ink-2">
+        <p className="mb-12 max-w-md text-lg leading-relaxed text-qed-ink-2">
           Everything you need to learn deliberately: a level check, a roadmap, the right tutor, and
           every session tracked.
         </p>
         <div className="flex flex-wrap gap-4">
           <Link
             to="/quiz"
-            className="label-caps bg-qed-ink px-8 py-4 text-qed-ground transition-colors hover:bg-qed-amber"
+            className="text-[0.8125rem] font-semibold bg-qed-ink px-8 py-4 text-qed-ground transition-colors hover:bg-qed-amber"
           >
             Start your level check
           </Link>
           <Link
             to="/pathwise/demo"
-            className="label-caps border border-qed-hairline px-8 py-4 transition-colors hover:border-qed-ink"
+            className="text-[0.8125rem] font-semibold border border-qed-hairline px-8 py-4 transition-colors hover:border-qed-ink"
           >
             Try demo mode
           </Link>

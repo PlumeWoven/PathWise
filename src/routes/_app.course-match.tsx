@@ -237,7 +237,7 @@ function CourseMatchPageInner() {
   if (loading) {
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <main className="px-5 sm:px-8 pt-20 pb-24 max-w-5xl mx-auto">
+        <main className="px-6 sm:px-8 pt-24 pb-24 max-w-5xl mx-auto">
           <div className="text-center text-[var(--pw-ink-2)] text-[0.875rem]">
             Matching courses to your level and your tutors…
           </div>
@@ -258,9 +258,9 @@ function CourseMatchPageInner() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-5xl mx-auto">
+      <main className="px-6 sm:px-8 pb-24 max-w-5xl mx-auto">
         {/* Breadcrumb */}
-        <div className="mt-3 label-caps text-[var(--pw-ink-2)]">
+        <div className="mt-4 label-caps text-[var(--pw-ink-2)]">
           <Link
             to="/roadmap"
             search={{ roadmapId: roadmap.id }}
@@ -277,10 +277,10 @@ function CourseMatchPageInner() {
           <div className="label-caps text-[var(--pw-ink-2)]">
             Stage {String(stage.stage_number).padStart(2, "0")} of {roadmap.total_stages}
           </div>
-          <h1 className="font-display text-[1.875rem] sm:text-[2.25rem] leading-tight mt-1">
+          <h1 className="font-display text-[1.875rem] sm:text-[2.25rem] leading-tight mt-2">
             {stage.title} needs a {bandMeta.label} course
           </h1>
-          <p className="mt-2.5 text-[0.875rem] text-[var(--pw-ink-2)] max-w-2xl">
+          <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-2xl">
             You can't tick this stage off until you've taken a course that fits it. We only show
             courses that clear two bars at once: pitched at the level your quiz placed you in, and
             taught by a tutor you were matched with.
@@ -288,7 +288,7 @@ function CourseMatchPageInner() {
         </div>
 
         {/* Convergence explainer */}
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-stretch">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-stretch">
           <ConvergenceCard
             kicker="Your level"
             title={bandMeta.label}
@@ -319,7 +319,7 @@ function CourseMatchPageInner() {
               meta.missingLearningProfile ? (
                 <Link
                   to="/find-tutor"
-                  className="label-caps text-pw-accent underline underline-offset-2"
+                  className="text-[0.8125rem] font-semibold text-pw-accent underline underline-offset-2"
                 >
                   Take the tutor quiz →
                 </Link>
@@ -327,7 +327,7 @@ function CourseMatchPageInner() {
                 <Link
                   to="/matches"
                   search={{}}
-                  className="label-caps text-pw-accent underline underline-offset-2"
+                  className="text-[0.8125rem] font-semibold text-pw-accent underline underline-offset-2"
                 >
                   See your matched tutors →
                 </Link>
@@ -343,7 +343,7 @@ function CourseMatchPageInner() {
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className={`mt-6 pw-card p-5 ${isComplete ? "border-[var(--pw-accent-2)]" : "border-[var(--pw-accent)]"}`}
+              className={`mt-6 pw-card p-6 ${isComplete ? "border-[var(--pw-accent-2)]" : "border-[var(--pw-accent)]"}`}
               style={{
                 background: isComplete
                   ? "color-mix(in srgb, var(--pw-accent-2) 8%, transparent)"
@@ -355,10 +355,10 @@ function CourseMatchPageInner() {
                   <div className="label-caps text-[var(--pw-ink-2)]">
                     {isComplete ? "Requirement met" : "Your course for this stage"}
                   </div>
-                  <h2 className="font-display text-[1.375rem] leading-tight mt-1">
+                  <h2 className="font-display text-[1.375rem] leading-tight mt-2">
                     {enrollment.course?.title ?? "Course"}
                   </h2>
-                  <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1">
+                  <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">
                     {isComplete
                       ? "You've finished this course — head back and mark the stage complete."
                       : "Work through it, then confirm below to unlock the stage."}
@@ -429,8 +429,8 @@ function CourseMatchPageInner() {
                 if (group.length === 0) return null;
                 const km = MATCH_KIND_META[kind];
                 return (
-                  <section key={kind} className="mb-9">
-                    <div className="flex flex-wrap items-baseline gap-3">
+                  <section key={kind} className="mb-8">
+                    <div className="flex flex-wrap items-baseline gap-4">
                       <h2 className="font-display text-[1.375rem] leading-none uppercase tracking-[-0.025em]">
                         {km.label}
                       </h2>
@@ -438,7 +438,7 @@ function CourseMatchPageInner() {
                         {group.length} course{group.length === 1 ? "" : "s"}
                       </span>
                     </div>
-                    <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1">{km.blurb}</p>
+                    <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">{km.blurb}</p>
                     <div className="mt-4 space-y-4">
                       {group.map((m) => (
                         <CourseMatchCard
@@ -485,7 +485,7 @@ function ConvergenceCard({
       <div className="font-display text-[1.25rem] leading-none uppercase tracking-[-0.025em] mt-2">
         {title}
       </div>
-      <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1.5">{body}</p>
+      <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">{body}</p>
       {action && <div className="mt-2">{action}</div>}
     </div>
   );
@@ -520,17 +520,17 @@ function CourseMatchCard({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`pw-card p-5 transition-colors hover:border-[var(--pw-ink)] ${toneBorder}`}
+      className={`pw-card p-6 transition-colors hover:border-[var(--pw-ink)] ${toneBorder}`}
     >
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span
-              className={`pw-pill px-2.5 py-1 ${tone === "strong" ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "text-[var(--pw-ink-2)]"}`}
+              className={`pw-pill px-2 py-2 ${tone === "strong" ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "text-[var(--pw-ink-2)]"}`}
             >
               {MATCH_KIND_META[kind].label}
             </span>
-            <span className="pw-pill px-2.5 py-1 inline-flex items-center gap-1.5">
+            <span className="pw-pill px-2 py-2 inline-flex items-center gap-2">
               {band === null ? (
                 "All levels"
               ) : (
@@ -547,42 +547,42 @@ function CourseMatchCard({
             )}
           </div>
 
-          <h3 className="font-display text-[1.3125rem] leading-tight mt-2.5">{course.title}</h3>
+          <h3 className="font-display text-[1.3125rem] leading-tight mt-2">{course.title}</h3>
           {course.subtitle && (
-            <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1">{course.subtitle}</p>
+            <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">{course.subtitle}</p>
           )}
 
-          <div className="mt-2.5 flex flex-wrap items-center gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
             {tutor?.display_name && (
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-2">
                 <Icon name="user" className="h-4 w-4" /> {tutor.display_name}
               </span>
             )}
             {course.estimated_weeks && (
               <>
                 <span className="text-[var(--pw-border)]">·</span>
-                <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-2">
                   <Icon name="calendar" className="h-4 w-4" /> {course.estimated_weeks} weeks
                 </span>
               </>
             )}
             <span className="text-[var(--pw-border)]">·</span>
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-2">
               <Icon name="euro" className="h-4 w-4" /> {price}
             </span>
           </div>
 
           {/* Why this course, for this student, at this stage */}
           <div
-            className="mt-3 text-[0.8125rem] px-3 py-2 border border-[var(--pw-border)]"
+            className="mt-4 text-[0.8125rem] px-4 py-2 border border-[var(--pw-border)]"
             style={{ background: "var(--pw-surface-2)" }}
           >
             <span className="label-caps text-[var(--pw-ink-2)]">Why you're seeing this</span>
-            <p className="mt-1">{match.reason}</p>
+            <p className="mt-2">{match.reason}</p>
           </div>
 
           {course.learning_outcomes && course.learning_outcomes.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-4 flex flex-wrap gap-2">
               {course.learning_outcomes.slice(0, 4).map((o) => (
                 <span key={o} className="pw-badge">
                   {o}
@@ -596,7 +596,7 @@ function CourseMatchCard({
           <button
             onClick={onEnroll}
             disabled={busy}
-            className="pw-btn-primary px-5 py-2.5 disabled:opacity-60 whitespace-nowrap"
+            className="pw-btn-primary px-6 py-2 disabled:opacity-60 whitespace-nowrap"
           >
             {busy ? "Enrolling…" : "Choose this course"}
           </button>
@@ -604,7 +604,7 @@ function CourseMatchCard({
             <Link
               to="/courses/$slug"
               params={{ slug: course.slug }}
-              className="pw-btn-outline px-5 py-2.5 text-center whitespace-nowrap"
+              className="pw-btn-outline px-6 py-2 text-center whitespace-nowrap"
             >
               Preview
             </Link>
@@ -631,22 +631,22 @@ function EmptyState({
       <div className="flex justify-center">
         <Icon name="target" className="h-12 w-12" />
       </div>
-      <h2 className="font-display text-[1.5rem] mt-3">No course clears both bars yet</h2>
+      <h2 className="font-display text-[1.5rem] mt-4">No course clears both bars yet</h2>
       <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-2 max-w-lg mx-auto">
         {subjectCourseCount === 0
           ? `No published ${subject ?? "course"} courses exist yet.`
           : `There are ${subjectCourseCount} ${subject ?? ""} course${subjectCourseCount === 1 ? "" : "s"} published, but none sits at ${bandLabel} from your ${matchedTutorCount} matched tutor${matchedTutorCount === 1 ? "" : "s"}.`}{" "}
         Widening your tutor match is usually the fastest fix.
       </p>
-      <div className="mt-6 flex flex-wrap gap-3 justify-center">
-        <Link to="/find-tutor" className="pw-btn-primary px-5 py-2.5">
+      <div className="mt-6 flex flex-wrap gap-4 justify-center">
+        <Link to="/find-tutor" className="pw-btn-primary px-6 py-2">
           Retake the tutor quiz
         </Link>
-        <Link to="/matches" search={{}} className="pw-btn-outline px-5 py-2.5">
+        <Link to="/matches" search={{}} className="pw-btn-outline px-6 py-2">
           Browse all matched tutors
         </Link>
       </div>
-      <p className="mt-5 text-[0.75rem] text-[var(--pw-ink-2)]">
+      <p className="mt-6 text-[0.75rem] text-[var(--pw-ink-2)]">
         You can also book a session with a matched tutor and ask them to publish a course at your
         level.
       </p>

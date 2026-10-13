@@ -42,7 +42,7 @@ export function TrustBadge({
   const m = MAP[status] ?? MAP.unverified;
   return (
     <span
-      className={`label-caps inline-flex items-center gap-1.5 rounded-full border border-solid px-2.5 py-1 ${className}`}
+      className={`label-caps inline-flex items-center gap-2 rounded-full border border-solid px-2 py-2 ${className}`}
       style={{ color: m.color, background: "transparent", borderColor: m.border }}
       title={`Verification: ${m.label}`}
     >

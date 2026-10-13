@@ -91,7 +91,7 @@ export function DashboardShell({
         }`}
       >
         {/* User profile (now at the top) */}
-        <div className="px-5 py-4 flex items-center gap-3 border-b border-[var(--pw-border)]">
+        <div className="px-6 py-4 flex items-center gap-4 border-b border-[var(--pw-border)]">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center font-display text-[0.8125rem] font-semibold bg-[var(--pw-ink)] text-[var(--pw-bg)] shrink-0"
             aria-hidden
@@ -155,13 +155,13 @@ export function DashboardShell({
         </nav>
 
         {/* Footer */}
-        <div className="p-3 border-t border-[var(--pw-border)]">
+        <div className="p-4 border-t border-[var(--pw-border)]">
           {isDemo ? (
             <button
               onClick={onExit}
-              className="w-full label-caps py-2 pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
+              className="w-full text-[0.8125rem] font-semibold py-2 pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
             >
-              ← Exit Demo
+              ← Exit demo
             </button>
           ) : (
             <button
@@ -169,7 +169,7 @@ export function DashboardShell({
                 await logout();
                 navigate({ to: "/" });
               }}
-              className="block w-full text-center label-caps py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)] transition-colors"
+              className="block w-full text-center text-[0.8125rem] font-semibold py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)] transition-colors"
             >
               Sign out
             </button>
@@ -182,19 +182,19 @@ export function DashboardShell({
         {banner}
         {/* Below lg: the drawer opens from here, in the page flow (it used to be a fixed
             button covering the header's logo). Its label says which section you're in. */}
-        <div className="lg:hidden px-5 sm:px-8 pt-4">
+        <div className="lg:hidden px-6 sm:px-8 pt-4">
           <button
             onClick={() => setOpen(true)}
             aria-expanded={open}
             aria-controls="dashboard-nav"
-            className="pw-pill min-h-11 px-3 inline-flex items-center gap-2"
+            className="pw-pill min-h-11 px-4 inline-flex items-center gap-2"
           >
             <Icon name="menu" className="h-4 w-4" />
             {current}
             <span className="sr-only">, open dashboard menu</span>
           </button>
         </div>
-        <main className="px-5 sm:px-8 pt-6 pb-24 max-w-7xl mx-auto">{children}</main>
+        <main className="px-6 sm:px-8 pt-6 pb-24 max-w-7xl mx-auto">{children}</main>
       </div>
     </div>
   );

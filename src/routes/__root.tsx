@@ -10,7 +10,7 @@ import { MotionConfig } from "framer-motion";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--pw-bg)] px-4">
-      <div className="pw-card max-w-md text-center py-10 px-8">
+      <div className="pw-card max-w-md text-center py-12 px-8">
         <div className="font-display font-bold uppercase tracking-[-0.025em] text-[1.5rem] text-[var(--pw-ink)]">
           PathWise
         </div>
@@ -22,7 +22,7 @@ function NotFoundComponent() {
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div className="mt-8">
-          <Link to="/" className="pw-btn-primary inline-flex items-center justify-center px-8 py-3">
+          <Link to="/" className="pw-btn-primary inline-flex items-center justify-center px-8 py-4">
             Go home
           </Link>
         </div>

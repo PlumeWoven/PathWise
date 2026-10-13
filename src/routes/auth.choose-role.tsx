@@ -117,16 +117,16 @@ function ChooseRolePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)] flex items-center justify-center px-5 py-12">
+    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)] flex items-center justify-center px-6 py-12">
       <motion.main
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
         className="w-full max-w-[35rem]"
       >
-        <div className="pw-card p-7">
+        <div className="pw-card p-8">
           <div className="label-caps text-[var(--pw-ink-2)]">One last step</div>
-          <h1 className="font-display text-[1.75rem] uppercase tracking-[-0.025em] leading-none mt-3">
+          <h1 className="font-display text-[1.75rem] uppercase tracking-[-0.025em] leading-none mt-4">
             {displayName ? `Welcome, ${displayName.split(" ")[0]}` : "Welcome to PathWise"}
           </h1>
           <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
@@ -136,7 +136,7 @@ function ChooseRolePage() {
 
           <fieldset className="mt-6">
             <legend className="sr-only">Choose your role</legend>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {OPTIONS.map((o) => {
                 const selected = choice === o.id;
                 return (
@@ -153,10 +153,10 @@ function ChooseRolePage() {
                     style={selected ? { background: "var(--pw-accent-soft)" } : undefined}
                   >
                     <Icon name={o.icon} className="h-6 w-6" />
-                    <div className="font-display text-[1rem] uppercase tracking-[-0.025em] leading-none mt-3">
+                    <div className="font-display text-[1rem] uppercase tracking-[-0.025em] leading-none mt-4">
                       {o.label}
                     </div>
-                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{o.sub}</div>
+                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{o.sub}</div>
                   </button>
                 );
               })}
@@ -166,7 +166,7 @@ function ChooseRolePage() {
           <button
             onClick={handleContinue}
             disabled={!choice || submitting}
-            className="pw-btn-primary w-full inline-flex justify-center items-center mt-6 px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="pw-btn-primary w-full inline-flex justify-center items-center mt-6 px-6 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? "Saving…" : "Continue →"}
           </button>

@@ -10,26 +10,26 @@ export function DemoBanner() {
   }, []);
   if (hidden) return null;
   return (
-    <div className="fixed inset-x-3 bottom-3 z-40 pw-card p-3 shadow-pw-float border border-[var(--pw-border)] sm:inset-x-auto sm:bottom-5 sm:right-5 sm:max-w-[21.25rem] sm:p-4">
-      <div className="flex items-start gap-3">
+    <div className="fixed inset-x-3 bottom-3 z-40 pw-card p-4 shadow-pw-float border border-[var(--pw-border)] sm:inset-x-auto sm:bottom-5 sm:right-5 sm:max-w-[21.25rem] sm:p-4">
+      <div className="flex items-start gap-4">
         <Icon name="film" className="hidden h-6 w-6 sm:block" />
         <div className="flex-1">
           <div className="font-display text-[0.9375rem] leading-tight">
             Want to see how Pathwise works?
           </div>
-          <p className="mt-1 hidden text-[0.75rem] text-[var(--pw-ink-2)] sm:block">
+          <p className="mt-2 hidden text-[0.75rem] text-[var(--pw-ink-2)] sm:block">
             No signup. Explore the full tutor & student experience with sample data.
           </p>
-          <div className="mt-2 flex gap-2 sm:mt-3">
-            <Link to="/pathwise/demo" className="pw-btn-primary px-3 py-1.5 max-sm:min-h-11">
-              Try Demo Mode →
+          <div className="mt-2 flex gap-2 sm:mt-4">
+            <Link to="/pathwise/demo" className="pw-btn-outline px-4 py-2 max-sm:min-h-11">
+              Try demo mode →
             </Link>
             <button
               onClick={() => {
                 localStorage.setItem("pw-demo-banner-hidden", "1");
                 setHidden(true);
               }}
-              className="label-caps min-h-11 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors px-2"
+              className="text-[0.8125rem] font-semibold min-h-11 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors px-2"
             >
               Dismiss
             </button>

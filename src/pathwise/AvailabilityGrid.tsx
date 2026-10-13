@@ -169,7 +169,7 @@ export function AvailabilityGrid({
         it. With a mouse you can drag to paint several; arrow keys move between slots.
       </p>
 
-      <div className="sm:hidden mt-3 grid grid-cols-7 gap-1" role="group" aria-label="Day to edit">
+      <div className="sm:hidden mt-4 grid grid-cols-7 gap-2" role="group" aria-label="Day to edit">
         {DAYS.map((d, i) => (
           <button
             key={d}
@@ -183,7 +183,7 @@ export function AvailabilityGrid({
         ))}
       </div>
 
-      <div ref={cellsRef} className="pw-card mt-3 p-3 select-none">
+      <div ref={cellsRef} className="pw-card mt-4 p-4 select-none">
         <div
           role="group"
           aria-label="Weekly availability"
@@ -194,7 +194,7 @@ export function AvailabilityGrid({
             <div
               key={d}
               aria-hidden="true"
-              className={`text-center label-caps text-[var(--pw-ink-2)] py-1 ${phoneHidden(i)}`}
+              className={`text-center label-caps text-[var(--pw-ink-2)] py-2 ${phoneHidden(i)}`}
             >
               {d}
             </div>
@@ -250,7 +250,7 @@ export function AvailabilityGrid({
           <button
             type="button"
             onClick={copyDayToAll}
-            className="pw-btn-outline px-3 py-1.5 inline-flex items-center gap-1.5 sm:ml-auto"
+            className="pw-btn-outline px-4 py-2 inline-flex items-center gap-2 sm:ml-auto"
           >
             <Copy className="w-3 h-3" aria-hidden="true" /> Copy {DAYS[col]} to all days
           </button>

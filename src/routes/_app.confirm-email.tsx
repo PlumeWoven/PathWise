@@ -113,7 +113,7 @@ function ConfirmEmailPage() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="flex items-center justify-center px-5 py-24">
+      <main className="flex items-center justify-center px-6 py-24">
         <div className="max-w-md w-full pw-card p-8 text-center">
           {status === "loading" && (
             <>
@@ -145,9 +145,9 @@ function ConfirmEmailPage() {
                 {errorMessage || "Something went wrong."}
               </p>
               <div className="flex flex-col gap-2 mt-6">
-                <Button onClick={() => navigate({ to: "/" })}>Go Home</Button>
+                <Button onClick={() => navigate({ to: "/" })}>Go home</Button>
                 <Button variant="outline" onClick={handleResend}>
-                  Resend Email
+                  Resend email
                 </Button>
               </div>
             </>

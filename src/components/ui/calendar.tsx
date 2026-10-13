@@ -25,7 +25,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "bg-background group/calendar p-3 text-[var(--pw-ink)] [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
+        "bg-transparent group/calendar p-4 text-[var(--pw-ink)] [--cell-size:2rem] [[data-slot=card-content]_&]:bg-transparent [[data-slot=popover-content]_&]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className,
@@ -36,11 +36,13 @@ function Calendar({
         ...formatters,
       }}
       classNames={{
-        root: cn("w-fit", defaultClassNames.root),
+        // Fills its container (days stretch to 1/7 each, square), so it never sits as a
+        // smaller block inside its card.
+        root: cn("w-full", defaultClassNames.root),
         months: cn("relative flex flex-col gap-4 md:flex-row", defaultClassNames.months),
         month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
         nav: cn(
-          "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
+          "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-2",
           defaultClassNames.nav,
         ),
         button_previous: cn(
@@ -58,7 +60,7 @@ function Calendar({
           defaultClassNames.month_caption,
         ),
         dropdowns: cn(
-          "label-caps flex h-(--cell-size) w-full items-center justify-center gap-1.5 text-[var(--pw-ink)]",
+          "label-caps flex h-(--cell-size) w-full items-center justify-center gap-2 text-[var(--pw-ink)]",
           defaultClassNames.dropdowns,
         ),
         dropdown_root: cn(
@@ -70,7 +72,7 @@ function Calendar({
           "label-caps select-none text-[var(--pw-ink)]",
           captionLayout === "label"
             ? ""
-            : "[&>svg]:text-muted-foreground flex h-8 items-center gap-1 pl-2 pr-1 [&>svg]:size-3.5",
+            : "[&>svg]:text-muted-foreground flex h-8 items-center gap-2 pl-2 pr-2 [&>svg]:size-3.5",
           defaultClassNames.caption_label,
         ),
         table: "w-full border-collapse",
@@ -162,7 +164,7 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "data-[selected-single=true]:bg-pw-accent-fill data-[selected-single=true]:text-pw-on-accent data-[selected-single=true]:hover:text-pw-on-accent data-[range-middle=true]:bg-[var(--pw-surface-2)] data-[range-middle=true]:text-[var(--pw-ink)] data-[range-start=true]:bg-pw-accent-fill data-[range-start=true]:text-pw-on-accent data-[range-start=true]:hover:text-pw-on-accent data-[range-end=true]:bg-pw-accent-fill data-[range-end=true]:text-pw-on-accent data-[range-end=true]:hover:text-pw-on-accent group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring flex aspect-square h-auto w-full min-w-(--cell-size) flex-col gap-1 text-sm font-normal normal-case leading-none tracking-normal text-inherit group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-2 [&>span]:text-xs [&>span]:opacity-70",
+        "data-[selected-single=true]:bg-pw-accent-fill data-[selected-single=true]:text-pw-on-accent data-[selected-single=true]:hover:text-pw-on-accent data-[range-middle=true]:bg-[var(--pw-surface-2)] data-[range-middle=true]:text-[var(--pw-ink)] data-[range-start=true]:bg-pw-accent-fill data-[range-start=true]:text-pw-on-accent data-[range-start=true]:hover:text-pw-on-accent data-[range-end=true]:bg-pw-accent-fill data-[range-end=true]:text-pw-on-accent data-[range-end=true]:hover:text-pw-on-accent group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring flex aspect-square h-auto w-full min-w-(--cell-size) flex-col gap-2 text-sm font-normal normal-case leading-none tracking-normal text-inherit group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-2 [&>span]:text-xs [&>span]:opacity-70",
         defaultClassNames.day,
         className,
       )}

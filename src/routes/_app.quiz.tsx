@@ -313,18 +313,18 @@ function QuizPageInner() {
     <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)] relative">
       {/* XP indicator (during quiz) */}
       {(phase === "quiz" || phase === "intro") && (
-        <div className="fixed top-[4.375rem] right-4 sm:top-[4.625rem] sm:right-6 z-30 flex items-center gap-2 pw-card px-3 py-1.5 label-caps">
+        <div className="fixed top-[4.375rem] right-4 sm:top-[4.625rem] sm:right-6 z-30 flex items-center gap-2 pw-card px-4 py-2 label-caps">
           <Icon name="sparkles" className="h-4 w-4" />
           <span>{pw.totalXP} XP</span>
           {pw.streak >= 3 && (
-            <span className="ml-2 inline-flex items-center gap-1 text-[var(--pw-accent)]">
+            <span className="ml-2 inline-flex items-center gap-2 text-[var(--pw-accent)]">
               <Icon name="flame" className="h-4 w-4" /> {pw.streak}
             </span>
           )}
         </div>
       )}
 
-      <main className="px-5 sm:px-8 pb-20">
+      <main className="px-6 sm:px-8 pb-24">
         <AnimatedStepper
           steps={STEPS}
           currentStep={step}
@@ -364,14 +364,14 @@ function QuizPageInner() {
 
           {phase === "goal" && (
             <Step key="goal" title="What's your main goal right now?" direction={direction}>
-              <div className="flex flex-wrap gap-2.5 mt-8 justify-center">
+              <div className="flex flex-wrap gap-2 mt-8 justify-center">
                 {GOALS.map((g) => {
                   const selected = pw.goal === g.id;
                   return (
                     <button
                       key={g.id}
                       onClick={() => pickGoal(g.id)}
-                      className={`pw-pill px-5 py-3 ${selected ? "is-active" : ""}`}
+                      className={`pw-pill px-6 py-4 ${selected ? "is-active" : ""}`}
                     >
                       <Icon name={g.icon} className="h-4 w-4" />
                       {g.label}
@@ -397,21 +397,21 @@ function QuizPageInner() {
                 <h2 className="font-display text-[2rem] mt-4 leading-none uppercase tracking-[-0.025em]">
                   Level Check: Unlocked
                 </h2>
-                <p className="text-[0.9375rem] text-[var(--pw-ink-2)] mt-3">
+                <p className="text-[0.9375rem] text-[var(--pw-ink-2)] mt-4">
                   {ADAPTIVE_LENGTH} questions that adapt as you go — get one right and the next gets
                   harder, miss one and it eases off. That's how we place you precisely.
                 </p>
                 <div
-                  className="mt-5 text-[0.8125rem] px-4 py-3 border border-[var(--pw-border)] text-left"
+                  className="mt-6 text-[0.8125rem] px-4 py-4 border border-[var(--pw-border)] text-left"
                   style={{ background: "var(--pw-surface-2)" }}
                 >
                   <div className="label-caps text-[var(--pw-ink-2)]">Why it matters</div>
-                  <p className="mt-1.5 text-[var(--pw-ink-2)]">
+                  <p className="mt-2 text-[var(--pw-ink-2)]">
                     Your level decides which of your matched tutors' courses unlock each stage of
                     your roadmap.
                   </p>
                 </div>
-                <button onClick={beginQuiz} className="pw-btn-primary mt-7 px-8 py-3.5">
+                <button onClick={beginQuiz} className="pw-btn-primary mt-8 px-8 py-4">
                   Begin →
                 </button>
               </div>
@@ -429,7 +429,7 @@ function QuizPageInner() {
               className="max-w-[35rem] mx-auto mt-12"
             >
               <div
-                className={`pw-card p-6 sm:p-7 relative ${
+                className={`pw-card p-6 sm:p-8 relative ${
                   feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
                 }`}
               >
@@ -437,17 +437,17 @@ function QuizPageInner() {
                   <span>
                     Question {asked + 1} of {ADAPTIVE_LENGTH}
                   </span>
-                  <span className="pw-pill px-2 py-0.5 text-pw-accent gap-1">
+                  <span className="pw-pill px-2 py-0 text-pw-accent gap-2">
                     <Icon name="sparkles" className="h-3.5 w-3.5" /> {pw.totalXP} XP
                   </span>
                 </div>
-                <div className="mt-3 pw-progress">
+                <div className="mt-4 pw-progress">
                   <div
                     className="pw-progress-fill transition-all duration-500"
                     style={{ width: `${((asked + 1) / ADAPTIVE_LENGTH) * 100}%` }}
                   />
                 </div>
-                <div className="flex items-center gap-2 mt-5">
+                <div className="flex items-center gap-2 mt-6">
                   <span className="label-caps text-[var(--pw-ink-2)]">{question.topic}</span>
                   <span
                     className="pw-badge"
@@ -458,7 +458,7 @@ function QuizPageInner() {
                 </div>
                 <h3 className="text-[1.125rem] font-medium mt-2 leading-snug">{question.question}</h3>
 
-                <div className="mt-5 space-y-3 relative">
+                <div className="mt-6 space-y-4 relative">
                   {question.options.map((opt, i) => {
                     const last = run.answers[run.answers.length - 1];
                     const selectedThis =
@@ -474,7 +474,7 @@ function QuizPageInner() {
                         key={i}
                         onClick={() => answer(i)}
                         disabled={feedback !== "none"}
-                        className={`w-full text-left px-5 py-3 border border-[var(--pw-border)] text-[0.9375rem] transition-colors relative ${cls}`}
+                        className={`w-full text-left px-6 py-4 border border-[var(--pw-border)] text-[0.9375rem] transition-colors relative ${cls}`}
                         style={
                           feedback !== "none" && isCorrect
                             ? {
@@ -501,7 +501,7 @@ function QuizPageInner() {
                 {feedback === "correct" && (
                   <div
                     role="status"
-                    className="mt-4 text-[0.8125rem] flex items-center gap-1.5"
+                    className="mt-4 text-[0.8125rem] flex items-center gap-2"
                     style={{ color: "var(--pw-accent-2)" }}
                   >
                     <Icon name="check" className="h-4 w-4" /> Correct — stepping up the difficulty.
@@ -518,13 +518,13 @@ function QuizPageInner() {
                 )}
 
                 {pw.streak >= 3 && feedback === "correct" && (
-                  <div className="mt-2 text-[0.75rem] text-[var(--pw-accent)] flex items-center gap-1.5">
+                  <div className="mt-2 text-[0.75rem] text-[var(--pw-accent)] flex items-center gap-2">
                     <Icon name="flame" className="h-4 w-4" /> {pw.streak} in a row!
                   </div>
                 )}
 
                 {feedback !== "none" && (
-                  <button autoFocus onClick={advance} className="pw-btn-primary mt-5 px-5 py-2.5">
+                  <button autoFocus onClick={advance} className="pw-btn-primary mt-6 px-6 py-2">
                     Next →
                   </button>
                 )}
@@ -551,8 +551,8 @@ function QuizPageInner() {
                     }}
                   >
                     <div className="label-caps opacity-90">YOUR LEVEL</div>
-                    <Icon name={LEVEL_META[lvl].icon} className="h-8 w-8 mt-1 text-pw-on-accent" />
-                    <div className="font-display text-[1.75rem] font-bold leading-none mt-1">
+                    <Icon name={LEVEL_META[lvl].icon} className="h-8 w-8 mt-2 text-pw-on-accent" />
+                    <div className="font-display text-[1.75rem] font-bold leading-none mt-2">
                       {lvl}
                     </div>
                     <div className="font-mono-pw text-[0.75rem] mt-2 opacity-90">
@@ -562,7 +562,7 @@ function QuizPageInner() {
                 </div>
 
                 <div
-                  className="mt-3 font-mono-pw text-[0.875rem] flex items-center justify-center gap-1.5"
+                  className="mt-4 font-mono-pw text-[0.875rem] flex items-center justify-center gap-2"
                   style={{ color: "var(--pw-accent)" }}
                 >
                   <Icon name="sparkles" className="h-4 w-4" /> {pw.totalXP} XP Earned
@@ -571,14 +571,14 @@ function QuizPageInner() {
 
                 {/* Per-topic breakdown — the strands the roadmap will lean on */}
                 {topicEntries.length > 0 && (
-                  <div className="mt-5 text-left">
+                  <div className="mt-6 text-left">
                     <div className="label-caps text-[var(--pw-ink-2)] mb-2">By topic</div>
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       {topicEntries.map(([topic, band]) => (
                         <div key={topic} className="flex items-center justify-between text-[0.8125rem]">
                           <span className="text-[var(--pw-ink-2)]">{topic}</span>
-                          <span className="flex items-center gap-1.5">
-                            <span className="flex gap-0.5">
+                          <span className="flex items-center gap-2">
+                            <span className="flex gap-0">
                               {[1, 2, 3, 4, 5].map((n) => (
                                 <span
                                   key={n}
@@ -603,7 +603,7 @@ function QuizPageInner() {
                 <button
                   onClick={handleBuildRoadmap}
                   disabled={buildingRoadmap}
-                  className="pw-btn-primary mt-7 w-full px-7 py-3.5 disabled:opacity-60"
+                  className="pw-btn-primary mt-8 w-full px-8 py-4 disabled:opacity-60"
                 >
                   {buildingRoadmap ? "Building..." : "Build My Roadmap →"}
                 </button>
