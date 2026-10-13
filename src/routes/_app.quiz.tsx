@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import confetti from "canvas-confetti";
+import { burst } from "@/lib/celebrate";
 import { GOALS, LEVEL_META, SUBJECTS, Subject, GoalId, QuizQuestion } from "../pathwise/data";
 import {
   ADAPTIVE_LENGTH,
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/_app/quiz")({
   component: QuizPage,
 });
 
-type Phase = "subject" | "goal" | "intro" | "quiz" | "loading" | "result";
+type Phase = "subject" | "goal" | "intro" | "quiz" | "result";
 
 const STEPS = ["Subject", "Goal", "Level check", "Your level"];
 // Result shows every step complete (STEPS.length + 1).
@@ -56,7 +56,6 @@ const PHASE_STEP: Record<Phase, number> = {
   goal: 2,
   intro: 3,
   quiz: 3,
-  loading: 4,
   result: 5,
 };
 
@@ -75,7 +74,10 @@ function QuizPageInner() {
   const [feedback, setFeedback] = useState<"none" | "correct" | "wrong">("none");
   const [floatXP, setFloatXP] = useState(false);
   const [xpGain, setXpGain] = useState(0);
-  const [loadingText, setLoadingText] = useState("Analyzing your answers...");
+  // The answered run waiting for "Next" (or the short auto-advance after a correct answer).
+  const pendingRef = useRef<AdaptiveState | null>(null);
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(advanceTimer.current), []);
   // REMOVED: separate diagnosticId state — now handled inside the unified save function
   const [buildingRoadmap, setBuildingRoadmap] = useState(false);
   const savedRef = useRef(false);
@@ -101,14 +103,15 @@ function QuizPageInner() {
   // Subject and goal can be revisited until the quiz starts; answers can't be undone after that.
   const canJumpBack = phase === "goal" || phase === "intro";
 
+  // Picks advance at once; the press state is the feedback (no 300 ms wait).
   const pickSubject = (s: Subject) => {
     setState({ subject: s });
-    setTimeout(() => setPhase("goal"), 300);
+    setPhase("goal");
   };
 
   const pickGoal = (g: GoalId) => {
     setState({ goal: g });
-    setTimeout(() => setPhase("intro"), 300);
+    setPhase("intro");
   };
 
   const beginQuiz = () => {
@@ -140,16 +143,21 @@ function QuizPageInner() {
     }
 
     setFeedback(correct ? "correct" : "wrong");
-    const delay = correct ? 900 : 1700;
-    setTimeout(() => {
-      setFeedback("none");
-      const following = nextQuestion(pw.subject!, next);
-      if (!following) {
-        finish(next);
-      } else {
-        setQuestion(following);
-      }
-    }, delay);
+    // Feedback stays until "Next" (focused, so Enter works). A correct answer also moves on
+    // by itself after 600 ms; a wrong one waits, so the right answer can be read.
+    pendingRef.current = next;
+    if (correct) advanceTimer.current = setTimeout(advance, 600);
+  };
+
+  const advance = () => {
+    const next = pendingRef.current;
+    if (!next || !pw.subject) return;
+    pendingRef.current = null;
+    clearTimeout(advanceTimer.current);
+    setFeedback("none");
+    const following = nextQuestion(pw.subject, next);
+    if (!following) finish(next);
+    else setQuestion(following);
   };
 
   const finish = (state: AdaptiveState) => {
@@ -161,30 +169,10 @@ function QuizPageInner() {
       topicBands: topicBands(state),
       totalXP: earnedXP(state),
     });
-    setPhase("loading");
-    const phrases = [
-      "Analyzing your answers...",
-      "Calibrating difficulty...",
-      "Placing you in a level band...",
-    ];
-    let i = 0;
-    setLoadingText(phrases[0]);
-    const t = setInterval(() => {
-      i = (i + 1) % phrases.length;
-      setLoadingText(phrases[i]);
-    }, 500);
-    setTimeout(() => {
-      clearInterval(t);
-      setPhase("result");
-      setTimeout(() => {
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.4 },
-          colors: ["#e8913c", "#5fa3ab", "#ede7dc", "#2e6b72"],
-        });
-      }, 200);
-    }, 1600);
+    // The placement is computed synchronously, so the result shows at once
+    // (it used to sit behind a fixed 1.6 s "Analyzing..." screen).
+    setPhase("result");
+    burst({ particleCount: 80, spread: 70, origin: { y: 0.4 } });
   };
 
   // ─── FIXED: one atomic function — diagnostic + roadmap saved together ────────
@@ -344,7 +332,8 @@ function QuizPageInner() {
           className="mx-auto max-w-[35rem] pt-12"
         />
 
-        <AnimatePresence mode="wait" custom={direction}>
+        {/* popLayout, not "wait": the next step mounts while the old one leaves. */}
+        <AnimatePresence mode="popLayout" custom={direction}>
           {phase === "subject" && (
             <Step key="subject" title="What do you want to get better at?" direction={direction}>
               <div className="grid grid-cols-2 gap-4 mt-8">
@@ -511,6 +500,7 @@ function QuizPageInner() {
 
                 {feedback === "correct" && (
                   <div
+                    role="status"
                     className="mt-4 text-[0.8125rem] flex items-center gap-1.5"
                     style={{ color: "var(--pw-accent-2)" }}
                   >
@@ -518,7 +508,7 @@ function QuizPageInner() {
                   </div>
                 )}
                 {feedback === "wrong" && (
-                  <div className="mt-4 text-[0.8125rem] text-[var(--pw-ink-2)]">
+                  <div role="status" className="mt-4 text-[0.8125rem] text-[var(--pw-ink-2)]">
                     Not quite — the answer was{" "}
                     <strong style={{ color: "var(--pw-accent-2)" }}>
                       {question.options[question.correctIndex]}
@@ -532,59 +522,13 @@ function QuizPageInner() {
                     <Icon name="flame" className="h-4 w-4" /> {pw.streak} in a row!
                   </div>
                 )}
-              </div>
-            </motion.div>
-          )}
 
-          {phase === "loading" && (
-            <motion.div
-              key="loading"
-              variants={stepSlide}
-              custom={direction}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              className="flex flex-col items-center justify-center mt-24"
-            >
-              <div className="relative w-16 h-16">
-                <svg
-                  viewBox="0 0 50 50"
-                  className="w-full h-full animate-spin"
-                  style={{ animationDuration: "1.2s" }}
-                >
-                  <circle
-                    cx="25"
-                    cy="25"
-                    r="20"
-                    stroke="var(--pw-surface-2)"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <circle
-                    cx="25"
-                    cy="25"
-                    r="20"
-                    stroke="var(--pw-accent)"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeDasharray="125"
-                    strokeDashoffset="80"
-                    strokeLinecap="round"
-                  />
-                </svg>
+                {feedback !== "none" && (
+                  <button autoFocus onClick={advance} className="pw-btn-primary mt-5 px-5 py-2.5">
+                    Next →
+                  </button>
+                )}
               </div>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={loadingText}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-5 text-[0.875rem] text-[var(--pw-ink-2)]"
-                >
-                  {loadingText}
-                </motion.div>
-              </AnimatePresence>
             </motion.div>
           )}
 
@@ -676,14 +620,18 @@ function Step({
   title,
   direction,
   children,
+  ref,
 }: {
   title: string;
   direction: number;
   children: React.ReactNode;
   key?: React.Key;
+  // AnimatePresence popLayout measures the exiting step through this ref.
+  ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
     <motion.div
+      ref={ref}
       variants={stepSlide}
       custom={direction}
       initial="enter"
