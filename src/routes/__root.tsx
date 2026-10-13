@@ -3,7 +3,7 @@ import appCss from "../styles.css?url";
 import { AuthProvider } from "../pathwise/auth";
 import { DarkModeProvider } from "../pathwise/DarkMode";
 import { LoginModal } from "../pathwise/LoginModal";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { MotionConfig } from "framer-motion";
 

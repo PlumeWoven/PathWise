@@ -160,8 +160,9 @@ function FindTutorPageInner() {
         </div>
       </div>
 
-      <main className="px-5 py-10 max-w-2xl mx-auto">
-        <AnimatePresence mode="wait" custom={direction}>
+      <main className="relative px-5 py-10 max-w-2xl mx-auto">
+        {/* popLayout, not "wait": the next question mounts while the old one leaves. */}
+        <AnimatePresence mode="popLayout" custom={direction}>
           <motion.div
             key={step}
             custom={direction}
@@ -282,7 +283,7 @@ function Q1({
               onClick={() => {
                 onChange("subject", s.id);
                 onChange("multi_subject", false);
-                setTimeout(onNext, 200);
+                onNext();
               }}
               className={`pw-card p-4 flex flex-col items-center text-center transition-colors hover:border-[var(--pw-ink)] ${active ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
             >
@@ -296,7 +297,7 @@ function Q1({
         onClick={() => {
           onChange("multi_subject", true);
           onChange("subject", undefined);
-          setTimeout(onNext, 150);
+          onNext();
         }}
         className="mt-5 w-full pw-btn-outline px-4 py-3"
         style={
@@ -665,11 +666,6 @@ function deriveTraits(a: Answers): string[] {
 
 function Results({ answers, onRestart }: { answers: Answers; onRestart: () => void }) {
   const { user } = useAuth();
-  const [matching, setMatching] = useState(true);
-  useEffect(() => {
-    const t = setTimeout(() => setMatching(false), 1800);
-    return () => clearTimeout(t);
-  }, []);
 
   const traits = useMemo(() => deriveTraits(answers), [answers]);
   const subjLabel = answers.subject
@@ -680,89 +676,70 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
 
   return (
     <div className="pt-6">
-      <AnimatePresence mode="wait">
-        {matching ? (
-          <motion.div key="matching" exit={{ opacity: 0 }} className="text-center py-12">
-            <motion.div
-              className="flex justify-center"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}
-            >
-              <Icon name="sparkles" className="h-12 w-12" />
-            </motion.div>
-            <div className="font-display text-[1.625rem] leading-none uppercase tracking-[-0.025em] mt-4">
-              Finding your perfect match…
-            </div>
-            <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">
-              Analyzing your learning profile
-            </div>
+      {/* Shown at once: the profile is derived synchronously (it sat behind a 1.8 s fake loader). */}
+      <motion.div key="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        {/* Profile card */}
+        <div className="relative pw-card p-7 overflow-hidden">
+          <motion.div
+            className="absolute -top-8 -right-8 opacity-10"
+            animate={{ rotate: [0, 8, -8, 0] }}
+            transition={{ duration: 6, repeat: Infinity }}
+          >
+            <Icon name="target" className="h-32 w-32" />
           </motion.div>
-        ) : (
-          <motion.div key="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            {/* Profile card */}
-            <div className="relative pw-card p-7 overflow-hidden">
-              <motion.div
-                className="absolute -top-8 -right-8 opacity-10"
-                animate={{ rotate: [0, 8, -8, 0] }}
-                transition={{ duration: 6, repeat: Infinity }}
+          <div className="label-caps text-[var(--pw-ink-2)]">Your learning profile</div>
+          <div className="font-display text-[2rem] leading-none uppercase tracking-[-0.025em] mt-2">
+            The {traits[0] ?? "Curious Learner"}
+          </div>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {traits.map((t, i) => (
+              <motion.span
+                key={t}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.1 + i * 0.08 }}
+                className="pw-pill px-3 py-1 bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
               >
-                <Icon name="target" className="h-32 w-32" />
-              </motion.div>
-              <div className="label-caps text-[var(--pw-ink-2)]">Your learning profile</div>
-              <div className="font-display text-[2rem] leading-none uppercase tracking-[-0.025em] mt-2">
-                The {traits[0] ?? "Curious Learner"}
-              </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {traits.map((t, i) => (
-                  <motion.span
-                    key={t}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 + i * 0.08 }}
-                    className="pw-pill px-3 py-1 bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
-                  >
-                    {t}
-                  </motion.span>
-                ))}
-              </div>
-              <div className="mt-6 grid grid-cols-2 gap-4 text-[0.8125rem]">
-                <Field label="Subject" value={subjLabel ?? "—"} />
-                <Field label="Level" value={cap(answers.experience_level)} />
-                <Field label="Frequency" value={freqLabel(answers.frequency)} />
-                <Field
-                  label="Budget"
-                  value={answers.budget_max ? `Up to ${formatPrice(answers.budget_max)}/hr` : "—"}
-                />
-              </div>
-            </div>
+                {t}
+              </motion.span>
+            ))}
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-4 text-[0.8125rem]">
+            <Field label="Subject" value={subjLabel ?? "—"} />
+            <Field label="Level" value={cap(answers.experience_level)} />
+            <Field label="Frequency" value={freqLabel(answers.frequency)} />
+            <Field
+              label="Budget"
+              value={answers.budget_max ? `Up to ${formatPrice(answers.budget_max)}/hr` : "—"}
+            />
+          </div>
+        </div>
 
-            {/* CTAs */}
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Link
-                to="/matches"
-                search={(prev: Record<string, unknown>) => ({
-                  ...prev,
-                  subject: answers.subject,
-                  budget: answers.budget_max,
-                  level: answers.experience_level,
-                })}
-                className="pw-btn-primary text-center px-5 py-3"
-              >
-                View my matches →
-              </Link>
-              <button onClick={onRestart} className="pw-btn-outline px-5 py-3">
-                Retake the quiz
-              </button>
-            </div>
+        {/* CTAs */}
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Link
+            to="/matches"
+            search={(prev: Record<string, unknown>) => ({
+              ...prev,
+              subject: answers.subject,
+              budget: answers.budget_max,
+              level: answers.experience_level,
+            })}
+            className="pw-btn-primary text-center px-5 py-3"
+          >
+            View my matches →
+          </Link>
+          <button onClick={onRestart} className="pw-btn-outline px-5 py-3">
+            Retake the quiz
+          </button>
+        </div>
 
-            {!user && (
-              <div className="mt-5 text-center text-[0.75rem] text-[var(--pw-ink-2)]">
-                Your answers are saved locally. Sign up to keep them.
-              </div>
-            )}
-          </motion.div>
+        {!user && (
+          <div className="mt-5 text-center text-[0.75rem] text-[var(--pw-ink-2)]">
+            Your answers are saved locally. Sign up to keep them.
+          </div>
         )}
-      </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

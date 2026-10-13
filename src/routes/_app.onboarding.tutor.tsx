@@ -4,7 +4,7 @@ import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Cropper, { Area } from "react-easy-crop";
-import confetti from "canvas-confetti";
+import { burst } from "@/lib/celebrate";
 import {
   Camera,
   Check,
@@ -31,7 +31,6 @@ export const Route = createFileRoute("/_app/onboarding/tutor")({
 
 const STORAGE_KEY = "pw_tutor_onboarding_v1";
 // QED palette: amber, teal-ink, paper, teal. canvas-confetti needs literal colours.
-const CONFETTI_COLORS = ["#e8913c", "#5fa3ab", "#ede7dc", "#2e6b72"];
 const STEPS = ["Basic Info", "Expertise", "Video Intro", "Availability", "Pricing", "Review"];
 const EDU_LEVELS = ["High School", "Bachelor's", "Master's", "PhD", "Other"];
 
@@ -383,12 +382,8 @@ function TutorWizard() {
       toast.error("Couldn't publish profile.");
       return;
     }
-    confetti({ particleCount: 140, spread: 80, origin: { y: 0.65 }, colors: CONFETTI_COLORS });
-    setTimeout(
-      () =>
-        confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 }, colors: CONFETTI_COLORS }),
-      250,
-    );
+    burst({ particleCount: 140, spread: 80, origin: { y: 0.65 } });
+    setTimeout(() => burst({ particleCount: 80, spread: 100, origin: { y: 0.6 } }), 250);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {

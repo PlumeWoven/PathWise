@@ -138,6 +138,8 @@ body,
 }
 
 :root {
+  /* Native controls (selects, date pickers, checkboxes, scrollbars) follow the theme. */
+  color-scheme: light;
   --radius: 0px;
   /* Height of the sticky site header; sticky bars below it offset by this. */
   --pw-header-h: 3.625rem;
@@ -207,6 +209,7 @@ body,
 }
 
 .dark {
+  color-scheme: dark;
   /* QED dark = the exact landing palette (see --color-qed-* above). */
   --pw-bg: #0a0c0e;
   --pw-surface: #16191e;
@@ -480,7 +483,7 @@ textarea.bg-white {
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, scale 0.08s ease-out;
 }
 
 .pw-btn-primary:hover:not(:disabled) {
@@ -505,7 +508,7 @@ textarea.bg-white {
   text-transform: uppercase;
   color: var(--pw-ink);
   background-color: transparent;
-  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, scale 0.08s ease-out;
 }
 
 .pw-btn-secondary:hover:not(:disabled) {
@@ -674,7 +677,7 @@ textarea.bg-white {
     color: var(--pw-ink);
     background-color: transparent;
     border: 1px solid var(--pw-border);
-    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, scale 0.08s ease-out;
   }
 
   .pw-pill:hover {
@@ -717,11 +720,17 @@ textarea.bg-white {
     font-weight: 600;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+    transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, scale 0.08s ease-out;
   }
 
   .pw-btn-outline:hover:not(:disabled) {
     border-color: var(--pw-ink);
+  }
+
+  /* Press feedback on pointer-down, not on release (apple-design §1): a tap on a phone,
+     which has no hover, now shows something immediately. */
+  :is(.pw-btn-primary, .pw-btn-secondary, .pw-btn-outline, .pw-pill):active:not(:disabled) {
+    scale: 0.97;
   }
 
   .pw-tracking-wide {

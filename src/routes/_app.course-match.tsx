@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import confetti from "canvas-confetti";
+import { burst } from "@/lib/celebrate";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "../pathwise/auth";
 import { RoleGate } from "../pathwise/RoleGate";
@@ -209,12 +209,7 @@ function CourseMatchPageInner() {
       await completeEnrollment(enrollment.id);
       const fresh = await getStageEnrollment(stage.id);
       setEnrollment(fresh);
-      confetti({
-        particleCount: 70,
-        spread: 65,
-        origin: { y: 0.5 },
-        colors: ["#e8913c", "#5fa3ab", "#ede7dc", "#2e6b72"],
-      });
+      burst({ particleCount: 70, spread: 65, origin: { y: 0.5 } });
       toast.success("Course complete — this stage is unlocked.");
     } catch (err: unknown) {
       console.error("[course-match] complete", err);

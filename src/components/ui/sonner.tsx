@@ -1,10 +1,14 @@
 import { Toaster as Sonner } from "sonner";
+import { useDarkMode } from "@/pathwise/DarkMode";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  // Sonner defaults to light; follow the app's theme (set on <html>, not the OS).
+  const { theme } = useDarkMode();
   return (
     <Sonner
+      theme={theme}
       className="toaster group"
       toastOptions={{
         classNames: {

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import confetti from "canvas-confetti";
+import { burst } from "@/lib/celebrate";
 import { toast } from "sonner";
 import { LEVEL_META, Subject, Level } from "../pathwise/data";
 import { Icon, type IconName } from "@/components/Icon";
@@ -454,14 +454,9 @@ function RoadmapPageInner() {
       );
       setRoadmap({ ...roadmap, current_stage: stage.stage_number + 1 });
 
-      // Confetti + overlay (unchanged)
+      // Confetti (skipped under reduced motion) + the completion dialog
       const fire = (origin: { x: number; y: number }) =>
-        confetti({
-          particleCount: 90,
-          spread: 75,
-          origin,
-          colors: ["#e8913c", "#5fa3ab", "#ede7dc", "#2e6b72"],
-        });
+        burst({ particleCount: 90, spread: 75, origin });
       fire({ x: 0.3, y: 0.5 });
       fire({ x: 0.7, y: 0.5 });
       setTimeout(() => fire({ x: 0.5, y: 0.4 }), 250);
