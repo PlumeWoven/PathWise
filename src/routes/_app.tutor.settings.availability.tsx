@@ -1,11 +1,11 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { COMMON_TIMEZONES, detectTimezone } from "../pathwise/scheduling";
-import { Globe, Clock, Copy, Save, AlertTriangle } from "lucide-react";
+import { Globe, Clock, Save, AlertTriangle } from "lucide-react";
+import { AvailabilityGrid, type CellState } from "../pathwise/AvailabilityGrid";
 
 // Availability renders inside DashboardShell at /dashboard/calendar.
 // Kept as a redirect so existing links and bookmarks still land there.
@@ -15,12 +15,8 @@ export const Route = createFileRoute("/_app/tutor/settings/availability")({
   },
 });
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const DAY_INDEX = [1, 2, 3, 4, 5, 6, 0];
-const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const BUFFER_OPTIONS = [0, 15, 30, 60];
 
-type CellState = "free" | "available" | "blocked" | "booked";
 
 export function AvailabilityPage() {
   const { user, isLoggedIn } = useAuth();
@@ -40,7 +36,6 @@ export function AvailabilityPage() {
   const [saving, setSaving] = useState(false);
   const [tzMismatch, setTzMismatch] = useState<string | null>(null);
 
-  const dragMode = useRef<CellState | null>(null);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -98,54 +93,6 @@ export function AvailabilityPage() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function cellState(day: number, hour: number): CellState {
-    const key = `${day}-${hour}`;
-    if (bookedSlots.has(key)) return "booked";
-    return grid[key] ?? "free";
-  }
-
-  function paint(day: number, hour: number, mode: CellState) {
-    const key = `${day}-${hour}`;
-    if (bookedSlots.has(key)) return;
-    setGrid((g) => ({ ...g, [key]: mode }));
-  }
-
-  function nextMode(current: CellState): CellState {
-    if (current === "free") return "available";
-    if (current === "available") return "blocked";
-    return "free";
-  }
-
-  function onCellMouseDown(day: number, hour: number) {
-    const cur = cellState(day, hour);
-    if (cur === "booked") return;
-    const target = nextMode(cur);
-    dragMode.current = target;
-    paint(day, hour, target);
-  }
-
-  function onCellEnter(day: number, hour: number) {
-    if (dragMode.current === null) return;
-    paint(day, hour, dragMode.current);
-  }
-
-  function copyMondayToAll() {
-    setGrid((g) => {
-      const next = { ...g };
-      for (let h = 0; h < 24; h++) {
-        const src = next[`1-${h}`];
-        for (const day of [2, 3, 4, 5, 6, 0]) {
-          const k = `${day}-${h}`;
-          if (bookedSlots.has(k)) continue;
-          if (src) next[k] = src;
-          else delete next[k];
-        }
-      }
-      return next;
-    });
-    toast.success("Copied Monday to all weekdays + weekend");
   }
 
   function compactGrid(): Array<{
@@ -249,11 +196,7 @@ export function AvailabilityPage() {
   }
 
   return (
-    <div
-      className="bg-[var(--pw-bg)] text-[var(--pw-ink)]"
-      onMouseUp={() => (dragMode.current = null)}
-      onMouseLeave={() => (dragMode.current = null)}
-    >
+    <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <div className="py-6 max-w-5xl mx-auto pb-24">
         <div className="flex items-baseline justify-between flex-wrap gap-3">
           <div>
@@ -261,8 +204,7 @@ export function AvailabilityPage() {
               Your weekly availability
             </h1>
             <p className="text-sm text-[var(--pw-ink-2)] mt-1">
-              Click a cell to mark it available. Click again to block it (vacation/time off). Drag
-              to paint multiple cells.
+              The hours students can book you each week, in your time zone.
             </p>
           </div>
           <Link to="/dashboard" className="pw-btn-outline px-4 py-2">
@@ -362,21 +304,7 @@ export function AvailabilityPage() {
           </p>
         </div>
 
-        <div className="mt-4 flex items-center gap-4 flex-wrap">
-          {/* These must stay in lockstep with the cell colours in HourRow below.
-              They were hardcoded hex that no longer matched: booked cells render
-              with --pw-accent-fill (orange) while the swatch claimed #3B82F6 (blue), so
-              a booked slot looked like an unexplained colour. */}
-          <Legend color="var(--pw-accent-2)" label="Available" />
-          <Legend color="var(--pw-ink-2)" label="Blocked / time off" />
-          <Legend color="var(--pw-accent-fill)" label="Booked" />
-          <Legend color="var(--pw-input-bg)" label="Free" border />
-          <button
-            onClick={copyMondayToAll}
-            className="pw-btn-outline px-3 py-1.5 flex items-center gap-1.5 ml-auto"
-          >
-            <Copy className="w-3 h-3" /> Copy Monday to all days
-          </button>
+        <div className="mt-4 flex justify-end">
           <button
             onClick={save}
             disabled={saving}
@@ -386,90 +314,15 @@ export function AvailabilityPage() {
           </button>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="pw-card mt-4 overflow-x-auto select-none"
-        >
-          <div className="min-w-[40rem] p-3">
-            <div className="grid grid-cols-[3.75rem_repeat(7,1fr)] gap-px">
-              <div />
-              {DAYS.map((d) => (
-                <div key={d} className="text-center label-caps text-[var(--pw-ink-2)] py-2">
-                  {d}
-                </div>
-              ))}
-              {HOURS.map((h) => (
-                <Hour
-                  key={h}
-                  hour={h}
-                  cellState={cellState}
-                  onMouseDown={onCellMouseDown}
-                  onMouseEnter={onCellEnter}
-                />
-              ))}
-            </div>
-          </div>
-        </motion.div>
+        <AvailabilityGrid
+          grid={grid}
+          onChange={setGrid}
+          bookedSlots={bookedSlots}
+          className="mt-4"
+        />
 
         {loading && <p className="text-sm text-[var(--pw-ink-2)] mt-4">Loading…</p>}
       </div>
-    </div>
-  );
-}
-
-function Hour({
-  hour,
-  cellState,
-  onMouseDown,
-  onMouseEnter,
-}: {
-  hour: number;
-  cellState: (day: number, h: number) => CellState;
-  onMouseDown: (day: number, h: number) => void;
-  onMouseEnter: (day: number, h: number) => void;
-}) {
-  const label = useMemo(() => {
-    const ampm = hour < 12 ? "am" : "pm";
-    const hr = hour % 12 === 0 ? 12 : hour % 12;
-    return `${hr}${ampm}`;
-  }, [hour]);
-  return (
-    <>
-      <div className="text-right pr-2 font-mono-pw text-[0.6875rem] text-[var(--pw-ink-2)] py-1">
-        {label}
-      </div>
-      {DAY_INDEX.map((day) => {
-        const state = cellState(day, hour);
-        let bgClass = "";
-        if (state === "available") bgClass = "bg-[var(--pw-accent-2)]";
-        else if (state === "blocked") bgClass = "bg-[var(--pw-ink-2)]";
-        else if (state === "booked") bgClass = "bg-[var(--pw-accent-fill)]";
-        else bgClass = "bg-[var(--pw-input-bg)]";
-
-        return (
-          <div
-            key={`${day}-${hour}`}
-            onMouseDown={() => onMouseDown(day, hour)}
-            onMouseEnter={() => onMouseEnter(day, hour)}
-            className={`h-7 cursor-pointer pw-border hover:opacity-80 transition-opacity ${bgClass}`}
-            style={{ opacity: state === "booked" ? 0.9 : 1 }}
-            title={`${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]} ${hour}:00 — ${state}`}
-          />
-        );
-      })}
-    </>
-  );
-}
-
-function Legend({ color, label, border }: { color: string; label: string; border?: boolean }) {
-  return (
-    <div className="flex items-center gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
-      <span
-        className="w-4 h-4"
-        style={{ background: color, border: border ? "1px solid var(--pw-border)" : undefined }}
-      />
-      {label}
     </div>
   );
 }
