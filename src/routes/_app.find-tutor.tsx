@@ -395,6 +395,7 @@ function Q3({ value, onChange }: { value?: Style; onChange: (v: Style) => void }
 }
 
 // ---------- Q4: Pace slider ----------
+const PACE_LABELS = ["Take it slow", "Easygoing", "Just right", "Push me", "Sprint mode"];
 function Q4({
   value,
   onChange,
@@ -425,6 +426,8 @@ function Q4({
             step={1}
             value={value}
             onChange={(e) => onChange(Number(e.target.value))}
+            aria-label="Learning pace"
+            aria-valuetext={PACE_LABELS[value - 1]}
             className="w-full accent-[var(--pw-accent)]"
           />
           <motion.div
@@ -439,7 +442,7 @@ function Q4({
           </motion.div>
         </div>
         <div className="mt-6 text-center text-[0.875rem] text-[var(--pw-ink-2)]">
-          {["Take it slow", "Easygoing", "Just right", "Push me", "Sprint mode"][value - 1]}
+          {PACE_LABELS[value - 1]}
         </div>
       </div>
       <button onClick={onNext} className="mt-10 w-full pw-btn-primary px-5 py-3">
@@ -611,6 +614,8 @@ function Q8({
           step={50}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
+          aria-label="Budget per hour"
+          aria-valuetext={`${formatPrice(value)} per hour`}
           className="mt-6 w-full accent-[var(--pw-accent)]"
         />
         <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)] mt-2">

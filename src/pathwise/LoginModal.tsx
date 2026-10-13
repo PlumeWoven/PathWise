@@ -1,10 +1,11 @@
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useId, useState, FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
 import { normalizeRole, pendingBookingTutorId, postAuthDestination } from "./roles";
 import { supabase } from "@/integrations/supabase/client";
 import { signInWithGoogle } from "./oauth";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 // Google sign-in is disabled in Supabase Auth and the set_profile_role RPC it
@@ -45,8 +46,6 @@ export function LoginModal() {
       setSignupEmail("");
     }
   }, [loginOpen]);
-
-  if (!loginOpen) return null;
 
   const handleClose = () => closeLogin();
 
@@ -247,27 +246,15 @@ export function LoginModal() {
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center px-4"
-        style={{ background: "rgba(10,12,14,0.7)", backdropFilter: "blur(6px)" }}
-        onClick={handleClose}
-      >
-        <div
-          className="pw-card w-full max-w-[32.5rem] p-7 relative shadow-pw-float"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={handleClose}
-            aria-label="Close"
-            className="absolute right-4 top-4 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors text-xl leading-none"
-          >
-            ×
-          </button>
-
-          <h2 className="font-display font-bold uppercase tracking-[-0.025em] text-[1.75rem] leading-none">
+      {/* Radix Dialog: role + label, focus moved in and trapped, Esc, page behind made inert. */}
+      <Dialog open={loginOpen} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="pw-card block w-[calc(100%-2rem)] max-w-[32.5rem] max-h-[calc(100dvh-2rem)] overflow-y-auto p-7 border-[var(--pw-border)] shadow-pw-float">
+          <DialogTitle className="font-display font-bold uppercase tracking-[-0.025em] text-[1.75rem] leading-none">
             {title}
-          </h2>
-          <p className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">{subtitle}</p>
+          </DialogTitle>
+          <DialogDescription className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">
+            {subtitle}
+          </DialogDescription>
 
           {mode === "signup" && (
             <div className="mt-6 grid grid-cols-3 gap-3">
@@ -306,8 +293,14 @@ export function LoginModal() {
 
           {mode === "signin" && (
             <form onSubmit={handleSignIn} className="mt-6 space-y-3">
-              <Field label="Email" type="email" value={email} onChange={setEmail} />
-              <Field label="Password" type="password" value={password} onChange={setPassword} />
+              <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
+              <Field
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={setPassword}
+              />
               {error && <ErrorLine msg={error} />}
               <SubmitButton submitting={submitting} label="Sign In →" />
               {GOOGLE_ENABLED && (
@@ -345,9 +338,15 @@ export function LoginModal() {
 
           {mode === "signup" && (
             <form onSubmit={handleSignUp} className="mt-6 space-y-3">
-              <Field label="Full name" type="text" value={name} onChange={setName} />
-              <Field label="Email" type="email" value={email} onChange={setEmail} />
-              <Field label="Password" type="password" value={password} onChange={setPassword} />
+              <Field label="Full name" type="text" autoComplete="name" value={name} onChange={setName} />
+              <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
+              <Field
+                label="Password"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={setPassword}
+              />
               {error && <ErrorLine msg={error} />}
               <label className="flex items-start gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
                 <input
@@ -404,10 +403,10 @@ export function LoginModal() {
 
           {mode === "forgot" && (
             <form onSubmit={handleForgot} className="mt-6 space-y-3">
-              <Field label="Email" type="email" value={email} onChange={setEmail} />
+              <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
               {error && <ErrorLine msg={error} />}
               {info && (
-                <div className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
+                <div role="status" className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
                   {info}
                 </div>
               )}
@@ -427,8 +426,8 @@ export function LoginModal() {
               </div>
             </form>
           )}
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Modal */}
       <ConfirmationModal
@@ -461,6 +460,7 @@ function RoleCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className="pw-card text-left p-4 transition-colors"
       style={{
         borderColor: selected ? "var(--pw-accent)" : "var(--pw-border)",
@@ -479,19 +479,26 @@ function RoleCard({
 function Field({
   label,
   type,
+  autoComplete,
   value,
   onChange,
 }: {
   label: string;
   type: string;
+  autoComplete: string;
   value: string;
   onChange: (v: string) => void;
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="label-caps text-[var(--pw-ink-2)]">{label}</label>
+      <label htmlFor={id} className="label-caps text-[var(--pw-ink-2)]">
+        {label}
+      </label>
       <input
+        id={id}
         type={type}
+        autoComplete={autoComplete}
         required
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -503,7 +510,7 @@ function Field({
 
 function ErrorLine({ msg }: { msg: string }) {
   return (
-    <div className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
+    <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
       {msg}
     </div>
   );

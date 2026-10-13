@@ -107,7 +107,7 @@ function ResetPasswordPage() {
               />
             </div>
             {error && (
-              <div className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
+              <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
                 {error}
               </div>
             )}
@@ -131,9 +131,10 @@ function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 space-y-3">
             <div>
-              <label className="label-caps text-[var(--pw-ink-2)]">New password</label>
-              <input
+              <label htmlFor="rp-new" className="label-caps text-[var(--pw-ink-2)]">New password</label>
+              <input id="rp-new"
                 type="password"
+                autoComplete="new-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -141,9 +142,10 @@ function ResetPasswordPage() {
               />
             </div>
             <div>
-              <label className="label-caps text-[var(--pw-ink-2)]">Confirm password</label>
-              <input
+              <label htmlFor="rp-confirm" className="label-caps text-[var(--pw-ink-2)]">Confirm password</label>
+              <input id="rp-confirm"
                 type="password"
+                autoComplete="new-password"
                 required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
@@ -151,7 +153,7 @@ function ResetPasswordPage() {
               />
             </div>
             {error && (
-              <div className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
+              <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
                 {error}
               </div>
             )}

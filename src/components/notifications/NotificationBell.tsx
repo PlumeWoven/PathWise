@@ -111,10 +111,15 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        >
           <Bell className="h-5 w-5 text-[var(--pw-ink)] hover:text-[var(--pw-accent)] transition-colors" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-pw-accent-fill text-[0.625rem] font-semibold text-pw-on-accent">
+            <span aria-hidden="true" className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-pw-accent-fill text-[0.625rem] font-semibold text-pw-on-accent">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

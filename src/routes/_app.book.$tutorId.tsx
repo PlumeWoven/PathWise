@@ -626,8 +626,8 @@ function BookPage() {
                       {recurring && (
                         <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
-                            <label className="label-caps text-[var(--pw-ink-2)]">Frequency</label>
-                            <select
+                            <label htmlFor="bk-frequency" className="label-caps text-[var(--pw-ink-2)]">Frequency</label>
+                            <select id="bk-frequency"
                               value={frequency}
                               onChange={(e) => setFrequency(e.target.value as Frequency)}
                               className="mt-1 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
@@ -638,8 +638,8 @@ function BookPage() {
                             </select>
                           </div>
                           <div>
-                            <label className="label-caps text-[var(--pw-ink-2)]">Ends</label>
-                            <select
+                            <label htmlFor="bk-ends" className="label-caps text-[var(--pw-ink-2)]">Ends</label>
+                            <select id="bk-ends"
                               value={endMode}
                               onChange={(e) => setEndMode(e.target.value as any)}
                               className="mt-1 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
@@ -652,10 +652,10 @@ function BookPage() {
                           <div>
                             {endMode === "count" && (
                               <>
-                                <label className="label-caps text-[var(--pw-ink-2)]">
+                                <label htmlFor="bk-count" className="label-caps text-[var(--pw-ink-2)]">
                                   Number of sessions
                                 </label>
-                                <input
+                                <input id="bk-count"
                                   type="number"
                                   min={2}
                                   max={26}
@@ -671,10 +671,10 @@ function BookPage() {
                             )}
                             {endMode === "date" && (
                               <>
-                                <label className="label-caps text-[var(--pw-ink-2)]">
+                                <label htmlFor="bk-end-date" className="label-caps text-[var(--pw-ink-2)]">
                                   End date
                                 </label>
-                                <input
+                                <input id="bk-end-date"
                                   type="date"
                                   value={recEndDate ? recEndDate.toISOString().slice(0, 10) : ""}
                                   onChange={(e) =>
@@ -717,10 +717,11 @@ function BookPage() {
                   Confirm your timezone
                 </h1>
                 <div className="pw-card p-4">
-                  <label className="label-caps text-[var(--pw-ink-2)]">
+                  <label htmlFor="bk-timezone" className="label-caps text-[var(--pw-ink-2)]">
                     Your timezone (auto-detected)
                   </label>
                   <select
+                    id="bk-timezone"
                     className="mt-1 w-full pw-border px-3 py-2.5 text-[0.875rem] bg-[var(--pw-surface)]"
                     value={tz}
                     onChange={(e) => setTz(e.target.value)}

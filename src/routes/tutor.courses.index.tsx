@@ -107,6 +107,7 @@ export function TutorCoursesPage() {
                   <Link
                     to="/dashboard/courses/$courseId/edit"
                     params={{ courseId: course.id }}
+                    aria-label={`Edit ${course.title}`}
                     className="p-1 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
                   >
                     <Edit className="size-4" />
@@ -114,12 +115,14 @@ export function TutorCoursesPage() {
                   <Link
                     to="/courses/$slug"
                     params={{ slug: course.slug || course.id }}
+                    aria-label={`View ${course.title}`}
                     className="p-1 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
                   >
                     <Eye className="size-4" />
                   </Link>
                   <button
                     onClick={() => deleteCourse(course.id)}
+                    aria-label={`Delete ${course.title}`}
                     className="p-1 text-[var(--pw-danger)] hover:bg-[var(--pw-surface-2)] transition-colors"
                   >
                     <Trash2 className="size-4" />

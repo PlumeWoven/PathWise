@@ -7,6 +7,13 @@ import { LEVEL_META, Subject, Level } from "../pathwise/data";
 import { Icon, type IconName } from "@/components/Icon";
 import { GOAL_LABELS, usePW } from "../pathwise/store";
 import { StageDetailModal } from "../pathwise/StageDetailModal";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "../pathwise/auth";
 import { RoleGate } from "../pathwise/RoleGate";
 // ─── api.ts replaces inline supabase calls ───────────────────────────────────
@@ -464,7 +471,6 @@ function RoadmapPageInner() {
         nextTitle: next?.title ?? null,
         xp: 100,
       });
-      setTimeout(() => setOverlay(null), 1500);
     } catch (err: unknown) {
       const e = err as { message?: string };
       console.error("[roadmap] mark complete", err);
@@ -731,8 +737,7 @@ function RoadmapPageInner() {
                       </motion.div>
 
                       <div
-                        onClick={() => setOpenStage(s.stage_number)}
-                        className={`text-left w-full pw-card p-5 relative transition-colors cursor-pointer hover:border-[var(--pw-ink)] ${isActive ? "border-[var(--pw-accent)]" : isCompleted ? "border-[var(--pw-accent-2)]" : ""}`}
+                        className={`text-left w-full pw-card p-5 relative transition-colors hover:border-[var(--pw-ink)] ${isActive ? "border-[var(--pw-accent)]" : isCompleted ? "border-[var(--pw-accent-2)]" : ""}`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -742,7 +747,16 @@ function RoadmapPageInner() {
                               STAGE {String(s.stage_number).padStart(2, "0")}
                             </div>
                             <h3 className="font-display text-[1.25rem] leading-[1.05] uppercase tracking-[-0.025em] mt-1">
-                              {s.title}
+                              {/* A real button stretched over the card (::after), so the
+                                  card opens from the keyboard too. Nested controls sit
+                                  above it with relative z-10. */}
+                              <button
+                                type="button"
+                                onClick={() => setOpenStage(s.stage_number)}
+                                className="text-left uppercase after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-[var(--pw-accent)]"
+                              >
+                                {s.title}
+                              </button>
                             </h3>
                           </div>
                           {isCompleted && (
@@ -753,12 +767,11 @@ function RoadmapPageInner() {
                           {isActive && (
                             <button
                               onClick={(e) => {
-                                // The whole card is a button that opens the stage
-                                // modal; this one has its own destination.
+                                // Sits above the card's stretched button; it has its own destination.
                                 e.stopPropagation();
                                 handleStartHere(s);
                               }}
-                              className="pw-pill px-2.5 py-1 whitespace-nowrap bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
+                              className="relative z-10 pw-pill px-2.5 py-1 whitespace-nowrap bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
                             >
                               <Icon name="play" className="h-3.5 w-3.5 text-pw-on-accent" /> START
                               HERE
@@ -829,7 +842,7 @@ function RoadmapPageInner() {
                                   handleMarkComplete(s);
                                 }
                               }}
-                              className={`pw-pill px-3 py-1.5 transition-colors cursor-pointer ${req.met ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"}`}
+                              className={`relative z-10 pw-pill px-3 py-1.5 transition-colors cursor-pointer ${req.met ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"}`}
                               style={{ opacity: completing === s.stage_number ? 0.6 : 1 }}
                             >
                               {completing === s.stage_number ? (
@@ -882,38 +895,25 @@ function RoadmapPageInner() {
         </div>
       </main>
 
-      <AnimatePresence>
-        {openStage !== null && (
-          <StageDetailModal
-            subject={subject}
-            stageNumber={openStage}
-            stageTitle={stages.find((s) => s.stage_number === openStage)?.title ?? ""}
-            onClose={() => setOpenStage(null)}
-          />
-        )}
-      </AnimatePresence>
+      {openStage !== null && (
+        <StageDetailModal
+          subject={subject}
+          stageNumber={openStage}
+          stageTitle={stages.find((s) => s.stage_number === openStage)?.title ?? ""}
+          onClose={() => setOpenStage(null)}
+        />
+      )}
 
-      {/* Full-screen completion moment */}
-      <AnimatePresence>
-        {overlay && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-            style={{ background: "rgba(10,12,14,0.6)", backdropFilter: "blur(8px)" }}
-          >
-            <motion.div
-              initial={{ scale: 0.7, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 26 }}
-              className="pw-card text-center px-10 py-12 max-w-md w-full border-[var(--pw-accent)] shadow-pw-float"
-            >
-              <Icon name="target" className="h-12 w-12" />
-              <h2 className="font-display text-[2.25rem] leading-none uppercase tracking-[-0.025em] mt-3">
+      {/* Completion moment: a dialog people dismiss themselves, so it is announced and never
+          vanishes before it can be read. */}
+      <Dialog open={overlay !== null} onOpenChange={(open) => !open && setOverlay(null)}>
+        <DialogContent className="pw-card block text-center px-10 py-12 w-[calc(100%-2rem)] max-w-md border-[var(--pw-accent)] shadow-pw-float">
+          {overlay && (
+            <>
+              <Icon name="target" className="h-12 w-12 mx-auto" />
+              <DialogTitle className="font-display font-normal text-[2.25rem] leading-none uppercase tracking-[-0.025em] mt-3">
                 Stage {overlay.stageNumber} Complete!
-              </h2>
+              </DialogTitle>
               <div
                 className="font-mono-pw text-[0.75rem] mt-2 flex items-center justify-center gap-1.5"
                 style={{ color: "var(--pw-accent-3)" }}
@@ -921,18 +921,19 @@ function RoadmapPageInner() {
                 <Icon name="sparkles" className="h-4 w-4" /> +{overlay.xp} XP earned
               </div>
               {overlay.nextTitle ? (
-                <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4">
+                <DialogDescription className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4">
                   Next: <strong className="text-[var(--pw-ink)]">{overlay.nextTitle}</strong>
-                </p>
+                </DialogDescription>
               ) : (
-                <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4 flex items-center justify-center gap-1.5">
+                <DialogDescription className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4 flex items-center justify-center gap-1.5">
                   <Icon name="flag" className="h-4 w-4" /> Final stage reached!
-                </p>
+                </DialogDescription>
               )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <DialogClose className="pw-btn-primary mt-6 px-5 py-2.5">Continue →</DialogClose>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

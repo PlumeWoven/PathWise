@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useCallback } from "react";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { AvailabilityGrid, type CellState } from "@/pathwise/AvailabilityGrid";
 import { detectTimezone } from "@/pathwise/scheduling";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { formatPrice } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/_app/onboarding/tutor")({
@@ -585,25 +586,23 @@ function Step1({
         <div className="flex-1">
           <Label>Profile photo</Label>
           <p className="text-[0.7812rem] text-[var(--pw-ink-2)] mt-0.5">Square 1:1, min 400×400px.</p>
-          <label className="mt-2 inline-flex items-center gap-1.5 pw-pill px-3 py-1.5 cursor-pointer">
+          <label className="mt-2 inline-flex items-center gap-1.5 pw-pill px-3 py-1.5 cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
             <Upload className="size-3.5" /> Choose photo
-            <input type="file" accept="image/*" className="hidden" onChange={onPick} />
+            <input type="file" accept="image/*" className="sr-only" onChange={onPick} />
           </label>
         </div>
       </div>
 
-      {cropFile && (
-        <div
-          className="fixed inset-0 z-50 bg-[rgba(10,12,14,0.6)] flex items-center justify-center p-4"
-          onClick={() => !uploading && setCropFile(null)}
+      <Dialog open={!!cropFile} onOpenChange={(open) => !open && !uploading && setCropFile(null)}>
+        <DialogContent
+          aria-describedby={undefined}
+          className="block w-[calc(100%-2rem)] max-w-[30rem] p-4 border-[var(--pw-border)] shadow-pw-float sm:rounded-none"
         >
-          <div
-            className="bg-[var(--pw-surface)] border border-[var(--pw-border)] shadow-pw-float p-4 max-w-[30rem] w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="font-display text-[1.25rem] uppercase tracking-[-0.025em] leading-none">
+          {cropFile && (
+            <>
+            <DialogTitle className="font-display font-normal text-[1.25rem] uppercase tracking-[-0.025em] leading-none">
               Crop your photo
-            </h3>
+            </DialogTitle>
             <div className="relative mt-3 h-[20rem] bg-qed-ground overflow-hidden">
               <Cropper
                 image={cropFile}
@@ -617,6 +616,7 @@ function Step1({
             </div>
             <input
               type="range"
+              aria-label="Zoom"
               min={1}
               max={3}
               step={0.01}
@@ -640,13 +640,14 @@ function Step1({
                 {uploading ? "Uploading…" : "Save photo"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div>
-        <Label>Full name</Label>
-        <Input
+        <Label htmlFor="tob-name">Full name</Label>
+        <Input id="tob-name"
           value={state.full_name}
           onChange={(e) => update("full_name", e.target.value)}
           placeholder="Jane Doe"
@@ -655,7 +656,7 @@ function Step1({
 
       <div>
         <div className="flex items-baseline justify-between">
-          <Label>Headline</Label>
+          <Label htmlFor="tob-headline">Headline</Label>
           <span
             className="font-mono-pw text-[0.6875rem]"
             style={{ color: headlineLeft < 0 ? "var(--pw-danger)" : "var(--pw-ink-2)" }}
@@ -664,6 +665,7 @@ function Step1({
           </span>
         </div>
         <Input
+          id="tob-headline"
           value={state.headline}
           maxLength={140}
           onChange={(e) => update("headline", e.target.value)}
@@ -672,8 +674,8 @@ function Step1({
       </div>
 
       <div>
-        <Label>Bio (markdown supported)</Label>
-        <textarea
+        <Label htmlFor="tob-bio">Bio (markdown supported)</Label>
+        <textarea id="tob-bio"
           rows={5}
           value={state.bio}
           onChange={(e) => update("bio", e.target.value)}
@@ -684,8 +686,8 @@ function Step1({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-          <Label>Years of experience</Label>
-          <Input
+          <Label htmlFor="tob-years">Years of experience</Label>
+          <Input id="tob-years"
             type="number"
             min={0}
             max={70}
@@ -695,8 +697,8 @@ function Step1({
           />
         </div>
         <div>
-          <Label>Education level</Label>
-          <select
+          <Label htmlFor="tob-education">Education level</Label>
+          <select id="tob-education"
             value={state.education_level}
             onChange={(e) => update("education_level", e.target.value)}
             className="pw-input mt-1 text-[0.875rem]"
@@ -711,8 +713,8 @@ function Step1({
         </div>
       </div>
       <div>
-        <Label>Institution</Label>
-        <Input
+        <Label htmlFor="tob-institution">Institution</Label>
+        <Input id="tob-institution"
           value={state.institution}
           onChange={(e) => update("institution", e.target.value)}
           placeholder="Stanford University"
@@ -776,10 +778,10 @@ function Step2({
       </p>
 
       <div>
-        <Label>Subjects</Label>
+        <Label htmlFor="tob-subjects">Subjects</Label>
         <div className="mt-1 relative">
           <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--pw-ink-2)]" />
-          <input
+          <input id="tob-subjects"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search subjects…"
@@ -892,12 +894,14 @@ function TagField({
   onRemove: (t: string) => void;
   accent?: boolean;
 }) {
+  const id = useId();
   return (
     <div>
-      <Label>{label}</Label>
+      <Label htmlFor={id}>{label}</Label>
       {helper && <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{helper}</p>}
       <div className="mt-2 flex gap-2">
         <input
+          id={id}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
@@ -909,7 +913,7 @@ function TagField({
           placeholder="Type and press Enter"
           className="flex-1 pw-border px-3 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
         />
-        <button type="button" onClick={onAdd} className="pw-pill px-3">
+        <button type="button" onClick={onAdd} aria-label={`Add to ${label}`} className="pw-pill px-3">
           <Plus className="size-3.5" />
         </button>
       </div>
@@ -930,6 +934,7 @@ function TagField({
               <button
                 type="button"
                 onClick={() => onRemove(t)}
+                aria-label={`Remove ${t}`}
                 className="opacity-60 hover:opacity-100"
               >
                 <X className="size-3" />
@@ -1139,9 +1144,9 @@ function Step3({
                 Stop recording
               </button>
             )}
-            <label className="pw-pill px-3 py-2 cursor-pointer inline-flex items-center gap-1.5">
+            <label className="pw-pill px-3 py-2 cursor-pointer inline-flex items-center gap-1.5 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
               <Upload className="size-3.5" /> Upload file
-              <input type="file" accept="video/*" className="hidden" onChange={onUploadFile} />
+              <input type="file" accept="video/*" className="sr-only" onChange={onUploadFile} />
             </label>
             {uploading && (
               <span className="text-[0.75rem] text-[var(--pw-ink-2)] self-center">Uploading…</span>
@@ -1203,15 +1208,15 @@ function Step4({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label>Timezone</Label>
-          <Input value={state.timezone} onChange={(e) => update("timezone", e.target.value)} />
+          <Label htmlFor="tob-timezone">Timezone</Label>
+          <Input id="tob-timezone" value={state.timezone} onChange={(e) => update("timezone", e.target.value)} />
           <p className="text-[0.7188rem] text-[var(--pw-ink-2)] mt-1">
             Auto-detected — you can change it.
           </p>
         </div>
         <div>
-          <Label>Buffer time between sessions</Label>
-          <select
+          <Label htmlFor="tob-buffer">Buffer time between sessions</Label>
+          <select id="tob-buffer"
             value={state.buffer_minutes}
             onChange={(e) => update("buffer_minutes", Number(e.target.value))}
             className="pw-input mt-1 text-[0.875rem]"
@@ -1293,9 +1298,9 @@ function Step5({
   return (
     <div className="space-y-6">
       <div>
-        <Label>Default hourly rate (MDL)</Label>
+        <Label htmlFor="tob-rate">Default hourly rate (MDL)</Label>
         <div className="mt-1 relative">
-          <input
+          <input id="tob-rate"
             type="number"
             min={0}
             value={state.hourly_rate}
@@ -1543,8 +1548,12 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
 
 /* ─────────────── tiny field primitives ─────────────── */
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <label className="label-caps text-[var(--pw-ink-2)] block">{children}</label>;
+function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
+  return (
+    <label htmlFor={htmlFor} className="label-caps text-[var(--pw-ink-2)] block">
+      {children}
+    </label>
+  );
 }
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={"pw-input mt-1 text-[0.875rem] " + (props.className ?? "")} />;

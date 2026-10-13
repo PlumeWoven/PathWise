@@ -62,8 +62,8 @@ function StudentOnboarding() {
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5 pw-card p-6">
           <div>
-            <label className="label-caps text-[var(--pw-ink-2)]">Grade level</label>
-            <select
+            <label htmlFor="sob-grade" className="label-caps text-[var(--pw-ink-2)]">Grade level</label>
+            <select id="sob-grade"
               required
               value={grade}
               onChange={(e) => setGrade(e.target.value === "" ? "" : Number(e.target.value))}
@@ -79,8 +79,8 @@ function StudentOnboarding() {
             </select>
           </div>
           <div>
-            <label className="label-caps text-[var(--pw-ink-2)]">What's your goal?</label>
-            <textarea
+            <label htmlFor="sob-goal" className="label-caps text-[var(--pw-ink-2)]">What's your goal?</label>
+            <textarea id="sob-goal"
               required
               rows={3}
               value={goal}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Subject } from "./data";
 import { addSession, getStageProgress, removeSession, useProgress } from "./progress";
 import { Icon } from "@/components/Icon";
@@ -30,40 +30,19 @@ export function StageDetailModal({ subject, stageNumber, stageTitle, onClose }: 
   }
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: "rgba(10,12,14,0.7)", backdropFilter: "blur(6px)" }}
-        onClick={onClose}
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        aria-describedby={undefined}
+        className="pw-card block w-[calc(100%-2rem)] max-w-2xl max-h-[88vh] overflow-y-auto p-0 border-[var(--pw-border)] shadow-pw-float"
       >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.2 }}
-          className="pw-card w-full max-w-2xl max-h-[88vh] overflow-y-auto shadow-pw-float"
-          onClick={(e) => e.stopPropagation()}
-        >
           <div className="p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="label-caps text-[var(--pw-ink-2)]">
-                  STAGE {String(stageNumber).padStart(2, "0")} · SESSION LOG
-                </div>
-                <h2 className="font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none mt-1">
-                  {stageTitle}
-                </h2>
+            <div className="pr-10">
+              <div className="label-caps text-[var(--pw-ink-2)]">
+                STAGE {String(stageNumber).padStart(2, "0")} · SESSION LOG
               </div>
-              <button
-                onClick={onClose}
-                className="text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors text-2xl leading-none"
-                aria-label="Close"
-              >
-                ×
-              </button>
+              <DialogTitle className="font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none mt-1">
+                {stageTitle}
+              </DialogTitle>
             </div>
 
             {/* Add session form */}
@@ -176,8 +155,7 @@ export function StageDetailModal({ subject, stageNumber, stageTitle, onClose }: 
               )}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 }
