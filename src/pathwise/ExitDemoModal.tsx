@@ -2,20 +2,21 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useDemo } from "./DemoContext";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { capturedEmail, captureEmail } = useDemo();
   const [email, setEmail] = useState(capturedEmail ?? "");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  if (!open) return null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes("@")) {
-      toast.error("Please enter a valid email");
+      setError("Enter an email address, like you@example.com.");
       return;
     }
+    setError("");
     captureEmail(email);
     toast.success("Welcome to Pathwise!", { description: "Setting up your account…" });
     onClose();
@@ -23,43 +24,30 @@ export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () =>
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-[rgba(10,12,14,0.7)] backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="pw-card max-w-md w-full p-7 relative shadow-pw-float"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="exit-demo-title"
-      >
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute top-3 right-3 w-8 h-8 hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors"
-        >
-          ×
-        </button>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="pw-card block w-[calc(100%-2rem)] max-w-md p-7 border-[var(--pw-border)] shadow-pw-float">
         <div className="label-caps text-pw-accent">Ready for the real thing?</div>
-        <h2
-          id="exit-demo-title"
-          className="mt-1 font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none"
-        >
+        <DialogTitle className="mt-1 font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none">
           Start your own journey
-        </h2>
-        <p className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
+        </DialogTitle>
+        <DialogDescription className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
           Create your free account to keep your courses, students and earnings — for real this time.
-        </p>
+        </DialogDescription>
         <form onSubmit={submit} className="mt-5 space-y-3">
           <input
             type="email"
+            aria-label="Email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            autoFocus
             className="pw-input text-[0.875rem]"
           />
+          {error && (
+            <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
+              {error}
+            </div>
+          )}
           <button type="submit" className="pw-btn-primary w-full px-5 py-3">
             Create my free account →
           </button>
@@ -74,7 +62,7 @@ export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () =>
         <p className="mt-3 text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
           No credit card · Cancel anytime
         </p>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

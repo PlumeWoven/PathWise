@@ -283,10 +283,10 @@ export function AvailabilityPage() {
 
         <div className="pw-card mt-4 p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="label-caps text-[var(--pw-ink-2)] flex items-center gap-1.5">
+            <label htmlFor="av-timezone" className="label-caps text-[var(--pw-ink-2)] flex items-center gap-1.5">
               <Globe className="w-3 h-3" /> Timezone
             </label>
-            <select
+            <select id="av-timezone"
               value={tz}
               onChange={(e) => setTz(e.target.value)}
               className="pw-input mt-1 text-[0.8125rem]"
@@ -302,10 +302,10 @@ export function AvailabilityPage() {
             </p>
           </div>
           <div>
-            <label className="label-caps text-[var(--pw-ink-2)] flex items-center gap-1.5">
+            <label htmlFor="av-buffer" className="label-caps text-[var(--pw-ink-2)] flex items-center gap-1.5">
               <Clock className="w-3 h-3" /> Buffer between sessions
             </label>
-            <select
+            <select id="av-buffer"
               value={bufferMinutes}
               onChange={(e) => setBufferMinutes(Number(e.target.value))}
               className="pw-input mt-1 text-[0.8125rem]"
@@ -318,8 +318,8 @@ export function AvailabilityPage() {
             </select>
           </div>
           <div>
-            <label className="label-caps text-[var(--pw-ink-2)]">Min advance booking</label>
-            <select
+            <label htmlFor="av-advance" className="label-caps text-[var(--pw-ink-2)]">Min advance booking</label>
+            <select id="av-advance"
               value={minAdvanceHours}
               onChange={(e) => setMinAdvanceHours(Number(e.target.value))}
               className="pw-input mt-1 text-[0.8125rem]"
@@ -332,9 +332,10 @@ export function AvailabilityPage() {
             </select>
           </div>
           <div>
-            <label className="label-caps text-[var(--pw-ink-2)]">Instant bookings</label>
-            <button
+            <label htmlFor="av-instant" className="label-caps text-[var(--pw-ink-2)]">Instant bookings</label>
+            <button id="av-instant"
               onClick={() => setInstantBookings((v) => !v)}
+              aria-pressed={instantBookings}
               className="pw-input mt-1 text-[0.8125rem] text-left"
               style={{
                 background: instantBookings ? "var(--pw-accent-soft)" : "var(--pw-input-bg)",

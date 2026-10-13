@@ -1,5 +1,14 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -22,6 +31,7 @@ import {
 } from "lucide-react";
 import {
   DndContext,
+  KeyboardSensor,
   PointerSensor,
   TouchSensor,
   closestCenter,
@@ -33,6 +43,7 @@ import {
   SortableContext,
   useSortable,
   arrayMove,
+  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -472,6 +483,7 @@ function Step1Basic({
                     subcategory_tags: (course.subcategory_tags ?? []).filter((x) => x !== t),
                   })
                 }
+                aria-label={`Remove tag ${t}`}
                 className="text-[var(--pw-ink-2)] hover:text-[var(--pw-danger)]"
               >
                 <X className="size-3" />
@@ -490,8 +502,9 @@ function Step1Basic({
               }
             }}
             placeholder="Add tag and press Enter"
+            aria-label="New tag"
           />
-          <Button type="button" variant="outline" onClick={addTag}>
+          <Button type="button" variant="outline" onClick={addTag} aria-label="Add tag">
             <Plus className="size-4" />
           </Button>
         </div>
@@ -592,6 +605,7 @@ function Step1Basic({
             type="file"
             accept="image/*"
             onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
+            aria-label="Upload course thumbnail"
             className="absolute inset-0 opacity-0 cursor-pointer"
           />
           {uploading && (
@@ -622,7 +636,11 @@ function Step2Content({
   setLessons: React.Dispatch<React.SetStateAction<LessonRow[]>>;
   userId: string;
 }) {
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const totalDuration = useMemo(
     () => lessons.reduce((s, l) => s + (l.duration_minutes ?? 0), 0),
@@ -765,7 +783,11 @@ function SectionCard({
     opacity: isDragging ? 0.6 : 1,
   };
 
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
   const onLessonDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
     if (!over || active.id === over.id) return;
@@ -785,6 +807,7 @@ function SectionCard({
         <button
           {...attributes}
           {...listeners}
+          aria-label={`Reorder section ${section.title}`}
           className="cursor-grab text-[var(--pw-ink-2)] touch-none"
         >
           <GripVertical className="size-4" />
@@ -792,6 +815,7 @@ function SectionCard({
         <Input
           value={section.title}
           onChange={(e) => onUpdate({ title: e.target.value })}
+          aria-label="Section title"
           className="font-medium"
         />
         <button
@@ -890,6 +914,7 @@ function LessonCard({
         <button
           {...attributes}
           {...listeners}
+          aria-label={`Reorder lesson ${lesson.title}`}
           className="cursor-grab text-[var(--pw-ink-2)] touch-none"
         >
           <GripVertical className="size-3.5" />
@@ -897,6 +922,7 @@ function LessonCard({
         <Input
           value={lesson.title}
           onChange={(e) => onUpdate({ title: e.target.value })}
+          aria-label="Lesson title"
           className="text-[0.8125rem] h-8"
         />
         <Input
@@ -904,10 +930,16 @@ function LessonCard({
           min={0}
           value={lesson.duration_minutes}
           onChange={(e) => onUpdate({ duration_minutes: Number(e.target.value) || 0 })}
+          aria-label="Duration in minutes"
           className="w-20 text-[0.8125rem] h-8"
           placeholder="min"
         />
-        <button onClick={() => setOpen(!open)} className="text-[var(--pw-ink-2)] p-1">
+        <button
+          onClick={() => setOpen(!open)}
+          aria-label={open ? "Collapse lesson details" : "Expand lesson details"}
+          aria-expanded={open}
+          className="text-[var(--pw-ink-2)] p-1"
+        >
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </button>
         <button
@@ -924,6 +956,7 @@ function LessonCard({
             value={lesson.description ?? ""}
             onChange={(e) => onUpdate({ description: e.target.value })}
             placeholder="Lesson description"
+            aria-label="Lesson description"
             rows={2}
           />
           <div className="flex items-center gap-2">
@@ -931,9 +964,10 @@ function LessonCard({
               value={lesson.video_url ?? ""}
               onChange={(e) => onUpdate({ video_url: e.target.value })}
               placeholder="Video URL or upload"
+              aria-label="Lesson video URL"
               className="text-[0.8125rem] h-8"
             />
-            <label className="inline-flex items-center gap-1 text-[0.75rem] cursor-pointer px-2 py-1.5 border border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)]">
+            <label className="inline-flex items-center gap-1 text-[0.75rem] cursor-pointer px-2 py-1.5 border border-[var(--pw-border)] hover:bg-[var(--pw-surface-2)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
               {uploading ? (
                 <Loader2 className="size-3 animate-spin" />
               ) : (
@@ -943,7 +977,7 @@ function LessonCard({
               <input
                 type="file"
                 accept="video/*"
-                className="hidden"
+                className="sr-only"
                 onChange={(e) => e.target.files?.[0] && handleVideoUpload(e.target.files[0])}
               />
             </label>
@@ -960,6 +994,7 @@ function LessonCard({
             {lesson.resources.map((r, i) => (
               <div key={i} className="flex gap-1.5 mb-1.5">
                 <select
+                  aria-label="Resource type"
                   value={r.type}
                   onChange={(e) =>
                     updateResource(i, { type: e.target.value as LessonResource["type"] })
@@ -974,15 +1009,21 @@ function LessonCard({
                   value={r.label}
                   onChange={(e) => updateResource(i, { label: e.target.value })}
                   placeholder="Label"
+                  aria-label="Resource label"
                   className="h-8 text-[0.75rem]"
                 />
                 <Input
                   value={r.value}
                   onChange={(e) => updateResource(i, { value: e.target.value })}
                   placeholder="URL or text"
+                  aria-label="Resource URL or text"
                   className="h-8 text-[0.75rem]"
                 />
-                <button onClick={() => removeResource(i)} className="text-[var(--pw-danger)] p-1">
+                <button
+                  onClick={() => removeResource(i)}
+                  aria-label={`Remove resource ${i + 1}`}
+                  className="text-[var(--pw-danger)] p-1"
+                >
                   <X className="size-3.5" />
                 </button>
               </div>
@@ -1038,25 +1079,28 @@ function Step3Description({
       <Field label="Course description">
         <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)]">
           <div className="flex gap-1 p-1.5 border-b border-[var(--pw-border)]">
-            <ToolBtn onClick={() => exec("bold")}>
+            <ToolBtn label="Bold" onClick={() => exec("bold")}>
               <Bold className="size-3.5" />
             </ToolBtn>
-            <ToolBtn onClick={() => exec("italic")}>
+            <ToolBtn label="Italic" onClick={() => exec("italic")}>
               <Italic className="size-3.5" />
             </ToolBtn>
-            <ToolBtn onClick={() => exec("formatBlock")}>
+            <ToolBtn label="Heading" onClick={() => exec("formatBlock")}>
               <span className="text-[0.6875rem] font-bold">H2</span>
             </ToolBtn>
-            <ToolBtn onClick={() => exec("insertUnorderedList")}>
+            <ToolBtn label="Bulleted list" onClick={() => exec("insertUnorderedList")}>
               <List className="size-3.5" />
             </ToolBtn>
-            <ToolBtn onClick={() => exec("insertOrderedList")}>
+            <ToolBtn label="Numbered list" onClick={() => exec("insertOrderedList")}>
               <ListOrdered className="size-3.5" />
             </ToolBtn>
           </div>
           <div
             ref={editorRef}
             contentEditable
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Course description"
             onInput={(e) => patch({ description: (e.target as HTMLDivElement).innerHTML })}
             className="min-h-[9.375rem] p-3 text-[0.875rem] focus:outline-none prose prose-sm max-w-none"
             suppressContentEditableWarning
@@ -1072,9 +1116,11 @@ function Step3Description({
                 value={o}
                 onChange={(e) => setOutcome(i, e.target.value)}
                 placeholder={`Outcome ${i + 1}`}
+                aria-label={`Outcome ${i + 1}`}
               />
               <button
                 onClick={() => patch({ learning_outcomes: outcomes.filter((_, idx) => idx !== i) })}
+                aria-label={`Remove outcome ${i + 1}`}
                 className="text-[var(--pw-danger)] p-2"
               >
                 <X className="size-4" />
@@ -1105,6 +1151,7 @@ function Step3Description({
                 onClick={() =>
                   patch({ prerequisites: (course.prerequisites ?? []).filter((x) => x !== p) })
                 }
+                aria-label={`Remove prerequisite ${p}`}
               >
                 <X className="size-3" />
               </button>
@@ -1126,6 +1173,7 @@ function Step3Description({
               }
             }}
             placeholder='e.g. "Basic JavaScript"'
+            aria-label="New prerequisite, press Enter to add"
           />
         </div>
       </Field>
@@ -1164,14 +1212,22 @@ function Step3Description({
   );
 }
 
-function ToolBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+function ToolBtn({
+  label,
+  children,
+  onClick,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
-      onMouseDown={(e) => {
-        e.preventDefault();
-        onClick();
-      }}
+      aria-label={label}
+      // preventDefault keeps the editor's selection; click (not mousedown) also fires on Enter/Space.
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
       className="px-2 py-1 hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"
     >
       {children}
@@ -1440,13 +1496,30 @@ function Field({
   hint?: string;
   children: React.ReactNode;
 }) {
+  const id = useId();
+  // A lone input/select/textarea gets the id so the label names it. Composite
+  // fields (tag lists, choice grids, the editor) are labelled as a group.
+  const control =
+    isValidElement<{ id?: string }>(children) &&
+    [Input, Textarea, "input", "select", "textarea"].includes(children.type as never)
+      ? cloneElement(children, { id })
+      : null;
   return (
-    <div className="space-y-1.5">
+    <div
+      className="space-y-1.5"
+      {...(control ? {} : { role: "group", "aria-labelledby": `${id}-label` })}
+    >
       <div className="flex items-center justify-between">
-        <label className="label-caps text-[var(--pw-ink-2)]">{label}</label>
+        <label
+          id={`${id}-label`}
+          htmlFor={control ? id : undefined}
+          className="label-caps text-[var(--pw-ink-2)]"
+        >
+          {label}
+        </label>
         {hint && <span className="text-[0.6875rem] text-[var(--pw-ink-2)]">{hint}</span>}
       </div>
-      {children}
+      {control ?? children}
     </div>
   );
 }
