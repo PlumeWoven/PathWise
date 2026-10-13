@@ -77,7 +77,7 @@ export function DashboardShell({
       {/* Backdrop */}
       {open && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-[rgba(10,12,14,0.6)]"
+          className="lg:hidden fixed inset-0 z-40 bg-[rgba(0,0,0,0.6)]"
           onClick={() => setOpen(false)}
         />
       )}

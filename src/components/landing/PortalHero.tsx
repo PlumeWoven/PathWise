@@ -53,7 +53,7 @@ export function PortalHero() {
           style={{ opacity: duotone }}
           className="pointer-events-none absolute inset-0 z-10 bg-linear-135 from-qed-amber to-qed-teal mix-blend-overlay motion-reduce:opacity-25!"
         />
-        <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(circle,transparent_20%,rgba(10,12,14,0.8)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(circle,transparent_20%,rgba(0,0,0,0.8)_100%)]" />
 
         <motion.div
           style={{ x: panelLeftX }}
@@ -98,13 +98,9 @@ export function PortalHero() {
               aria-hidden="true"
               className="pointer-events-none absolute -inset-x-6 -inset-y-8 -z-10 rounded-[1.5rem] bg-qed-ground/70 blur-2xl"
             />
-            <h1 className="mt-8 font-syne text-[clamp(1.375rem,2.6vw,2.25rem)] font-semibold leading-tight">
-              Find exactly where you stand.
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-qed-ink-2 sm:text-base">
-              A 3-minute quiz reveals your level, builds your roadmap, and finds the right tutor. No
-              guesswork. No wasted sessions.
-            </p>
+            {/* The tagline and blurb were removed from view; the heading stays for screen
+                readers and search engines, so the page still has an h1. */}
+            <h1 className="sr-only">PathWise: find exactly where you stand</h1>
             <LandingCtas className="mt-8 justify-center" />
           </div>
         </div>

@@ -84,16 +84,16 @@ body,
   --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
 
   /* QED landing palette — always dark, scoped to the landing page via bg-qed-* / text-qed-* */
-  --color-qed-ground: #0a0c0e;
-  --color-qed-ground-2: #101317;
-  --color-qed-card: #16191e;
-  --color-qed-ink: #ede7dc;
-  --color-qed-ink-2: #9ea5a8;
-  --color-qed-muted: #6c7378; /* decorative only: 4.1:1 on ground, fails AA for small text */
+  --color-qed-ground: #000000;
+  --color-qed-ground-2: #0e0e0e;
+  --color-qed-card: #161616;
+  --color-qed-ink: #efebe3;
+  --color-qed-ink-2: #a8a29a;
+  --color-qed-muted: #77726b; /* decorative only: 4.1:1 on ground, fails AA for small text */
   --color-qed-amber: #e8913c;
-  --color-qed-teal: #2e6b72;
-  --color-qed-teal-ink: #5fa3ab; /* teal for text: 6.5:1 on ground-2 */
-  --color-qed-hairline: rgba(237, 231, 220, 0.13);
+  --color-qed-teal: #c2560f; /* orange (was teal): the only accents are orange + amber-orange */
+  --color-qed-teal-ink: #fb7a2c; /* orange for text: 6.8:1 on ground-2 */
+  --color-qed-hairline: rgba(239, 235, 227, 0.13);
   --font-syne: 'Syne', sans-serif;
   --font-sora: 'Sora', sans-serif;
 
@@ -143,34 +143,33 @@ body,
   --radius: 0px;
   /* Height of the sticky site header; sticky bars below it offset by this. */
   --pw-header-h: 3.625rem;
-  /* QED light variant: paper ground, ink #0a0c0e, same amber/teal.
-     Every token used as TEXT is >= 4.5:1 on bg, surface and surface-2 (checked with a WCAG
-     script). --pw-accent / --pw-accent-2 / --pw-secondary are therefore darker here than the
-     amber/teal fills; use --pw-accent-fill for amber fills. */
-  --pw-bg: #ede7dc;
-  --pw-surface: #f6f2ea;
-  --pw-ink: #0a0c0e;
-  --pw-muted: #4a5257;
-  --pw-accent: #8a4a0a;
-  --pw-secondary: #2a5f66;
+  /* Light = chalk: off-white cream ground, near-black ink. The only accents are amber-orange
+     and orange. Every token used as TEXT is >= 4.5:1 on bg, surface and surface-2 (checked
+     with a WCAG script), so the text oranges are darker than the #e8913c fill. */
+  --pw-bg: #f5f2eb;
+  --pw-surface: #fbf9f5;
+  --pw-ink: #121110;
+  --pw-muted: #57534c;
+  --pw-accent: #94510a;
+  --pw-secondary: #a8430b;
   /* Neomorphic shadow channels, kept only so leftover inline `var(--pw-shadow-*)` render nothing. */
   --pw-shadow-dark: transparent;
   --pw-shadow-light: transparent;
 
   /* Legacy / extended variables for backward compatibility */
-  --pw-surface-2: #e3dccf;
-  --pw-ink-2: #4a5257;
-  --pw-ink-3: #4a5257;
-  --pw-accent-soft: #ecdbc6;
-  --pw-accent-2: #2a5f66;
-  --pw-accent-3: #7a5200;
-  --pw-border: rgba(10, 12, 14, 0.13);
+  --pw-surface-2: #ebe6dc;
+  --pw-ink-2: #57534c;
+  --pw-ink-3: #57534c;
+  --pw-accent-soft: #f6e3cd;
+  --pw-accent-2: #a8430b;
+  --pw-accent-3: #94510a;
+  --pw-border: rgba(18, 17, 16, 0.13);
   --pw-danger: #b3261e;
-  --pw-input-bg: #e3dccf;
-  --pw-input-text: #0a0c0e;
+  --pw-input-bg: #efebe3;
+  --pw-input-text: #121110;
   /* Amber for fills (button hover, progress, dots) + the ink that sits on it (8:1). */
   --pw-accent-fill: #e8913c;
-  --pw-on-accent: #0a0c0e;
+  --pw-on-accent: #121110;
 
   /* shadcn tokens: aliases of the --pw-* values (the .dark block re-declares them so each
      scope resolves its own --pw-*). primary = ink fill with ground text; ring = amber. */
@@ -193,10 +192,10 @@ body,
   --border: var(--pw-border);
   --input: var(--pw-border);
   --ring: var(--pw-accent);
-  --chart-1: #b8650f;
-  --chart-2: #2e6b72;
-  --chart-3: #4a5257;
-  --chart-4: #7a5200;
+  --chart-1: #e8913c;
+  --chart-2: #a8430b;
+  --chart-3: #57534c;
+  --chart-4: #f2b27a;
   --chart-5: #b3261e;
   --sidebar: var(--pw-surface);
   --sidebar-foreground: var(--pw-ink);
@@ -210,29 +209,29 @@ body,
 
 .dark {
   color-scheme: dark;
-  /* QED dark = the exact landing palette (see --color-qed-* above). */
-  --pw-bg: #0a0c0e;
-  --pw-surface: #16191e;
-  --pw-ink: #ede7dc;
-  --pw-muted: #9ea5a8;
+  /* Dark = AMOLED: pure black ground, neutral near-black surfaces, chalk ink (same as the landing). */
+  --pw-bg: #000000;
+  --pw-surface: #0e0e0e;
+  --pw-ink: #efebe3;
+  --pw-muted: #a8a29a;
   --pw-accent: #e8913c;
-  --pw-secondary: #5fa3ab;
+  --pw-secondary: #fb7a2c;
   --pw-shadow-dark: transparent;
   --pw-shadow-light: transparent;
 
   /* Legacy / extended variables for backward compatibility */
-  --pw-surface-2: #101317;
-  --pw-ink-2: #9ea5a8;
-  --pw-ink-3: #9ea5a8;
-  --pw-accent-soft: #251c14;
-  --pw-accent-2: #5fa3ab;
-  --pw-accent-3: #f2b66d;
-  --pw-border: rgba(237, 231, 220, 0.13);
-  --pw-danger: #f0786a;
-  --pw-input-bg: #101317;
-  --pw-input-text: #ede7dc;
+  --pw-surface-2: #161616;
+  --pw-ink-2: #a8a29a;
+  --pw-ink-3: #a8a29a;
+  --pw-accent-soft: #24160a;
+  --pw-accent-2: #fb7a2c;
+  --pw-accent-3: #e8913c;
+  --pw-border: rgba(239, 235, 227, 0.14);
+  --pw-danger: #ff6b5e;
+  --pw-input-bg: #121212;
+  --pw-input-text: #efebe3;
   --pw-accent-fill: #e8913c;
-  --pw-on-accent: #0a0c0e;
+  --pw-on-accent: #000000;
 
   --background: var(--pw-bg);
   --foreground: var(--pw-ink);
@@ -254,10 +253,10 @@ body,
   --input: var(--pw-border);
   --ring: var(--pw-accent);
   --chart-1: #e8913c;
-  --chart-2: #5fa3ab;
-  --chart-3: #9ea5a8;
-  --chart-4: #f2b66d;
-  --chart-5: #f0786a;
+  --chart-2: #fb7a2c;
+  --chart-3: #a8a29a;
+  --chart-4: #f5b27a;
+  --chart-5: #ff6b5e;
   --sidebar: var(--pw-surface);
   --sidebar-foreground: var(--pw-ink);
   --sidebar-primary: var(--pw-ink);

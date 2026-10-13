@@ -319,7 +319,7 @@ function TutorProfilePage() {
           className="h-48 sm:h-64 w-full bg-cover bg-center bg-[var(--pw-surface-2)] border-b border-[var(--pw-border)]"
           style={{
             backgroundImage: tutor.cover_image_url
-              ? `linear-gradient(180deg, rgba(10,12,14,0.35) 0%, rgba(10,12,14,0.85) 100%), url(${tutor.cover_image_url})`
+              ? `linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.85) 100%), url(${tutor.cover_image_url})`
               : undefined,
           }}
           aria-hidden
