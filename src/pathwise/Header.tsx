@@ -105,17 +105,36 @@ export function PWHeader() {
     navigate({ to: "/admin" });
   };
 
+  // Signed-out visitors get the public sections, so every page answers "where can I go?"
+  // (they used to see only the logo and Sign In). Inline from lg up, in the Menu below.
+  const publicLinks = (stacked: boolean) => {
+    const cls = stacked ? `${c.link} px-2` : c.link;
+    return (
+      <>
+        <Link to="/quiz" className={cls}>
+          Level check
+        </Link>
+        <Link to="/find-tutor" className={cls}>
+          Find a tutor
+        </Link>
+        <Link to="/library" className={cls}>
+          Course library
+        </Link>
+      </>
+    );
+  };
+
   // Signed-in navigation, rendered inline on desktop and stacked in the phone menu.
   const navLinks = (stacked: boolean) => {
     if (!user) return null;
     const primary = stacked ? `${c.link} px-2` : c.accent;
-    const secondary = stacked ? `${c.link} px-2` : `${c.link} hidden sm:inline-flex`;
+    const secondary = stacked ? `${c.link} px-2` : `${c.link} hidden lg:inline-flex`;
     const tutorSide = user.role === "tutor" || user.role === "both";
     const studentSide = user.role === "student" || user.role === "both";
     return (
       <>
         {tutorSide && (
-          <Link to="/dashboard" className={primary} activeProps={{ style: { background: "var(--pw-accent-soft)" } }}>
+          <Link to="/dashboard" className={primary}>
             Dashboard
           </Link>
         )}
@@ -126,6 +145,9 @@ export function PWHeader() {
             </Link>
             <Link to="/find-tutor" className={secondary}>
               Find a tutor
+            </Link>
+            <Link to="/library" className={secondary}>
+              Library
             </Link>
             <Link to="/sessions" className={secondary}>
               My sessions
@@ -198,16 +220,16 @@ export function PWHeader() {
                   <span className={c.role}>{user.role}</span>
                 )}
               </span>
-              {/* Desktop: links inline. */}
-              <nav className="hidden sm:flex items-center gap-3">
+              {/* From lg: links inline. Below it the row (up to 7 links + Sign Out) is wider
+                  than the screen, so it collapses into the Menu. */}
+              <nav className="hidden lg:flex items-center gap-3">
                 {navLinks(false)}
                 <button onClick={handleSignOut} className={c.signOut}>
                   Sign Out
                 </button>
               </nav>
-              {/* Phone: one Menu button — the full row used to be wider than the screen.
-                  Keyed by path so it closes after navigating. */}
-              <details key={location.pathname} className="sm:hidden relative">
+              {/* Below lg: one Menu button. Keyed by path so it closes after navigating. */}
+              <details key={location.pathname} className="lg:hidden relative">
                 <summary className={`${c.link} list-none cursor-pointer select-none`}>Menu</summary>
                 <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-1 ${c.menu}`}>
                   {navLinks(true)}
@@ -218,9 +240,20 @@ export function PWHeader() {
               </details>
             </>
           ) : (
-            <button onClick={openLogin} className={c.signIn}>
-              Sign In
-            </button>
+            <>
+              <nav aria-label="Site" className="hidden lg:flex items-center gap-3">
+                {publicLinks(false)}
+              </nav>
+              <details key={location.pathname} className="lg:hidden relative">
+                <summary className={`${c.link} list-none cursor-pointer select-none`}>Menu</summary>
+                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-1 ${c.menu}`}>
+                  {publicLinks(true)}
+                </div>
+              </details>
+              <button onClick={openLogin} className={c.signIn}>
+                Sign In
+              </button>
+            </>
           )}
         </div>
       </header>

@@ -727,6 +727,12 @@ textarea.bg-white {
     border-color: var(--pw-ink);
   }
 
+  /* Wayfinding: the header link for the page you're on (TanStack sets aria-current) shows
+     in the accent, inline and in the phone Menu. Scoped to nav/menus so the logo isn't. */
+  header :is(nav, details) a[aria-current="page"] {
+    color: var(--pw-accent);
+  }
+
   /* Press feedback on pointer-down, not on release (apple-design §1): a tap on a phone,
      which has no hover, now shows something immediately. */
   :is(.pw-btn-primary, .pw-btn-secondary, .pw-btn-outline, .pw-pill):active:not(:disabled) {
