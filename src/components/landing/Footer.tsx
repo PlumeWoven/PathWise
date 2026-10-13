@@ -95,7 +95,7 @@ export function Footer({ lit = false }: { lit?: boolean }) {
         <p
           className={`whitespace-nowrap text-center font-syne text-[10.8vw] font-extrabold uppercase leading-none transition-[color,text-shadow] duration-1000 ${
             lit
-              ? "text-[rgba(237,231,220,0.3)] [text-shadow:0_0_32px_rgba(237,231,220,0.35)]"
+              ? "text-[rgba(239,235,227,0.3)] [text-shadow:0_0_32px_rgba(239,235,227,0.35)]"
               : "text-qed-hairline"
           }`}
         >

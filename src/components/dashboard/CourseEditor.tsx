@@ -609,7 +609,7 @@ function Step1Basic({
             className="absolute inset-0 opacity-0 cursor-pointer"
           />
           {uploading && (
-            <div className="absolute inset-0 bg-[rgba(10,12,14,0.6)] grid place-items-center text-qed-ink">
+            <div className="absolute inset-0 bg-[rgba(0,0,0,0.6)] grid place-items-center text-qed-ink">
               <Loader2 className="size-6 animate-spin" />
             </div>
           )}

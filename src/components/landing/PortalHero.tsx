@@ -53,7 +53,7 @@ export function PortalHero() {
           style={{ opacity: duotone }}
           className="pointer-events-none absolute inset-0 z-10 bg-linear-135 from-qed-amber to-qed-teal mix-blend-overlay motion-reduce:opacity-25!"
         />
-        <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(circle,transparent_20%,rgba(10,12,14,0.8)_100%)]" />
+        <div className="pointer-events-none absolute inset-0 z-20 bg-[radial-gradient(circle,transparent_20%,rgba(0,0,0,0.8)_100%)]" />
 
         <motion.div
           style={{ x: panelLeftX }}
