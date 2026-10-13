@@ -43,12 +43,12 @@ function DemoPage() {
   if (!codeOk) {
     return (
       <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <div className="max-w-md mx-auto pt-24 px-5 text-center">
+        <div className="max-w-md mx-auto pt-24 px-6 text-center">
           <h1 className="font-display text-3xl uppercase tracking-[-0.025em]">Invalid demo code</h1>
-          <p className="mt-3 text-[var(--pw-ink-2)]">
+          <p className="mt-4 text-[var(--pw-ink-2)]">
             The code "{search.code}" isn't valid. Try the public demo instead.
           </p>
-          <Link to="/demo" className="pw-btn-primary mt-6 inline-flex px-5 py-3">
+          <Link to="/demo" className="pw-btn-primary mt-6 inline-flex px-6 py-4">
             Open public demo
           </Link>
         </div>
@@ -117,14 +117,14 @@ function DemoBar({
 
   if (expired) {
     return (
-      <div className="px-5 sm:px-8 pt-14 lg:pt-4">
+      <div className="px-6 sm:px-8 pt-16 lg:pt-4">
         <div
-          className="max-w-7xl mx-auto pw-card px-4 py-3 flex flex-wrap items-center gap-3 justify-between"
+          className="max-w-7xl mx-auto pw-card px-4 py-4 flex flex-wrap items-center gap-4 justify-between"
           style={{ background: bg, borderColor: tone }}
         >
           <div className="flex items-center gap-2 text-[0.75rem]">
             <span
-              className="px-2 py-0.5 rounded-full border label-caps"
+              className="px-2 py-0 rounded-full border label-caps"
               style={{ borderColor: tone, color: tone }}
             >
               Demo expired
@@ -133,7 +133,7 @@ function DemoBar({
               Sign up to keep exploring with your own data.
             </span>
           </div>
-          <button onClick={onExitClick} className="pw-btn-primary text-[0.75rem] px-3 py-1.5">
+          <button onClick={onExitClick} className="pw-btn-primary text-[0.75rem] px-4 py-2">
             Sign up to continue →
           </button>
         </div>
@@ -142,14 +142,14 @@ function DemoBar({
   }
 
   return (
-    <div className="px-5 sm:px-8 pt-14 lg:pt-4">
+    <div className="px-6 sm:px-8 pt-16 lg:pt-4">
       <div
-        className="max-w-7xl mx-auto pw-card px-4 py-3 flex flex-wrap items-center gap-3 justify-between"
+        className="max-w-7xl mx-auto pw-card px-4 py-4 flex flex-wrap items-center gap-4 justify-between"
         style={{ background: bg, borderColor: warning ? tone : undefined }}
       >
         <div className="flex items-center gap-2 text-[0.75rem] min-w-0">
           <span
-            className={`px-2 py-0.5 rounded-full border label-caps shrink-0 ${
+            className={`px-2 py-0 rounded-full border label-caps shrink-0 ${
               expired
                 ? "border-[var(--pw-danger)]"
                 : warning
@@ -168,21 +168,21 @@ function DemoBar({
           </span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="hidden sm:inline-flex border border-[var(--pw-border)] p-0.5 bg-[var(--pw-surface)]">
+          <div className="hidden sm:inline-flex border border-[var(--pw-border)] p-0 bg-[var(--pw-surface)]">
             <button
               onClick={() => setView("tutor")}
-              className={`label-caps px-3 py-1.5 transition-colors ${view === "tutor" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
+              className={`text-[0.8125rem] font-semibold px-4 py-2 transition-colors ${view === "tutor" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
             >
               Tutor view
             </button>
             <button
               onClick={() => setView("student")}
-              className={`label-caps px-3 py-1.5 transition-colors ${view === "student" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
+              className={`text-[0.8125rem] font-semibold px-4 py-2 transition-colors ${view === "student" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
             >
               Student view
             </button>
           </div>
-          <button onClick={shareLink} className="pw-btn-outline text-[0.75rem] px-3 py-1.5">
+          <button onClick={shareLink} className="pw-btn-outline text-[0.75rem] px-4 py-2">
             Share demo
           </button>
         </div>
@@ -200,7 +200,7 @@ function MobileViewSwitch({
   setView: (v: "tutor" | "student") => void;
 }) {
   return (
-    <div className="sm:hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-40 inline-flex rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface)] shadow-lg p-1">
+    <div className="sm:hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-40 inline-flex rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface)] shadow-lg p-2">
       <button
         onClick={() => setView("tutor")}
         className={`label-caps px-4 py-2 rounded-full transition-colors ${view === "tutor" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
@@ -220,10 +220,10 @@ function MobileViewSwitch({
 function PersistentSignupLink() {
   const { exitDemo } = useDemo();
   return (
-    <div className="mt-10 text-center">
+    <div className="mt-12 text-center">
       <button
         onClick={exitDemo}
-        className="label-caps text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
+        className="text-[0.8125rem] font-semibold text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
       >
         Sign up for free →
       </button>
@@ -248,7 +248,7 @@ function TutorDemo() {
             {tutor.name}
           </h1>
           <span
-            className="inline-flex items-center gap-1 label-caps px-2 py-0.5 rounded-full border border-[var(--pw-accent)] text-[var(--pw-accent)]"
+            className="inline-flex items-center gap-2 label-caps px-2 py-0 rounded-full border border-[var(--pw-accent)] text-[var(--pw-accent)]"
             title="Verified tutor"
           >
             <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" aria-hidden>
@@ -257,11 +257,11 @@ function TutorDemo() {
             Verified
           </span>
         </div>
-        <p className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">{tutor.headline}</p>
+        <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">{tutor.headline}</p>
         <p className="mt-4 text-[0.875rem] leading-relaxed max-w-2xl">{tutor.bio}</p>
-        <ul className="mt-5 space-y-2">
+        <ul className="mt-6 space-y-2">
           {tutor.credentials.map((c) => (
-            <li key={c} className="flex items-center gap-3 text-[0.8125rem]">
+            <li key={c} className="flex items-center gap-4 text-[0.8125rem]">
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--pw-accent)] shrink-0" />
               <span>{c}</span>
             </li>
@@ -269,8 +269,8 @@ function TutorDemo() {
         </ul>
 
         {search.ref && (
-          <div className="mt-5 text-[0.75rem] text-[var(--pw-ink-2)] pt-4 border-t border-[var(--pw-border)]">
-            <Icon name="share" className="h-4 w-4 mr-1.5 align-text-bottom" />
+          <div className="mt-6 text-[0.75rem] text-[var(--pw-ink-2)] pt-4 border-t border-[var(--pw-border)]">
+            <Icon name="share" className="h-4 w-4 mr-2 align-text-bottom" />
             Your demo link <span className="text-[var(--pw-ink)]">{search.ref}</span> has been
             viewed <span className="text-[var(--pw-ink)]">{refViews}</span>{" "}
             {refViews === 1 ? "time" : "times"}.
@@ -298,9 +298,9 @@ function TutorDemo() {
           </h2>
           <span className="text-[0.75rem] text-[var(--pw-ink-2)]">MDL</span>
         </div>
-        <div className="mt-5 flex items-end gap-2 h-40">
+        <div className="mt-6 flex items-end gap-2 h-40">
           {earnings.map((v, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div key={i} className="flex-1 flex flex-col items-center gap-2">
               <div
                 className="w-full bg-pw-accent-fill transition-opacity hover:opacity-80"
                 style={{ height: `${(v / max) * 100}%` }}
@@ -326,7 +326,7 @@ function TutorDemo() {
               <li
                 key={m.id}
                 onClick={() => lockedFeature("the inbox")}
-                className="flex gap-3 p-3 hover:bg-[var(--pw-surface-2)] transition-colors cursor-pointer"
+                className="flex gap-4 p-4 hover:bg-[var(--pw-surface-2)] transition-colors cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-[0.75rem] font-medium bg-pw-accent-fill text-pw-on-accent">
                   {m.avatar}
@@ -353,7 +353,7 @@ function TutorDemo() {
           </div>
           <ul className="mt-4 divide-y divide-[var(--pw-border)]">
             {sessions.map((s) => (
-              <li key={s.id} className="flex items-center gap-3 p-3">
+              <li key={s.id} className="flex items-center gap-4 p-4">
                 <div className="w-0.5 h-10 bg-[var(--pw-accent)]" />
                 <div className="flex-1">
                   <div className="text-[0.875rem] font-medium">{s.topic}</div>
@@ -374,7 +374,7 @@ function TutorDemo() {
           <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">My courses</h2>
           <button
             onClick={() => lockedFeature("course creation")}
-            className="pw-btn-outline text-[0.75rem] px-3 py-1.5"
+            className="pw-btn-outline text-[0.75rem] px-4 py-2"
           >
             + New course
           </button>
@@ -386,25 +386,25 @@ function TutorDemo() {
               className="pw-card group p-0 overflow-hidden hover:border-[var(--pw-ink)] transition-colors"
             >
               <div className="h-32" style={{ background: c.thumb }} />
-              <div className="p-5">
+              <div className="p-6">
                 <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 rounded-full border border-[var(--pw-border)] label-caps text-[var(--pw-ink-2)]">
+                  <span className="px-2 py-0 rounded-full border border-[var(--pw-border)] label-caps text-[var(--pw-ink-2)]">
                     {c.category}
                   </span>
-                  <span className="px-2.5 py-0.5 rounded-full border border-[var(--pw-secondary)] label-caps text-[var(--pw-secondary)]">
+                  <span className="px-2 py-0 rounded-full border border-[var(--pw-secondary)] label-caps text-[var(--pw-secondary)]">
                     Published
                   </span>
                 </div>
                 <h3 className="mt-2 font-display text-[1rem] leading-tight transition-colors group-hover:text-pw-accent">
                   {c.title}
                 </h3>
-                <div className="mt-3 grid grid-cols-3 gap-2 text-[0.6875rem] text-[var(--pw-ink-2)]">
+                <div className="mt-4 grid grid-cols-3 gap-2 text-[0.6875rem] text-[var(--pw-ink-2)]">
                   <div>
                     <div className="text-[var(--pw-ink)] text-[0.875rem] font-medium">{c.students}</div>
                     students
                   </div>
                   <div>
-                    <div className="text-[var(--pw-ink)] text-[0.875rem] font-medium flex items-center gap-1">
+                    <div className="text-[var(--pw-ink)] text-[0.875rem] font-medium flex items-center gap-2">
                       <StarIcon className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                       {c.rating}
                     </div>
@@ -417,14 +417,14 @@ function TutorDemo() {
                     completion
                   </div>
                 </div>
-                <div className="mt-3 pw-progress">
+                <div className="mt-4 pw-progress">
                   <div className="pw-progress-fill" style={{ width: `${c.completion}%` }} />
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <p className="mt-3 text-[0.6875rem] text-[var(--pw-ink-2)]">
+        <p className="mt-4 text-[0.6875rem] text-[var(--pw-ink-2)]">
           Demo mode — changes won't be saved.
         </p>
       </section>
@@ -432,7 +432,7 @@ function TutorDemo() {
       {/* Recent review */}
       <section className="pw-card p-6">
         <h2 className="font-display text-[1.125rem] uppercase tracking-[-0.025em]">Recent review</h2>
-        <div className="mt-3 flex items-start gap-3">
+        <div className="mt-4 flex items-start gap-4">
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-[0.75rem] bg-pw-accent-fill text-pw-on-accent font-medium">
             MP
           </div>
@@ -442,7 +442,7 @@ function TutorDemo() {
               <span
                 role="img"
                 aria-label={`${review.rating} out of 5 stars`}
-                className="text-[var(--pw-accent)] inline-flex items-center gap-0.5"
+                className="text-[var(--pw-accent)] inline-flex items-center gap-0"
               >
                 {Array.from({ length: review.rating }, (_, n) => (
                   <StarIcon key={n} className="h-3 w-3 fill-current" aria-hidden="true" />
@@ -450,7 +450,7 @@ function TutorDemo() {
               </span>
               <span className="text-[0.6875rem] text-[var(--pw-ink-2)]">on {review.course}</span>
             </div>
-            <p className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">"{review.body}"</p>
+            <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">"{review.body}"</p>
           </div>
         </div>
       </section>
@@ -469,7 +469,7 @@ function StudentDemo() {
         <h1 className="font-display text-[1.75rem] uppercase tracking-[-0.025em] leading-none">
           Browse courses
         </h1>
-        <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-1">
+        <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-2">
           This is what students see when exploring Pathwise.
         </p>
       </div>
@@ -481,16 +481,16 @@ function StudentDemo() {
             className="pw-card group p-0 overflow-hidden hover:border-[var(--pw-ink)] transition-colors"
           >
             <div className="h-36" style={{ background: c.thumb }} />
-            <div className="p-5">
-              <div className="label-caps px-2.5 py-0.5 rounded-full border border-[var(--pw-border)] text-[var(--pw-ink-2)] inline-block">
+            <div className="p-6">
+              <div className="label-caps px-2 py-0 rounded-full border border-[var(--pw-border)] text-[var(--pw-ink-2)] inline-block">
                 {c.category}
               </div>
               <h3 className="mt-2 font-display text-[1.0625rem] leading-tight transition-colors group-hover:text-pw-accent">
                 {c.title}
               </h3>
-              <p className="mt-1 text-[0.75rem] text-[var(--pw-ink-2)]">by {tutor.name}</p>
-              <div className="mt-2 flex items-center gap-3 text-[0.75rem] text-[var(--pw-ink-2)] flex-wrap">
-                <span className="inline-flex items-center gap-1">
+              <p className="mt-2 text-[0.75rem] text-[var(--pw-ink-2)]">by {tutor.name}</p>
+              <div className="mt-2 flex items-center gap-4 text-[0.75rem] text-[var(--pw-ink-2)] flex-wrap">
+                <span className="inline-flex items-center gap-2">
                   <StarIcon className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
                   {c.rating} ({c.reviews})
                 </span>
@@ -516,12 +516,12 @@ function StudentDemo() {
                   onClick={() => setEnrolled(c.id)}
                   className={
                     enrolled === c.id
-                      ? "pw-btn-outline text-[0.75rem] px-3 py-1.5"
-                      : "pw-btn-primary text-[0.75rem] px-3 py-1.5"
+                      ? "pw-btn-outline text-[0.75rem] px-4 py-2"
+                      : "pw-btn-primary text-[0.75rem] px-4 py-2"
                   }
                 >
                   {enrolled === c.id ? (
-                    <span className="inline-flex items-center gap-1.5">
+                    <span className="inline-flex items-center gap-2">
                       <Icon name="check" className="h-3.5 w-3.5" />
                       Enrolled
                     </span>
@@ -548,7 +548,7 @@ function StudentDemo() {
           </div>
           <div className="mt-4 aspect-video bg-qed-ground border border-[var(--pw-border)] overflow-hidden flex items-center justify-center relative">
             {playing ? (
-              <div className="text-qed-ink-2 text-sm inline-flex items-center gap-1.5">
+              <div className="text-qed-ink-2 text-sm inline-flex items-center gap-2">
                 <Icon name="play" className="h-4 w-4" />
                 Playing sample lesson…
               </div>
@@ -561,7 +561,7 @@ function StudentDemo() {
               </button>
             )}
           </div>
-          <div className="mt-3 pw-progress">
+          <div className="mt-4 pw-progress">
             <div className="pw-progress-fill" style={{ width: "12%" }} />
           </div>
           <p className="mt-2 text-[0.75rem] text-[var(--pw-ink-2)]">
@@ -569,7 +569,7 @@ function StudentDemo() {
           </p>
           <button
             onClick={() => lockedFeature("certificates")}
-            className="mt-3 label-caps text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
+            className="mt-4 text-[0.8125rem] font-semibold text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
           >
             Get my certificate →
           </button>
@@ -581,10 +581,10 @@ function StudentDemo() {
 
 function Kpi({ label, value, delta }: { label: string; value: string; delta: string }) {
   return (
-    <div className="pw-card p-5 transition-colors hover:border-[var(--pw-ink)] cursor-default">
+    <div className="pw-card p-6 transition-colors hover:border-[var(--pw-ink)] cursor-default">
       <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
-      <div className="font-display text-[1.625rem] mt-1">{value}</div>
-      <div className="text-[0.6875rem] text-[var(--pw-secondary)] mt-1">{delta}</div>
+      <div className="font-display text-[1.625rem] mt-2">{value}</div>
+      <div className="text-[0.6875rem] text-[var(--pw-secondary)] mt-2">{delta}</div>
     </div>
   );
 }
@@ -603,11 +603,11 @@ function ConvertCTA() {
       <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-lg mx-auto">
         Sign up to keep your courses, students, and earnings. Free to start — no credit card.
       </p>
-      <div className="mt-5 flex gap-3 justify-center flex-wrap">
-        <button onClick={exitDemo} className="pw-btn-primary px-6 py-3 text-[0.875rem]">
+      <div className="mt-6 flex gap-4 justify-center flex-wrap">
+        <button onClick={exitDemo} className="pw-btn-primary px-6 py-4 text-[0.875rem]">
           Create my real account →
         </button>
-        <Link to="/" className="pw-btn-outline px-6 py-3 text-[0.875rem]">
+        <Link to="/" className="pw-btn-outline px-6 py-4 text-[0.875rem]">
           Back to home
         </Link>
       </div>

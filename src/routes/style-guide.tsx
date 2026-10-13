@@ -51,11 +51,11 @@ interface SectionProps {
 function Section({ id, title, applies, children }: SectionProps) {
   return (
     <section id={id} className="scroll-mt-24">
-      <div className="mb-5">
+      <div className="mb-6">
         <h2 className="font-display text-2xl font-bold uppercase tracking-[-0.025em] text-pw-ink">
           {title}
         </h2>
-        <p className="mt-1 text-sm text-pw-muted">
+        <p className="mt-2 text-sm text-pw-muted">
           <span className="label-caps text-pw-accent">Apply to:</span> {applies}
         </p>
       </div>
@@ -71,7 +71,7 @@ function Swatch({ name, varName }: { name: string; varName: string }) {
         className="h-16 w-full border border-[var(--pw-border)]"
         style={{ backgroundColor: `var(${varName})` }}
       />
-      <p className="mt-3 text-sm font-semibold text-pw-ink">{name}</p>
+      <p className="mt-4 text-sm font-semibold text-pw-ink">{name}</p>
       <p className="font-mono text-xs text-pw-muted">{varName}</p>
     </div>
   );
@@ -119,7 +119,7 @@ function StyleGuide() {
   const [available, setAvailable] = useState(true);
 
   return (
-    <main className="min-h-screen w-full bg-pw-bg px-5 py-10 text-pw-ink sm:px-8 lg:px-12">
+    <main className="min-h-screen w-full bg-pw-bg px-6 py-12 text-pw-ink sm:px-8 lg:px-12">
       {/* Page header */}
       <header className="mx-auto mb-12 flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
@@ -132,13 +132,13 @@ function StyleGuide() {
           <h1 className="font-display text-3xl font-bold uppercase leading-none tracking-[-0.025em] text-pw-ink">
             Design Language
           </h1>
-          <p className="mt-1 text-sm text-pw-muted">
+          <p className="mt-2 text-sm text-pw-muted">
             QED component vocabulary for every PathWise screen: square, hairline, label-caps.
           </p>
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-10 lg:grid-cols-[12.5rem_1fr]">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-12 lg:grid-cols-[12.5rem_1fr]">
         {/* Anchor nav */}
         <nav
           aria-label="Style guide sections"
@@ -158,7 +158,7 @@ function StyleGuide() {
             title="Color tokens"
             applies="every surface. Use the CSS variables / tailwind tokens so dark mode inverts automatically."
           >
-            <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
               <Swatch name="Ground" varName="--pw-bg" />
               <Swatch name="Surface" varName="--pw-surface" />
               <Swatch name="Surface 2" varName="--pw-surface-2" />
@@ -180,7 +180,7 @@ function StyleGuide() {
             title="Buttons"
             applies="primary CTAs (Get verified, Complete profile, Book trial), ghost actions (Find a tutor, View profile, Message, Clear filters)."
           >
-            <div className="pw-card flex flex-wrap items-center gap-5">
+            <div className="pw-card flex flex-wrap items-center gap-6">
               <button className="pw-btn-primary group">
                 Get verified{" "}
                 <ArrowRightIcon
@@ -230,7 +230,7 @@ function StyleGuide() {
               </div>
 
               {/* Top nav pills */}
-              <div className="pw-card flex flex-wrap items-start gap-3">
+              <div className="pw-card flex flex-wrap items-start gap-4">
                 <button className="pw-pill is-active">Dashboard</button>
                 <button className="pw-pill">My Roadmap</button>
                 <button className="pw-pill">Find a tutor</button>
@@ -251,7 +251,7 @@ function StyleGuide() {
             title="Cards & metric tiles"
             applies="metric cards (Earnings, Total students), chart panels, profile panels, admin stat tiles."
           >
-            <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
               {metricCards.map((m) => (
                 <motion.div
                   key={m.label}
@@ -265,8 +265,8 @@ function StyleGuide() {
                   className="pw-card"
                 >
                   <p className="label-caps text-[var(--pw-ink-2)]">{m.label}</p>
-                  <p className="mt-3 font-display text-3xl font-bold text-pw-accent">{m.value}</p>
-                  <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-pw-secondary">
+                  <p className="mt-4 font-display text-3xl font-bold text-pw-accent">{m.value}</p>
+                  <p className="mt-4 flex items-center gap-2 text-xs font-medium text-pw-secondary">
                     <TrendingUpIcon className="h-3.5 w-3.5" aria-hidden="true" />
                     {m.trend}
                   </p>
@@ -286,8 +286,8 @@ function StyleGuide() {
             title="Inputs & filters"
             applies="the Find-a-tutor filter rail (search, price slider, checkboxes, rating pills, selects)."
           >
-            <div className="pw-card grid grid-cols-1 gap-7 sm:grid-cols-2">
-              <div className="flex flex-col gap-5">
+            <div className="pw-card grid grid-cols-1 gap-8 sm:grid-cols-2">
+              <div className="flex flex-col gap-6">
                 <div>
                   <label
                     htmlFor="sg-search"
@@ -323,10 +323,10 @@ function StyleGuide() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-6">
                 <div>
                   <span className="mb-2 block label-caps text-[var(--pw-ink-2)]">Availability</span>
-                  <div className="flex items-center gap-3 text-sm text-pw-ink">
+                  <div className="flex items-center gap-4 text-sm text-pw-ink">
                     <ToggleSwitch
                       checked={available}
                       onChange={setAvailable}
@@ -351,7 +351,7 @@ function StyleGuide() {
                         {r === "any" ? (
                           "Any"
                         ) : (
-                          <span className="inline-flex items-center gap-1">
+                          <span className="inline-flex items-center gap-2">
                             {r}
                             <StarIcon className="h-3 w-3 fill-current" aria-hidden="true" />
                             <span className="sr-only">stars</span>
@@ -375,7 +375,7 @@ function StyleGuide() {
             title="Badges & tags"
             applies="status chips (EMAIL VERIFIED, Locked, 45% Match) and topic tags (Fractions, Decimals, Mathematics)."
           >
-            <div className="pw-card flex flex-wrap items-center gap-3">
+            <div className="pw-card flex flex-wrap items-center gap-4">
               <span className="pw-badge text-pw-secondary">
                 <ShieldCheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
                 Email verified
@@ -435,7 +435,7 @@ function StyleGuide() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
               <div className="pw-card">
                 <p className="label-caps text-[var(--pw-ink-2)]">Profile completeness</p>
-                <p className="mt-2 mb-3 font-display text-2xl font-bold text-pw-ink">17%</p>
+                <p className="mt-2 mb-4 font-display text-2xl font-bold text-pw-ink">17%</p>
                 <div
                   className="pw-progress"
                   role="progressbar"
@@ -453,7 +453,7 @@ function StyleGuide() {
               </div>
 
               <div className="pw-card">
-                <div className="mb-3 flex items-center gap-3">
+                <div className="mb-4 flex items-center gap-4">
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-pw-accent-fill text-pw-on-accent">
                     <PlayIcon className="h-4 w-4" aria-hidden="true" />
                   </span>
@@ -462,14 +462,14 @@ function StyleGuide() {
                 <h3 className="font-display text-xl font-bold uppercase tracking-[-0.025em] text-pw-ink">
                   Number Foundations
                 </h3>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-2">
                   <span className="pw-badge">Fractions</span>
                   <span className="pw-badge">Decimals</span>
                   <span className="pw-badge">Ratios</span>
                 </div>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <button className="pw-btn-primary !px-5 !py-2.5">Start here</button>
-                  <button className="pw-btn-secondary !px-5 !py-2.5">
+                <div className="mt-6 flex flex-wrap gap-4">
+                  <button className="pw-btn-primary !px-6 !py-2">Start here</button>
+                  <button className="pw-btn-secondary !px-6 !py-2">
                     <CheckIcon className="h-4 w-4" aria-hidden="true" /> Mark complete
                   </button>
                 </div>

@@ -19,7 +19,7 @@ export function ToggleSwitch({ checked, onChange, ariaLabel, id }: ToggleSwitchP
       aria-checked={checked}
       aria-label={ariaLabel}
       onClick={() => onChange(!checked)}
-      className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border px-1 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pw-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pw-bg)] ${
+      className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full border px-2 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pw-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pw-bg)] ${
         checked
           ? "border-pw-accent-fill bg-pw-accent-fill"
           : "border-[var(--pw-border)] bg-[var(--pw-surface-2)]"

@@ -6,24 +6,24 @@ export function SessionStateTracker({ status }: { status: SessionStatus }) {
   const currentIdx = ORDERED_STATES.indexOf(status === "reminder_sent" ? "confirmed" : status);
   return (
     <div className="pw-card p-4">
-      <div className="label-caps text-[var(--pw-ink-2)] mb-3">Session lifecycle</div>
+      <div className="label-caps text-[var(--pw-ink-2)] mb-4">Session lifecycle</div>
       {isFinal ? (
         <div
-          className="p-3 text-[0.8125rem]"
+          className="p-4 text-[0.8125rem]"
           style={{ background: STATUS_META[status].bg, color: STATUS_META[status].fg }}
         >
           <div className="font-display font-bold uppercase tracking-[-0.025em] text-[0.9375rem]">
             {STATUS_META[status].label}
           </div>
-          <div className="opacity-80 mt-0.5">{STATUS_META[status].description}</div>
+          <div className="opacity-80 mt-0">{STATUS_META[status].description}</div>
         </div>
       ) : (
-        <div className="flex items-center gap-1 overflow-x-auto pb-1">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2">
           {ORDERED_STATES.map((s, i) => {
             const done = i < currentIdx;
             const active = i === currentIdx;
             return (
-              <div key={s} className="flex items-center gap-1 flex-shrink-0">
+              <div key={s} className="flex items-center gap-2 flex-shrink-0">
                 <div
                   className="rounded-full w-7 h-7 flex items-center justify-center text-[0.6875rem] font-mono-pw font-medium"
                   style={{

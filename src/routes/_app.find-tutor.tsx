@@ -141,7 +141,7 @@ function FindTutorPageInner() {
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       {/* Progress bar */}
       <div className="sticky top-(--pw-header-h) z-30 bg-[var(--pw-bg)]/90 backdrop-blur border-b border-[var(--pw-border)]">
-        <div className="max-w-2xl mx-auto px-5 py-3">
+        <div className="max-w-2xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
             <span>{isResults ? "Your profile" : `Question ${step + 1} of ${totalQ}`}</span>
             {!isResults && step > 0 && (
@@ -160,7 +160,7 @@ function FindTutorPageInner() {
         </div>
       </div>
 
-      <main className="relative px-5 py-10 max-w-2xl mx-auto">
+      <main className="relative px-6 py-12 max-w-2xl mx-auto">
         {/* popLayout, not "wait": the next question mounts while the old one leaves. */}
         <AnimatePresence mode="popLayout" custom={direction}>
           <motion.div
@@ -299,7 +299,7 @@ function Q1({
           onChange("subject", undefined);
           onNext();
         }}
-        className="mt-5 w-full pw-btn-outline px-4 py-3"
+        className="mt-6 w-full pw-btn-outline px-4 py-4"
         style={
           value.multi_subject
             ? { background: "var(--pw-accent-soft)", borderColor: "var(--pw-ink)" }
@@ -384,10 +384,10 @@ function Q3({ value, onChange }: { value?: Style; onChange: (v: Style) => void }
             >
               <Icon name={s.icon} className="h-12 w-12" />
             </motion.div>
-            <div className="mt-3 font-display text-[1.25rem] uppercase tracking-[-0.025em]">
+            <div className="mt-4 font-display text-[1.25rem] uppercase tracking-[-0.025em]">
               {s.label}
             </div>
-            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{s.sub}</div>
+            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{s.sub}</div>
           </motion.button>
         ))}
       </div>
@@ -410,16 +410,16 @@ function Q4({
   return (
     <div>
       <Heading kicker="04" title="What's your pace?" />
-      <div className="mt-10 px-2">
+      <div className="mt-12 px-2">
         <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)]">
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-2">
             <Icon name="slow" className="h-4 w-4" /> I need time to absorb
           </span>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-2">
             Challenge me! <Icon name="fast" className="h-4 w-4" />
           </span>
         </div>
-        <div className="relative mt-3">
+        <div className="relative mt-4">
           <input
             type="range"
             min={1}
@@ -446,7 +446,7 @@ function Q4({
           {PACE_LABELS[value - 1]}
         </div>
       </div>
-      <button onClick={onNext} className="mt-10 w-full pw-btn-primary px-5 py-3">
+      <button onClick={onNext} className="mt-12 w-full pw-btn-primary px-6 py-4">
         Continue →
       </button>
     </div>
@@ -524,10 +524,10 @@ function Q6({
             whileHover={{ x: 4 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange(l.id)}
-            className={`w-full pw-card p-5 text-left transition-colors hover:border-[var(--pw-ink)] ${value === l.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
+            className={`w-full pw-card p-6 text-left transition-colors hover:border-[var(--pw-ink)] ${value === l.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
             <div className="font-display uppercase tracking-[-0.025em] text-[1rem]">{l.label}</div>
-            <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0.5">{l.desc}</div>
+            <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0">{l.desc}</div>
           </motion.button>
         ))}
       </div>
@@ -556,7 +556,7 @@ function Q7({ value, onChange }: { value?: Frequency; onChange: (v: Frequency) =
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onChange(f.id)}
-            className={`pw-card p-5 text-center transition-colors hover:border-[var(--pw-ink)] ${value === f.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
+            className={`pw-card p-6 text-center transition-colors hover:border-[var(--pw-ink)] ${value === f.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
             <div className="flex justify-center">
               <Icon name={f.icon} className="h-10 w-10" />
@@ -564,7 +564,7 @@ function Q7({ value, onChange }: { value?: Frequency; onChange: (v: Frequency) =
             <div className="mt-2 font-display uppercase tracking-[-0.025em] text-[0.9375rem]">
               {f.label}
             </div>
-            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{f.sub}</div>
+            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{f.sub}</div>
           </motion.button>
         ))}
       </div>
@@ -603,12 +603,12 @@ function Q8({
   return (
     <div>
       <Heading kicker="08" title="What's your budget per hour?" />
-      <div className="mt-10 px-2">
+      <div className="mt-12 px-2">
         <div className="text-center font-display text-[3.5rem]" style={{ color: "var(--pw-accent)" }}>
-          <span className="text-[1rem] text-[var(--pw-ink-2)] mr-1">up to</span>
+          <span className="text-[1rem] text-[var(--pw-ink-2)] mr-2">up to</span>
           {formatPrice(value)}
           {value >= 1000 ? "+" : ""}
-          <span className="text-[1rem] text-[var(--pw-ink-2)] ml-1">/hr</span>
+          <span className="text-[1rem] text-[var(--pw-ink-2)] ml-2">/hr</span>
         </div>
         <input
           type="range"
@@ -637,7 +637,7 @@ function Q8({
           <span className="text-[var(--pw-ink-2)]">tutors available in your range</span>
         </motion.div>
       </div>
-      <button onClick={onNext} className="mt-10 w-full pw-btn-primary px-5 py-3">
+      <button onClick={onNext} className="mt-12 w-full pw-btn-primary px-6 py-4">
         See my matches →
       </button>
     </div>
@@ -681,7 +681,7 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
       {/* Shown at once: the profile is derived synchronously (it sat behind a 1.8 s fake loader). */}
       <motion.div key="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         {/* Profile card */}
-        <div className="relative pw-card p-7 overflow-hidden">
+        <div className="relative pw-card p-8 overflow-hidden">
           <motion.div
             className="absolute -top-8 -right-8 opacity-10"
             animate={{ rotate: [0, 8, -8, 0] }}
@@ -693,14 +693,14 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
           <div className="font-display text-[2rem] leading-none uppercase tracking-[-0.025em] mt-2">
             The {traits[0] ?? "Curious Learner"}
           </div>
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2">
             {traits.map((t, i) => (
               <motion.span
                 key={t}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 + i * 0.08 }}
-                className="pw-pill px-3 py-1 bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
+                className="pw-pill px-4 py-2 bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
               >
                 {t}
               </motion.span>
@@ -718,7 +718,7 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
         </div>
 
         {/* CTAs */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Link
             to="/matches"
             search={(prev: Record<string, unknown>) => ({
@@ -727,17 +727,17 @@ function Results({ answers, onRestart }: { answers: Answers; onRestart: () => vo
               budget: answers.budget_max,
               level: answers.experience_level,
             })}
-            className="pw-btn-primary text-center px-5 py-3"
+            className="pw-btn-primary text-center px-6 py-4"
           >
             View my matches →
           </Link>
-          <button onClick={onRestart} className="pw-btn-outline px-5 py-3">
+          <button onClick={onRestart} className="pw-btn-outline px-6 py-4">
             Retake the quiz
           </button>
         </div>
 
         {!user && (
-          <div className="mt-5 text-center text-[0.75rem] text-[var(--pw-ink-2)]">
+          <div className="mt-6 text-center text-[0.75rem] text-[var(--pw-ink-2)]">
             Your answers are saved locally. Sign up to keep them.
           </div>
         )}
@@ -751,7 +751,7 @@ function Heading({ kicker, title }: { kicker: string; title: string }) {
   return (
     <div>
       <div className="label-caps text-pw-accent">{kicker}</div>
-      <h1 className="font-display text-[1.75rem] sm:text-[2rem] leading-tight mt-1">{title}</h1>
+      <h1 className="font-display text-[1.75rem] sm:text-[2rem] leading-tight mt-2">{title}</h1>
     </div>
   );
 }
@@ -759,7 +759,7 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
-      <div className="font-medium mt-0.5">{value}</div>
+      <div className="font-medium mt-0">{value}</div>
     </div>
   );
 }

@@ -51,23 +51,23 @@ function StudentOnboarding() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="max-w-[35rem] mx-auto px-5 sm:px-8 py-12">
+      <main className="max-w-[35rem] mx-auto px-6 sm:px-8 py-12">
         <div className="label-caps text-[var(--pw-ink-2)]">Step 1 of 1</div>
-        <h1 className="font-display text-[2.25rem] uppercase tracking-[-0.025em] leading-none mt-3">
+        <h1 className="font-display text-[2.25rem] uppercase tracking-[-0.025em] leading-none mt-4">
           Welcome, {profile.full_name || profile.display_name}
         </h1>
         <p className="mt-2 text-[0.9375rem] text-[var(--pw-ink-2)]">
           A couple of details so we can tailor your roadmap.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5 pw-card p-6">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6 pw-card p-6">
           <div>
             <label htmlFor="sob-grade" className="label-caps text-[var(--pw-ink-2)]">Grade level</label>
             <select id="sob-grade"
               required
               value={grade}
               onChange={(e) => setGrade(e.target.value === "" ? "" : Number(e.target.value))}
-              className="pw-input mt-1 text-[0.875rem]"
+              className="pw-input mt-2 text-[0.875rem]"
             >
               <option value="">Select grade…</option>
               {[6, 7, 8, 9, 10, 11, 12].map((g) => (
@@ -86,13 +86,13 @@ function StudentOnboarding() {
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. Pass my algebra final, prep for SAT…"
-              className="pw-input mt-1 text-[0.875rem]"
+              className="pw-input mt-2 text-[0.875rem]"
             />
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 disabled:opacity-50"
+            className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50"
           >
             {submitting ? "Saving…" : "Continue to my roadmap →"}
           </button>

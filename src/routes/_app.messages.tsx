@@ -23,7 +23,7 @@ function MessagesPage() {
 
   if (!loading && !isLoggedIn) return <SignInPrompt />;
   return (
-    <main className="max-w-5xl mx-auto px-5 sm:px-8 py-10">
+    <main className="max-w-5xl mx-auto px-6 sm:px-8 py-12">
       <h1 className="font-display text-[2rem] uppercase tracking-[-0.025em] leading-none mb-6">Messages</h1>
       <Inbox threadId={thread} onSelect={(id) => navigate({ to: "/messages", search: { thread: id } })} />
     </main>

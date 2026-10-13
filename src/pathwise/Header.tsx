@@ -10,32 +10,32 @@ import { Icon } from "@/components/Icon";
 // Class strings per look. Markup is shared; only these swap. PW is theme-aware (--pw-* tokens);
 // QED is the always-dark landing look (fixed qed-* tokens).
 const pwCta =
-  "label-caps inline-flex items-center border border-[var(--pw-border)] px-3 sm:px-4 py-2 max-sm:min-h-11 text-[var(--pw-ink)] hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors";
+  "text-[0.8125rem] font-semibold inline-flex items-center border border-[var(--pw-border)] px-4 sm:px-4 py-2 max-sm:min-h-11 text-[var(--pw-ink)] hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors";
 const PW = {
   brand:
     "inline-flex min-h-11 items-center font-syne text-[0.9375rem] font-bold uppercase leading-none text-[var(--pw-ink)] after:content-['.'] after:text-pw-accent",
   name: "hidden sm:inline text-[0.8125rem] text-[var(--pw-ink-2)]",
-  role: "label-caps inline-flex items-center rounded-full border border-[var(--pw-border)] px-2.5 py-1 text-[var(--pw-ink-2)]",
+  role: "label-caps inline-flex items-center rounded-full border border-[var(--pw-border)] px-2 py-2 text-[var(--pw-ink-2)]",
   accent: pwCta,
-  link: "label-caps inline-flex items-center min-h-11 px-1 py-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
-  signOut: "label-caps inline-flex items-center min-h-11 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  link: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 px-2 py-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  signOut: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
   signIn: pwCta,
   menu: "border border-[var(--pw-border)] bg-[var(--pw-bg)]",
 };
 // Landing ("/") is always dark. `dark` on the header re-scopes --pw-* tokens so ThemeToggle,
 // NotificationBell and VerificationBadge (which read them) stay legible on the dark bar.
 const cta =
-  "label-caps inline-flex items-center border border-qed-hairline px-3 sm:px-4 py-2 max-sm:min-h-11 text-qed-ink hover:bg-qed-ink hover:text-qed-ground transition-colors";
+  "text-[0.8125rem] font-semibold inline-flex items-center border border-qed-hairline px-4 sm:px-4 py-2 max-sm:min-h-11 text-qed-ink hover:bg-qed-ink hover:text-qed-ground transition-colors";
 const QED = {
   header:
-    "dark sticky top-0 z-40 w-full min-h-(--pw-header-h) px-5 sm:px-8 flex flex-wrap items-center justify-between gap-3 border-b border-qed-hairline bg-qed-ground",
+    "dark sticky top-0 z-40 w-full min-h-(--pw-header-h) px-6 sm:px-8 flex flex-wrap items-center justify-between gap-4 border-b border-qed-hairline bg-qed-ground",
   brand:
     "inline-flex min-h-11 items-center font-syne text-[0.9375rem] font-bold uppercase leading-none text-qed-ink after:content-['.'] after:text-qed-amber",
   name: "hidden sm:inline text-[0.8125rem] text-qed-ink-2",
-  role: "label-caps inline-flex items-center rounded-full border border-qed-hairline px-2.5 py-1 text-qed-ink-2",
+  role: "label-caps inline-flex items-center rounded-full border border-qed-hairline px-2 py-2 text-qed-ink-2",
   accent: cta,
-  link: "label-caps inline-flex items-center min-h-11 px-1 py-2 text-qed-ink-2 hover:text-qed-amber transition-colors",
-  signOut: "label-caps inline-flex items-center min-h-11 text-qed-ink-2 hover:text-qed-amber transition-colors",
+  link: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 px-2 py-2 text-qed-ink-2 hover:text-qed-amber transition-colors",
+  signOut: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 text-qed-ink-2 hover:text-qed-amber transition-colors",
   signIn: cta,
   menu: "border border-qed-hairline bg-qed-ground",
 };
@@ -141,7 +141,7 @@ export function PWHeader() {
         {studentSide && (
           <>
             <Link to="/roadmap" className={primary}>
-              My Roadmap
+              My roadmap
             </Link>
             <Link to="/find-tutor" className={secondary}>
               Find a tutor
@@ -175,8 +175,8 @@ export function PWHeader() {
     <>
       {/* Impersonation Banner */}
       {impersonating && (
-        <div className="sticky top-0 z-50 w-full bg-[var(--pw-accent-soft)] border-b border-[var(--pw-border)] px-5 py-2 flex items-center justify-between text-sm impersonation-banner">
-          <span className="text-pw-accent inline-flex items-center gap-1.5">
+        <div className="sticky top-0 z-50 w-full bg-[var(--pw-accent-soft)] border-b border-[var(--pw-border)] px-6 py-2 flex items-center justify-between text-sm impersonation-banner">
+          <span className="text-pw-accent inline-flex items-center gap-2">
             <Icon name="lock" className="h-4 w-4" />
             <span>
               You are impersonating <strong>{impersonatingName}</strong>. Actions will affect their
@@ -185,9 +185,9 @@ export function PWHeader() {
           </span>
           <button
             onClick={handleExitImpersonation}
-            className="label-caps px-3 py-1 bg-pw-accent-fill text-pw-on-accent hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors"
+            className="text-[0.8125rem] font-semibold px-4 py-2 bg-pw-accent-fill text-pw-on-accent hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors"
           >
-            Exit Impersonation
+            Exit impersonation
           </button>
         </div>
       )}
@@ -196,19 +196,19 @@ export function PWHeader() {
         className={
           qed
             ? QED.header
-            : `sticky top-0 z-40 w-full min-h-(--pw-header-h) px-5 sm:px-8 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--pw-border)] ${
+            : `sticky top-0 z-40 w-full min-h-(--pw-header-h) px-6 sm:px-8 flex flex-wrap items-center justify-between gap-4 border-b border-[var(--pw-border)] ${
                 scrolled ? "bg-[var(--pw-bg)]/95 backdrop-blur-md" : "bg-[var(--pw-bg)]"
               }`
         }
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <Link to="/" className={c.brand}>
             PathWise
           </Link>
           <ThemeToggle />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {isLoggedIn && user ? (
             <>
               <span className={c.name}>{user.name}</span>
@@ -220,38 +220,38 @@ export function PWHeader() {
                   <span className={c.role}>{user.role}</span>
                 )}
               </span>
-              {/* From lg: links inline. Below it the row (up to 7 links + Sign Out) is wider
+              {/* From lg: links inline. Below it the row (up to 7 links + Sign out) is wider
                   than the screen, so it collapses into the Menu. */}
-              <nav className="hidden lg:flex items-center gap-3">
+              <nav className="hidden lg:flex items-center gap-4">
                 {navLinks(false)}
                 <button onClick={handleSignOut} className={c.signOut}>
-                  Sign Out
+                  Sign out
                 </button>
               </nav>
               {/* Below lg: one Menu button. Keyed by path so it closes after navigating. */}
               <details key={location.pathname} className="lg:hidden relative">
                 <summary className={`${c.link} list-none cursor-pointer select-none`}>Menu</summary>
-                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-1 ${c.menu}`}>
+                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-2 ${c.menu}`}>
                   {navLinks(true)}
                   <button onClick={handleSignOut} className={`${c.signOut} text-left px-2 py-2`}>
-                    Sign Out
+                    Sign out
                   </button>
                 </div>
               </details>
             </>
           ) : (
             <>
-              <nav aria-label="Site" className="hidden lg:flex items-center gap-3">
+              <nav aria-label="Site" className="hidden lg:flex items-center gap-4">
                 {publicLinks(false)}
               </nav>
               <details key={location.pathname} className="lg:hidden relative">
                 <summary className={`${c.link} list-none cursor-pointer select-none`}>Menu</summary>
-                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-1 ${c.menu}`}>
+                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-2 ${c.menu}`}>
                   {publicLinks(true)}
                 </div>
               </details>
               <button onClick={openLogin} className={c.signIn}>
-                Sign In
+                Sign in
               </button>
             </>
           )}

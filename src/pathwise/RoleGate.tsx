@@ -39,11 +39,11 @@ export function RoleGate({
     const tutorSide = isTutorSide(role);
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <main className="px-5 sm:px-8 py-16 max-w-lg mx-auto text-center">
+        <main className="px-6 sm:px-8 py-16 max-w-lg mx-auto text-center">
           <div className="flex justify-center">
             <Icon name="lock" className="h-12 w-12" />
           </div>
-          <h1 className="font-display text-[1.75rem] mt-3">
+          <h1 className="font-display text-[1.75rem] mt-4">
             This area isn't available for your account
           </h1>
           <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
@@ -51,13 +51,13 @@ export function RoleGate({
               ? "You're signed in as a tutor. This section is for students."
               : "You're signed in as a student. This section is for tutors."}
           </p>
-          <div className="mt-6 flex gap-3 justify-center">
+          <div className="mt-6 flex gap-4 justify-center">
             {home !== "/" && (
-              <Link to={home} className="pw-btn-primary px-5 py-2.5">
+              <Link to={home} className="pw-btn-primary px-6 py-2">
                 {tutorSide ? "Go to your dashboard" : "Go to your roadmap"}
               </Link>
             )}
-            <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-5 py-2.5">
+            <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-6 py-2">
               Home
             </button>
           </div>
@@ -73,14 +73,14 @@ export function SignInPrompt() {
   const { openLogin } = useAuth();
   const navigate = useNavigate();
   return (
-    <main className="px-5 sm:px-8 py-16 max-w-lg mx-auto text-center text-[var(--pw-ink)]">
+    <main className="px-6 sm:px-8 py-16 max-w-lg mx-auto text-center text-[var(--pw-ink)]">
       <h1 className="font-display text-[1.75rem]">Sign in to continue</h1>
       <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">This page needs an account.</p>
-      <div className="mt-6 flex gap-3 justify-center">
-        <button onClick={openLogin} className="pw-btn-primary px-5 py-2.5">
+      <div className="mt-6 flex gap-4 justify-center">
+        <button onClick={openLogin} className="pw-btn-primary px-6 py-2">
           Sign in
         </button>
-        <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-5 py-2.5">
+        <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-6 py-2">
           Home
         </button>
       </div>

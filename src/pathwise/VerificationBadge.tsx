@@ -59,10 +59,10 @@ export function VerificationBadge({
   const t = TIERS[tier];
   const sizing =
     size === "sm"
-      ? "px-2 py-0.5 gap-1"
+      ? "px-2 py-0 gap-2"
       : size === "lg"
-        ? "px-3 py-1.5 gap-2"
-        : "px-2.5 py-1 gap-1.5";
+        ? "px-4 py-2 gap-2"
+        : "px-2 py-2 gap-2";
 
   return (
     <span

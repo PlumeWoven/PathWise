@@ -51,7 +51,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="pw-card p-4">
       <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
-      <div className="font-display text-3xl leading-none mt-3">{value}</div>
+      <div className="font-display text-3xl leading-none mt-4">{value}</div>
     </div>
   );
 }

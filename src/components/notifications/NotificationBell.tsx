@@ -134,7 +134,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="label-caps text-pw-accent hover:underline"
+              className="text-[0.8125rem] font-semibold text-pw-accent hover:underline"
             >
               Mark all as read
             </button>
@@ -150,7 +150,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             notifications.map((notif) => (
               <DropdownMenuItem
                 key={notif.id}
-                className={`flex flex-col items-start p-3 cursor-pointer ${
+                className={`flex flex-col items-start p-4 cursor-pointer ${
                   !notif.read ? "bg-[var(--pw-accent-soft)]" : ""
                 }`}
                 onClick={() => {
@@ -163,9 +163,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
               >
                 <div className="font-medium text-sm">{notif.title}</div>
                 {notif.message && (
-                  <div className="text-xs text-[var(--pw-ink-2)] mt-0.5">{notif.message}</div>
+                  <div className="text-xs text-[var(--pw-ink-2)] mt-0">{notif.message}</div>
                 )}
-                <div className="text-xs text-[var(--pw-ink-3)] mt-1">
+                <div className="text-xs text-[var(--pw-ink-3)] mt-2">
                   {formatDistanceToNow(new Date(notif.created_at), {
                     addSuffix: true,
                   })}

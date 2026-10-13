@@ -388,24 +388,24 @@ function BookPage() {
     });
     return (
       <div className="bg-[var(--pw-bg)]">
-        <main className="px-5 sm:px-8 py-12 max-w-xl mx-auto">
+        <main className="px-6 sm:px-8 py-12 max-w-xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="pw-card p-7 text-center"
+            className="pw-card p-8 text-center"
           >
-            <div className="mb-3 flex justify-center">
+            <div className="mb-4 flex justify-center">
               <Icon name="celebrate" className="h-12 w-12" />
             </div>
             <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
               {rescheduleId ? "You're moved!" : "You're booked!"}
             </h1>
             {rescheduleId && (
-              <p className="text-sm text-[var(--pw-ink-2)] mt-1">
+              <p className="text-sm text-[var(--pw-ink-2)] mt-2">
                 Your previous session has been cancelled.
               </p>
             )}
-            <p className="text-sm text-[var(--pw-ink-2)] mt-1">
+            <p className="text-sm text-[var(--pw-ink-2)] mt-2">
               {start.toLocaleString(undefined, {
                 dateStyle: "full",
                 timeStyle: "short",
@@ -413,7 +413,7 @@ function BookPage() {
               })}{" "}
               ({tz})
             </p>
-            <div className="mt-5 flex flex-col gap-2">
+            <div className="mt-6 flex flex-col gap-2">
               <a href={gcal} target="_blank" rel="noreferrer" className="pw-btn-outline px-4 py-2">
                 Add to Google Calendar
               </a>
@@ -440,13 +440,13 @@ function BookPage() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto">
+      <main className="px-6 sm:px-8 pb-24 max-w-3xl mx-auto">
         {/* Progress — the shared stepper shows only the current label on phones, so it fits 375px. */}
         <AnimatedStepper steps={[...STEPS]} currentStep={step + 1} className="mt-4" />
 
         {/* Tutor header */}
         {tutor && (
-          <div className="pw-card mt-5 p-4 flex items-center gap-3">
+          <div className="pw-card mt-6 p-4 flex items-center gap-4">
             {tutor.avatar_url ? (
               <img
                 src={tutor.avatar_url}
@@ -476,11 +476,11 @@ function BookPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.2 }}
-            className="mt-5"
+            className="mt-6"
           >
             {/* Step 1: Type */}
             {step === 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
                   Pick a session type
                 </h1>
@@ -516,19 +516,19 @@ function BookPage() {
 
             {/* Step 2: Time */}
             {step === 1 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">Pick a time</h1>
                 <p className="text-[0.8125rem] text-[var(--pw-ink-2)]">
                   Slots shown in <strong>{tz}</strong> (
                   {slot ? tzAbbreviation(slot, tz) : tzAbbreviation(new Date(), tz)})
                 </p>
                 {slots.length === 0 ? (
-                  <div className="pw-card p-5 text-sm text-[var(--pw-ink-2)]">
+                  <div className="pw-card p-6 text-sm text-[var(--pw-ink-2)]">
                     This tutor hasn't published availability yet. Try messaging them first.
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="pw-card p-3">
+                    <div className="pw-card p-4">
                       <Calendar
                         mode="single"
                         selected={pickedDay}
@@ -546,12 +546,12 @@ function BookPage() {
                         modifiers={{ hasSlots: (d) => hasSlotsOn(d, slots) }}
                         modifiersStyles={{ hasSlots: { fontWeight: 700 } }}
                       />
-                      <p className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-2 px-2 flex items-center gap-1.5">
+                      <p className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-2 px-2 flex items-center gap-2">
                         <CalendarIcon className="w-3 h-3" /> Bold dates have open slots. Past dates
                         and dates within {tutor?.min_advance_hours ?? 24}h are disabled.
                       </p>
                     </div>
-                    <div className="pw-card p-3">
+                    <div className="pw-card p-4">
                       <div className="label-caps text-[var(--pw-ink-2)] mb-2">
                         {pickedDay
                           ? pickedDay.toLocaleDateString(undefined, {
@@ -573,7 +573,7 @@ function BookPage() {
                             <button
                               key={s.toISOString()}
                               onClick={() => setSlot(s)}
-                              className={`pw-pill px-3 py-1.5 ${sel ? "is-active" : ""}`}
+                              className={`pw-pill px-4 py-2 ${sel ? "is-active" : ""}`}
                             >
                               {fmtInTz(s, tz, "h:mm a")}
                             </button>
@@ -581,7 +581,7 @@ function BookPage() {
                         })}
                       </div>
                       {slot && (
-                        <div className="mt-3 space-y-1 text-[0.75rem] text-[var(--pw-ink-2)]">
+                        <div className="mt-4 space-y-2 text-[0.75rem] text-[var(--pw-ink-2)]">
                           <p>
                             Your time: <strong>{fmtInTz(slot, tz, "h:mm a")}</strong>{" "}
                             {tzAbbreviation(slot, tz)}
@@ -609,13 +609,13 @@ function BookPage() {
                         <span className="text-[0.875rem] font-medium">Make this recurring</span>
                       </label>
                       {recurring && (
-                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div>
                             <label htmlFor="bk-frequency" className="label-caps text-[var(--pw-ink-2)]">Frequency</label>
                             <select id="bk-frequency"
                               value={frequency}
                               onChange={(e) => setFrequency(e.target.value as Frequency)}
-                              className="mt-1 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                              className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
                             >
                               <option value="weekly">Weekly</option>
                               <option value="biweekly">Bi-weekly</option>
@@ -627,7 +627,7 @@ function BookPage() {
                             <select id="bk-ends"
                               value={endMode}
                               onChange={(e) => setEndMode(e.target.value as any)}
-                              className="mt-1 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                              className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
                             >
                               <option value="count">After N sessions</option>
                               <option value="date">On a date</option>
@@ -650,7 +650,7 @@ function BookPage() {
                                       Math.max(2, Math.min(26, Number(e.target.value) || 2)),
                                     )
                                   }
-                                  className="mt-1 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                                  className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
                                 />
                               </>
                             )}
@@ -667,19 +667,19 @@ function BookPage() {
                                       e.target.value ? new Date(e.target.value) : undefined,
                                     )
                                   }
-                                  className="mt-1 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                                  className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
                                 />
                               </>
                             )}
                             {endMode === "ongoing" && (
-                              <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-5">
+                              <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-6">
                                 Books up to 26 occurrences from your selected start.
                               </p>
                             )}
                           </div>
                           {dstShifts.length > 0 && (
                             <div className="sm:col-span-3 flex items-start gap-2 text-[0.75rem] text-[var(--pw-accent-3)] bg-[var(--pw-accent-soft)] border border-[var(--pw-border)] p-2">
-                              <AlertTriangle className="w-4 h-4 mt-0.5" />
+                              <AlertTriangle className="w-4 h-4 mt-0" />
                               <span>
                                 Heads up — daylight-saving change between occurrences. Local
                                 clock-time is preserved across all instances.
@@ -697,7 +697,7 @@ function BookPage() {
 
             {/* Step 3: Timezone */}
             {step === 2 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
                   Confirm your timezone
                 </h1>
@@ -707,7 +707,7 @@ function BookPage() {
                   </label>
                   <select
                     id="bk-timezone"
-                    className="mt-1 w-full pw-border px-3 py-2.5 text-[0.875rem] bg-[var(--pw-surface)]"
+                    className="mt-2 w-full pw-border px-4 py-2 text-[0.875rem] bg-[var(--pw-surface)]"
                     value={tz}
                     onChange={(e) => setTz(e.target.value)}
                   >
@@ -718,7 +718,7 @@ function BookPage() {
                     ))}
                   </select>
                   {slot && (
-                    <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-3 space-y-1">
+                    <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-4 space-y-2">
                       <p>
                         Your time: <strong>{fmtInTz(slot, tz, "EEEE, MMM d · h:mm a")}</strong>{" "}
                         {tzAbbreviation(slot, tz)}
@@ -731,7 +731,7 @@ function BookPage() {
                         </p>
                       )}
                       {tzMismatch && (
-                        <p className="text-[var(--pw-accent-3)] flex items-center gap-1.5">
+                        <p className="text-[var(--pw-accent-3)] flex items-center gap-2">
                           <AlertTriangle className="w-3 h-3" /> You and your tutor are in different
                           timezones — double-check the times match.
                         </p>
@@ -745,11 +745,11 @@ function BookPage() {
 
             {/* Step 4: Summary */}
             {step === 3 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
                   Order summary
                 </h1>
-                <div className="pw-card p-5 space-y-2 text-[0.875rem]">
+                <div className="pw-card p-6 space-y-2 text-[0.875rem]">
                   <Row label="Tutor" value={tutor?.display_name ?? "—"} />
                   <Row
                     label="Type"
@@ -776,7 +776,7 @@ function BookPage() {
                       value={`${recurrenceInstances.length} × ${frequency}`}
                     />
                   )}
-                  <div className="border-t border-[var(--pw-border)] pt-3 mt-2 flex justify-between font-display text-[1.125rem]">
+                  <div className="border-t border-[var(--pw-border)] pt-4 mt-2 flex justify-between font-display text-[1.125rem]">
                     <span>Total</span>
                     <span>
                       {price === 0
@@ -788,7 +788,7 @@ function BookPage() {
                 {recurring && recurrenceInstances.length > 1 && (
                   <div className="pw-card p-4">
                     <div className="label-caps text-[var(--pw-ink-2)] mb-2">All instances</div>
-                    <ul className="text-[0.8125rem] space-y-1 max-h-48 overflow-auto">
+                    <ul className="text-[0.8125rem] space-y-2 max-h-48 overflow-auto">
                       {recurrenceInstances.map((d, i) => (
                         <li key={d.toISOString()} className="flex justify-between">
                           <span className="text-[var(--pw-ink-2)]">#{i + 1}</span>
@@ -804,11 +804,11 @@ function BookPage() {
 
             {/* Step 5: Pay */}
             {step === 4 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
                   {price === 0 ? "Confirm" : "Payment"}
                 </h1>
-                <div className="pw-card p-5">
+                <div className="pw-card p-6">
                   {price === 0 ? (
                     <p className="text-sm text-[var(--pw-ink-2)]">
                       No payment required for this trial — just confirm below.
@@ -819,7 +819,7 @@ function BookPage() {
                         PathWise is free during the beta: you pay your tutor directly, the way you
                         agree with them (cash or bank transfer). Nothing is charged here.
                       </p>
-                      <div className="mt-3 p-3 border border-[var(--pw-border)] bg-[var(--pw-surface-2)] text-[0.8125rem]">
+                      <div className="mt-4 p-4 border border-[var(--pw-border)] bg-[var(--pw-surface-2)] text-[0.8125rem]">
                         <strong>
                           {formatPrice(
                             price *
@@ -843,7 +843,7 @@ function BookPage() {
                   <button
                     onClick={handleConfirmAndPay}
                     disabled={submitting || !slot}
-                    className="pw-btn-primary px-5 py-2.5 flex-1 disabled:opacity-50"
+                    className="pw-btn-primary px-6 py-2 flex-1 disabled:opacity-50"
                   >
                     {submitting
                       ? "Booking…"
@@ -879,7 +879,7 @@ function TypeOption({
   return (
     <button
       onClick={onClick}
-      className={`pw-card w-full p-4 text-left flex items-center gap-3 transition-colors hover:border-[var(--pw-ink)] ${active ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
+      className={`pw-card w-full p-4 text-left flex items-center gap-4 transition-colors hover:border-[var(--pw-ink)] ${active ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
       style={active ? { background: "var(--pw-accent-soft)" } : undefined}
     >
       <Icon name={icon} className="h-7 w-7" />
@@ -920,7 +920,7 @@ function NavBar({
       <button
         onClick={onNext}
         disabled={disabled}
-        className="pw-btn-primary px-5 py-2.5 flex-1 disabled:opacity-50"
+        className="pw-btn-primary px-6 py-2 flex-1 disabled:opacity-50"
       >
         Continue →
       </button>

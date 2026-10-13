@@ -36,7 +36,7 @@ export function Voices() {
         <ul className="divide-y divide-qed-hairline">
           {testimonials.map((t) => (
             <li key={t.name}>
-              <figure className="group grid grid-cols-1 gap-3 py-8 md:grid-cols-[1fr_3fr_1fr] md:gap-8">
+              <figure className="group grid grid-cols-1 gap-4 py-8 md:grid-cols-[1fr_3fr_1fr] md:gap-8">
                 <span className="text-qed-ink-2">{t.role}</span>
                 <blockquote className="font-syne text-xl leading-snug transition-colors group-hover:text-qed-amber md:text-2xl">
                   “{t.quote}”

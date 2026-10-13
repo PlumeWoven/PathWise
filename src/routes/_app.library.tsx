@@ -162,16 +162,16 @@ function LibraryPageInner() {
   // ── Gate 2 failure: no roadmap means no quiz ──
   if (!roadmap) {
     return (
-      <main className="px-5 sm:px-8 py-16 max-w-lg mx-auto text-center">
+      <main className="px-6 sm:px-8 py-16 max-w-lg mx-auto text-center">
         <div className="flex justify-center">
           <Icon name="books" className="h-12 w-12" />
         </div>
-        <h1 className="font-display text-[1.75rem] mt-3">The library opens after your quiz</h1>
+        <h1 className="font-display text-[1.75rem] mt-4">The library opens after your quiz</h1>
         <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
           Courses here are shelved by level, so we need to know where you're starting from before
           it's any use to you. The quiz takes about two minutes.
         </p>
-        <Link to="/quiz" className="pw-btn-primary inline-block mt-6 px-5 py-2.5 text-[0.875rem]">
+        <Link to="/quiz" className="pw-btn-primary inline-block mt-6 px-6 py-2 text-[0.875rem]">
           Take the quiz →
         </Link>
       </main>
@@ -180,14 +180,14 @@ function LibraryPageInner() {
 
   if (error) {
     return (
-      <main className="px-5 sm:px-8 py-16 max-w-lg mx-auto text-center">
+      <main className="px-6 sm:px-8 py-16 max-w-lg mx-auto text-center">
         <div className="flex justify-center">
           <Icon name="warning" className="h-12 w-12" />
         </div>
-        <h1 className="font-display text-[1.75rem] mt-3">{error}</h1>
+        <h1 className="font-display text-[1.75rem] mt-4">{error}</h1>
         <button
           onClick={() => window.location.reload()}
-          className="pw-btn-outline mt-6 px-5 py-2.5 text-[0.875rem]"
+          className="pw-btn-outline mt-6 px-6 py-2 text-[0.875rem]"
         >
           Try again
         </button>
@@ -200,11 +200,11 @@ function LibraryPageInner() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="max-w-6xl mx-auto px-5 sm:px-8 py-10 pb-20">
+      <main className="max-w-6xl mx-auto px-6 sm:px-8 py-12 pb-24">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <div className="label-caps text-[var(--pw-ink-2)]">Course Library</div>
-          <h1 className="font-display text-[2.125rem] sm:text-[2.5rem] uppercase tracking-[-0.025em] leading-[1.1] mt-1">
+          <h1 className="font-display text-[2.125rem] sm:text-[2.5rem] uppercase tracking-[-0.025em] leading-[1.1] mt-2">
             Courses at your level
           </h1>
           <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-2xl">
@@ -227,7 +227,7 @@ function LibraryPageInner() {
           {/* Band rail — the dashboard's sidebar shape, in library terms */}
           <aside className="lg:sticky lg:top-24 lg:self-start">
             <div className="label-caps text-[var(--pw-ink-2)] mb-2">Level</div>
-            <div className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible pb-1">
+            <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-2">
               <BandPill
                 label="All levels"
                 count={courses.length}
@@ -272,7 +272,7 @@ function LibraryPageInner() {
             {/* Band-less courses are relevant to every shelf, so they trail it. */}
             {activeBand && openLevel.length > 0 && (
               <>
-                <div className="label-caps text-[var(--pw-ink-2)] mt-10 mb-3">
+                <div className="label-caps text-[var(--pw-ink-2)] mt-12 mb-4">
                   Open to every level
                 </div>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -288,7 +288,7 @@ function LibraryPageInner() {
         {/* Back to the stage that sent us here */}
         {search.stage != null && (
           <div className="mt-12 text-center">
-            <Link to="/roadmap" className="pw-btn-outline px-5 py-2.5 text-[0.875rem]">
+            <Link to="/roadmap" className="pw-btn-outline px-6 py-2 text-[0.875rem]">
               ← Back to your roadmap
             </Link>
           </div>
@@ -314,12 +314,12 @@ function BandPill({
   return (
     <button
       onClick={onClick}
-      className={`pw-pill px-3 py-2 text-left whitespace-nowrap transition-colors lg:w-full flex items-center justify-between gap-2 ${active ? "is-active" : ""}`}
+      className={`pw-pill px-4 py-2 text-left whitespace-nowrap transition-colors lg:w-full flex items-center justify-between gap-2 ${active ? "is-active" : ""}`}
     >
       <span>
         {label}
         {isYours && !active && (
-          <span className="ml-1.5 text-[var(--pw-accent)]" title="Your level">
+          <span className="ml-2 text-[var(--pw-accent)]" title="Your level">
             ●
           </span>
         )}
@@ -339,13 +339,13 @@ function CourseCard({ course, yourBand }: { course: LibraryCourse; yourBand: Lev
       className={`pw-card group p-4 flex flex-col transition-colors hover:border-[var(--pw-ink)] ${atYourLevel ? "border-[var(--pw-accent)]" : ""}`}
     >
       {course.thumbnail_url && (
-        <img src={course.thumbnail_url} alt="" className="w-full h-32 object-cover mb-3" />
+        <img src={course.thumbnail_url} alt="" className="w-full h-32 object-cover mb-4" />
       )}
 
-      <div className="flex flex-wrap items-center gap-1.5 mb-2">
+      <div className="flex flex-wrap items-center gap-2 mb-2">
         {course.band && (
           <span
-            className="pw-pill text-[0.6875rem] px-2 py-0.5 inline-flex items-center gap-1.5"
+            className="pw-pill text-[0.6875rem] px-2 py-0 inline-flex items-center gap-2"
             style={{ background: "var(--pw-surface-2)" }}
           >
             <Icon name={BAND_META[course.band].icon} className="h-4 w-4" />
@@ -354,7 +354,7 @@ function CourseCard({ course, yourBand }: { course: LibraryCourse; yourBand: Lev
         )}
         {course.fromMatchedTutor && (
           <span
-            className="pw-pill text-[0.6875rem] px-2 py-0.5 inline-flex items-center gap-1"
+            className="pw-pill text-[0.6875rem] px-2 py-0 inline-flex items-center gap-2"
             style={{ background: "var(--pw-accent-soft)", color: "var(--pw-accent)" }}
           >
             <StarIcon className="h-3.5 w-3.5 fill-current" aria-hidden="true" /> Your match
@@ -366,10 +366,10 @@ function CourseCard({ course, yourBand }: { course: LibraryCourse; yourBand: Lev
         {course.title}
       </h3>
       {course.subtitle && (
-        <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-1 line-clamp-2">{course.subtitle}</p>
+        <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2 line-clamp-2">{course.subtitle}</p>
       )}
 
-      <div className="mt-auto pt-3 flex items-center justify-between gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
+      <div className="mt-auto pt-4 flex items-center justify-between gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
         <span className="truncate">{course.tutorName ?? "PathWise tutor"}</span>
         {course.price != null && (
           <span className="whitespace-nowrap">

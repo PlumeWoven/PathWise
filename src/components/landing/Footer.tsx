@@ -25,8 +25,8 @@ const columns = [
 export function Footer({ lit = false }: { lit?: boolean }) {
   return (
     <footer className="relative overflow-hidden bg-qed-ground pt-32">
-      <div data-journey="footer-copy" className="relative z-[2] px-6 pb-20 md:px-24">
-        <div className="flex flex-col items-start justify-between gap-10 md:flex-row md:items-end">
+      <div data-journey="footer-copy" className="relative z-[2] px-6 pb-24 md:px-24">
+        <div className="flex flex-col items-start justify-between gap-12 md:flex-row md:items-end">
           <div>
             <h2 className="mb-6 max-w-lg font-syne text-4xl uppercase sm:text-5xl leading-none tracking-[-0.025em] md:text-7xl">
               No guesswork.
@@ -40,11 +40,11 @@ export function Footer({ lit = false }: { lit?: boolean }) {
           <LandingCtas />
         </div>
 
-        <div className="mt-20 grid grid-cols-2 gap-10">
+        <div className="mt-24 grid grid-cols-2 gap-12">
           {columns.map((col) => (
             <nav key={col.heading} aria-label={col.heading}>
               <h3 className="label-caps text-qed-ink-2">{col.heading}</h3>
-              <ul className="mt-3 space-y-1">
+              <ul className="mt-4 space-y-2">
                 {col.links.map((link) => (
                   <li key={link.to}>
                     <Link
@@ -66,11 +66,11 @@ export function Footer({ lit = false }: { lit?: boolean }) {
       <div className="flex items-center justify-between px-6 py-4 text-qed-ink-2 md:px-24">
         <span className="label-caps">
           © {new Date().getFullYear()} PathWise ·{" "}
-          <Link to="/privacy" className="inline-block py-3.5 -my-3.5 hover:text-qed-amber">
+          <Link to="/privacy" className="inline-block py-4 -my-4 hover:text-qed-amber">
             Privacy
           </Link>{" "}
           /{" "}
-          <Link to="/terms" className="inline-block py-3.5 -my-3.5 hover:text-qed-amber">
+          <Link to="/terms" className="inline-block py-4 -my-4 hover:text-qed-amber">
             Terms
           </Link>
         </span>
@@ -80,7 +80,7 @@ export function Footer({ lit = false }: { lit?: boolean }) {
             href="https://www.streamlinehq.com"
             target="_blank"
             rel="noreferrer"
-            className="inline-block py-3.5 -my-3.5 hover:text-qed-amber"
+            className="inline-block py-4 -my-4 hover:text-qed-amber"
           >
             Streamline
           </a>

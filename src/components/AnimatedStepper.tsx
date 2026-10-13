@@ -45,7 +45,7 @@ export function AnimatedStepper({
 }) {
   return (
     <nav aria-label="Progress" className={className}>
-      <ol className="flex items-center pb-7">
+      <ol className="flex items-center pb-8">
         {steps.map((label, i) => {
           const step = i + 1;
           const status =
@@ -83,7 +83,7 @@ export function AnimatedStepper({
                   )}
                 </button>
                 <span
-                  className={`label-caps absolute top-full mt-2.5 whitespace-nowrap ${
+                  className={`label-caps absolute top-full mt-2 whitespace-nowrap ${
                     status === "active"
                       ? "text-pw-ink"
                       : `hidden sm:block ${status === "upcoming" ? "text-[var(--pw-ink-2)]" : "text-pw-ink"}`
@@ -93,7 +93,7 @@ export function AnimatedStepper({
                 </span>
               </li>
               {step < steps.length && (
-                <li aria-hidden="true" className="relative mx-3 h-px flex-1 bg-[var(--pw-border)]">
+                <li aria-hidden="true" className="relative mx-4 h-px flex-1 bg-[var(--pw-border)]">
                   <motion.span
                     className="absolute inset-0 origin-left bg-pw-accent-fill"
                     initial={false}

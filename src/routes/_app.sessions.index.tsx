@@ -86,14 +86,14 @@ function SessionsList() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
+      <main className="px-6 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
         <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">My sessions</h1>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-4 flex gap-2">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id)}
-              className={`pw-pill px-3 py-1.5 ${filter === f.id ? "is-active" : ""}`}
+              className={`pw-pill px-4 py-2 ${filter === f.id ? "is-active" : ""}`}
             >
               {f.label}
             </button>
@@ -136,7 +136,7 @@ function SessionsList() {
                     </div>
                   </div>
                   <span
-                    className="pw-pill px-2.5 py-0.5"
+                    className="pw-pill px-2 py-0"
                     style={{ background: meta.bg, color: meta.fg }}
                   >
                     {meta.label}

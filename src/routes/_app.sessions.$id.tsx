@@ -237,7 +237,7 @@ function SessionDetail() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
+      <main className="px-6 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
         <div className="label-caps text-[var(--pw-ink-2)]">
           <Link to="/sessions" className="underline-offset-2 hover:underline">
             My sessions
@@ -245,19 +245,19 @@ function SessionDetail() {
           <span className="mx-2">→</span>Session details
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2">
           <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">Session</h1>
-          <span className="pw-pill px-2.5 py-0.5" style={{ background: meta.bg, color: meta.fg }}>
+          <span className="pw-pill px-2 py-0" style={{ background: meta.bg, color: meta.fg }}>
             {meta.label}
           </span>
         </div>
 
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <PersonCard label="Tutor" person={tutor} />
           <PersonCard label="Student" person={student} />
         </div>
 
-        <div className="mt-4 pw-card p-5 space-y-2">
+        <div className="mt-4 pw-card p-6 space-y-2">
           <Row
             label="Date & time"
             value={
@@ -303,7 +303,7 @@ function SessionDetail() {
           <button
             onClick={handleJoin}
             disabled={!canJoin}
-            className="pw-btn-primary px-5 py-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="pw-btn-primary px-6 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
             title={!canJoin ? "Available 5 min before start" : undefined}
           >
             {session.status_v2 === "in_progress" ? "Re-join session" : "Join session"}
@@ -362,7 +362,7 @@ function SessionDetail() {
         </div>
 
         {showCancel && (
-          <div className="mt-3 pw-card p-4">
+          <div className="mt-4 pw-card p-4">
             <label className="label-caps text-[var(--pw-ink-2)]">
               {reportMode ? "What went wrong?" : "Reason"}
             </label>
@@ -370,7 +370,7 @@ function SessionDetail() {
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={3}
-              className="mt-1 w-full pw-border px-3 py-2 text-sm bg-[var(--pw-surface)]"
+              className="mt-2 w-full pw-border px-4 py-2 text-sm bg-[var(--pw-surface)]"
               placeholder={
                 reportMode
                   ? "No-show, behaviour, lesson link didn't work… PathWise will contact you both."
@@ -399,18 +399,18 @@ function SessionDetail() {
         )}
 
         {/* Notes */}
-        <div className="mt-4 pw-card p-5">
+        <div className="mt-4 pw-card p-6">
           <div className="label-caps text-[var(--pw-ink-2)]">Notes</div>
-          <p className="text-sm text-[var(--pw-ink)] mt-1 whitespace-pre-wrap">
+          <p className="text-sm text-[var(--pw-ink)] mt-2 whitespace-pre-wrap">
             {session.notes || "—"}
           </p>
         </div>
 
         {/* Review form (student, awaiting_review) */}
         {isStudent && session.status_v2 === "awaiting_review" && (
-          <div className="mt-4 pw-card p-5">
+          <div className="mt-4 pw-card p-6">
             <h2 className="font-display text-lg uppercase tracking-[-0.025em]">How did it go?</h2>
-            <div className="flex gap-1 mt-2">
+            <div className="flex gap-2 mt-2">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
@@ -427,7 +427,7 @@ function SessionDetail() {
               value={reviewBody}
               onChange={(e) => setReviewBody(e.target.value)}
               rows={3}
-              className="mt-3 w-full pw-border px-3 py-2 text-sm bg-[var(--pw-surface)]"
+              className="mt-4 w-full pw-border px-4 py-2 text-sm bg-[var(--pw-surface)]"
               placeholder="Tell other students about this tutor"
             />
             {reviewError && (
@@ -438,7 +438,7 @@ function SessionDetail() {
             <button
               onClick={handleSubmitReview}
               disabled={reviewBusy}
-              className="pw-btn-primary px-4 py-2 mt-3 disabled:opacity-50"
+              className="pw-btn-primary px-4 py-2 mt-4 disabled:opacity-50"
             >
               {reviewBusy ? "Posting..." : "Submit review"}
             </button>
@@ -457,7 +457,7 @@ function PersonCard({
   person: { display_name: string | null; avatar_url: string | null } | null;
 }) {
   return (
-    <div className="pw-card p-4 flex items-center gap-3">
+    <div className="pw-card p-4 flex items-center gap-4">
       {person?.avatar_url ? (
         <img src={person.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover" />
       ) : (
@@ -477,7 +477,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between text-[0.875rem]">
       <span className="text-[var(--pw-ink-2)]">{label}</span>
-      <span className="text-right ml-3">{value}</span>
+      <span className="text-right ml-4">{value}</span>
     </div>
   );
 }

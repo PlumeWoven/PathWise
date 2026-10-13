@@ -398,7 +398,7 @@ function TutorWizard() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="max-w-[47.5rem] mx-auto px-5 sm:px-8 py-10">
+      <main className="max-w-[47.5rem] mx-auto px-6 sm:px-8 py-12">
         <ProgressBar step={state.step} />
 
         <div className="mt-8 pw-card p-6 sm:p-8">
@@ -409,12 +409,12 @@ function TutorWizard() {
           {state.step === 5 && <Step5 state={state} update={update} subjects={subjects} />}
           {state.step === 6 && <Step6 state={state} subjects={subjects} />}
 
-          <div className="mt-8 flex items-center justify-between border-t pw-border pt-5">
+          <div className="mt-8 flex items-center justify-between border-t pw-border pt-6">
             <button
               type="button"
               onClick={goPrev}
               disabled={state.step === 1 || saving}
-              className="label-caps inline-flex items-center gap-1 text-[var(--pw-ink-2)] disabled:opacity-40 hover:text-[var(--pw-ink)] transition-colors"
+              className="text-[0.8125rem] font-semibold inline-flex items-center gap-2 text-[var(--pw-ink-2)] disabled:opacity-40 hover:text-[var(--pw-ink)] transition-colors"
             >
               <ChevronLeft className="size-4" /> Back
             </button>
@@ -424,7 +424,7 @@ function TutorWizard() {
                   type="button"
                   onClick={goSkip}
                   disabled={saving}
-                  className="label-caps text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors px-3 py-2"
+                  className="text-[0.8125rem] font-semibold text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors px-4 py-2"
                 >
                   Skip for now
                 </button>
@@ -434,7 +434,7 @@ function TutorWizard() {
                   type="button"
                   onClick={goNext}
                   disabled={saving}
-                  className="pw-btn-primary inline-flex items-center gap-1 px-5 py-2.5 disabled:opacity-50"
+                  className="pw-btn-primary inline-flex items-center gap-2 px-6 py-2 disabled:opacity-50"
                 >
                   {saving ? "Saving…" : "Continue"} <ChevronRight className="size-4" />
                 </button>
@@ -443,7 +443,7 @@ function TutorWizard() {
                   type="button"
                   onClick={publish}
                   disabled={saving}
-                  className="pw-btn-primary inline-flex items-center gap-1 px-6 py-2.5 disabled:opacity-50"
+                  className="pw-btn-primary inline-flex items-center gap-2 px-6 py-2 disabled:opacity-50"
                 >
                   <Sparkles className="size-4" /> Publish profile
                 </button>
@@ -464,10 +464,10 @@ function ProgressBar({ step }: { step: number }) {
       <div className="label-caps text-[var(--pw-ink-2)]">
         Tutor onboarding · Step {step} of {STEPS.length}
       </div>
-      <h1 className="font-display text-[1.875rem] sm:text-[2.25rem] uppercase tracking-[-0.025em] leading-none mt-3">
+      <h1 className="font-display text-[1.875rem] sm:text-[2.25rem] uppercase tracking-[-0.025em] leading-none mt-4">
         {STEPS[step - 1]}
       </h1>
-      <div className="mt-5 flex gap-2">
+      <div className="mt-6 flex gap-2">
         {STEPS.map((label, i) => {
           const idx = i + 1;
           const done = idx < step;
@@ -565,10 +565,10 @@ function Step1({
   const headlineLeft = 140 - state.headline.length;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="text-[0.875rem] text-[var(--pw-ink-2)]">Tell students who you are.</p>
 
-      <div className="flex items-start gap-5">
+      <div className="flex items-start gap-6">
         <div className="shrink-0">
           <div className="size-24 rounded-full overflow-hidden bg-[var(--pw-surface-2)] flex items-center justify-center pw-border border">
             {state.avatar_url ? (
@@ -580,8 +580,8 @@ function Step1({
         </div>
         <div className="flex-1">
           <Label>Profile photo</Label>
-          <p className="text-[0.7812rem] text-[var(--pw-ink-2)] mt-0.5">Square 1:1, min 400×400px.</p>
-          <label className="mt-2 inline-flex items-center gap-1.5 pw-pill px-3 py-1.5 cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
+          <p className="text-[0.7812rem] text-[var(--pw-ink-2)] mt-0">Square 1:1, min 400×400px.</p>
+          <label className="mt-2 inline-flex items-center gap-2 pw-pill px-4 py-2 cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
             <Upload className="size-3.5" /> Choose photo
             <input type="file" accept="image/*" className="sr-only" onChange={onPick} />
           </label>
@@ -598,7 +598,7 @@ function Step1({
             <DialogTitle className="font-display font-normal text-[1.25rem] uppercase tracking-[-0.025em] leading-none">
               Crop your photo
             </DialogTitle>
-            <div className="relative mt-3 h-[20rem] bg-qed-ground overflow-hidden">
+            <div className="relative mt-4 h-[20rem] bg-qed-ground overflow-hidden">
               <Cropper
                 image={cropFile}
                 crop={crop}
@@ -617,13 +617,13 @@ function Step1({
               step={0.01}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full mt-3"
+              className="w-full mt-4"
             />
-            <div className="mt-3 flex justify-end gap-2">
+            <div className="mt-4 flex justify-end gap-2">
               <button
                 onClick={() => setCropFile(null)}
                 disabled={uploading}
-                className="label-caps px-3 py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors"
+                className="text-[0.8125rem] font-semibold px-4 py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors"
               >
                 Cancel
               </button>
@@ -675,11 +675,11 @@ function Step1({
           value={state.bio}
           onChange={(e) => update("bio", e.target.value)}
           placeholder="**About me…** Share your teaching style, experience, what you love."
-          className="pw-input mt-1 text-[0.875rem] font-mono-pw"
+          className="pw-input mt-2 text-[0.875rem] font-mono-pw"
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <Label htmlFor="tob-years">Years of experience</Label>
           <Input id="tob-years"
@@ -696,7 +696,7 @@ function Step1({
           <select id="tob-education"
             value={state.education_level}
             onChange={(e) => update("education_level", e.target.value)}
-            className="pw-input mt-1 text-[0.875rem]"
+            className="pw-input mt-2 text-[0.875rem]"
           >
             <option value="">Select…</option>
             {EDU_LEVELS.map((l) => (
@@ -774,16 +774,16 @@ function Step2({
 
       <div>
         <Label htmlFor="tob-subjects">Subjects</Label>
-        <div className="mt-1 relative">
+        <div className="mt-2 relative">
           <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--pw-ink-2)]" />
           <input id="tob-subjects"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search subjects…"
-            className="w-full pw-border pl-9 pr-3 py-2.5 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
+            className="w-full pw-border pl-8 pr-4 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
           />
         </div>
-        <div className="mt-3 flex flex-wrap gap-2 max-h-[11.25rem] overflow-y-auto">
+        <div className="mt-4 flex flex-wrap gap-2 max-h-[11.25rem] overflow-y-auto">
           {filtered.map((s) => {
             const on = state.subject_ids.includes(s.id);
             return (
@@ -791,14 +791,14 @@ function Step2({
                 type="button"
                 key={s.id}
                 onClick={() => toggleSubject(s.id)}
-                className="pw-pill px-3 py-1.5 transition-colors"
+                className="pw-pill px-4 py-2 transition-colors"
                 style={{
                   borderColor: on ? "var(--pw-accent)" : "var(--pw-border)",
                   background: on ? "var(--pw-accent-soft)" : "transparent",
                   color: on ? "var(--pw-accent)" : "var(--pw-ink)",
                 }}
               >
-                {on && <Check className="inline size-3 mr-1" />}
+                {on && <Check className="inline size-3 mr-2" />}
                 {s.name}
               </button>
             );
@@ -809,14 +809,14 @@ function Step2({
       {state.subject_ids.length > 0 && (
         <div>
           <Label>Proficiency per subject</Label>
-          <div className="mt-2 space-y-3">
+          <div className="mt-2 space-y-4">
             {state.subject_ids.map((id) => {
               const subj = subjects.find((s) => s.id === id);
               if (!subj) return null;
               const v = state.proficiency[id] ?? 3;
               const labels = ["Beginner", "Novice", "Intermediate", "Advanced", "Expert"];
               return (
-                <div key={id} className="pw-border p-3">
+                <div key={id} className="pw-border p-4">
                   <div className="flex items-center justify-between text-[0.8125rem]">
                     <span className="font-medium">{subj.name}</span>
                     <span className="label-caps text-[var(--pw-ink-2)]">{labels[v - 1]}</span>
@@ -893,7 +893,7 @@ function TagField({
   return (
     <div>
       <Label htmlFor={id}>{label}</Label>
-      {helper && <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{helper}</p>}
+      {helper && <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{helper}</p>}
       <div className="mt-2 flex gap-2">
         <input
           id={id}
@@ -906,9 +906,9 @@ function TagField({
             }
           }}
           placeholder="Type and press Enter"
-          className="flex-1 pw-border px-3 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
+          className="flex-1 pw-border px-4 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
         />
-        <button type="button" onClick={onAdd} aria-label={`Add to ${label}`} className="pw-pill px-3">
+        <button type="button" onClick={onAdd} aria-label={`Add to ${label}`} className="pw-pill px-4">
           <Plus className="size-3.5" />
         </button>
       </div>
@@ -917,7 +917,7 @@ function TagField({
           {tags.map((t) => (
             <span
               key={t}
-              className="pw-pill px-3 py-1 inline-flex items-center gap-1.5"
+              className="pw-pill px-4 py-2 inline-flex items-center gap-2"
               style={{
                 borderColor: accent ? "var(--pw-accent-3)" : "var(--pw-border)",
                 background: accent ? "var(--pw-accent-soft)" : "transparent",
@@ -1082,7 +1082,7 @@ function Step3({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
         A 60-90s intro video doubles your booking rate.
       </p>
@@ -1092,7 +1092,7 @@ function Step3({
         style={{ background: "var(--pw-accent-soft)", border: "1px solid var(--pw-accent)" }}
       >
         <div className="label-caps text-pw-accent">Tips</div>
-        <p className="text-[0.8125rem] mt-1">
+        <p className="text-[0.8125rem] mt-2">
           Introduce yourself, share your teaching philosophy, and what makes you unique.
         </p>
       </div>
@@ -1105,41 +1105,41 @@ function Step3({
             poster={state.video_thumbnail_url ?? undefined}
             className="w-full bg-qed-ground aspect-video"
           />
-          <div className="mt-3 flex gap-2">
+          <div className="mt-4 flex gap-2">
             <button
               onClick={() => {
                 setPreviewUrl(null);
                 update("video_intro_url", null);
                 update("video_thumbnail_url", null);
               }}
-              className="pw-pill px-3 py-1.5"
+              className="pw-pill px-4 py-2"
             >
               Re-record / Replace
             </button>
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <video ref={videoRef} className="w-full bg-qed-ground aspect-video" />
           <div className="flex flex-wrap gap-2">
             {!recording ? (
               <button
                 onClick={startRecord}
                 disabled={uploading}
-                className="pw-btn-primary inline-flex items-center gap-1.5 px-4 py-2 disabled:opacity-50"
+                className="pw-btn-primary inline-flex items-center gap-2 px-4 py-2 disabled:opacity-50"
               >
                 <VideoIcon className="size-4" /> Record now
               </button>
             ) : (
               <button
                 onClick={stopRecord}
-                className="pw-btn-primary inline-flex items-center gap-1.5 px-4 py-2"
+                className="pw-btn-primary inline-flex items-center gap-2 px-4 py-2"
                 style={{ background: "var(--pw-danger)" }}
               >
                 Stop recording
               </button>
             )}
-            <label className="pw-pill px-3 py-2 cursor-pointer inline-flex items-center gap-1.5 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
+            <label className="pw-pill px-4 py-2 cursor-pointer inline-flex items-center gap-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
               <Upload className="size-3.5" /> Upload file
               <input type="file" accept="video/*" className="sr-only" onChange={onUploadFile} />
             </label>
@@ -1196,7 +1196,7 @@ function Step4({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
         When are you available each week? Drag to paint multiple cells.
       </p>
@@ -1205,7 +1205,7 @@ function Step4({
         <div>
           <Label htmlFor="tob-timezone">Timezone</Label>
           <Input id="tob-timezone" value={state.timezone} onChange={(e) => update("timezone", e.target.value)} />
-          <p className="text-[0.7188rem] text-[var(--pw-ink-2)] mt-1">
+          <p className="text-[0.7188rem] text-[var(--pw-ink-2)] mt-2">
             Auto-detected — you can change it.
           </p>
         </div>
@@ -1214,7 +1214,7 @@ function Step4({
           <select id="tob-buffer"
             value={state.buffer_minutes}
             onChange={(e) => update("buffer_minutes", Number(e.target.value))}
-            className="pw-input mt-1 text-[0.875rem]"
+            className="pw-input mt-2 text-[0.875rem]"
           >
             {[0, 15, 30, 60].map((v) => (
               <option key={v} value={v}>
@@ -1294,17 +1294,17 @@ function Step5({
     <div className="space-y-6">
       <div>
         <Label htmlFor="tob-rate">Default hourly rate (MDL)</Label>
-        <div className="mt-1 relative">
+        <div className="mt-2 relative">
           <input id="tob-rate"
             type="number"
             min={0}
             value={state.hourly_rate}
             onChange={(e) => update("hourly_rate", e.target.value)}
-            className="w-full pw-border px-3 py-2.5 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
+            className="w-full pw-border px-4 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
             placeholder="300"
           />
         </div>
-        <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-1">
+        <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
           Suggested for your subjects: {suggestion?.[0]}–{suggestion?.[1]} MDL/hr
         </p>
       </div>
@@ -1316,7 +1316,7 @@ function Step5({
         </p>
         <div className="mt-2 space-y-2">
           {state.packages.map((p, i) => (
-            <div key={i} className="pw-border p-3 flex items-center gap-3">
+            <div key={i} className="pw-border p-4 flex items-center gap-4">
               <input
                 type="checkbox"
                 checked={p.enabled}
@@ -1338,7 +1338,7 @@ function Step5({
                 max={50}
                 value={p.discount_percent}
                 onChange={(e) => updPkg(i, { discount_percent: Number(e.target.value) })}
-                className="w-16 pw-border px-2 py-1 text-[0.8125rem]"
+                className="w-16 pw-border px-2 py-2 text-[0.8125rem]"
               />
               <span className="text-[0.75rem] text-[var(--pw-ink-2)]">%</span>
             </div>
@@ -1367,11 +1367,11 @@ function Step5({
           <span className="font-display text-[1.5rem]">{rate ? formatPrice(rate) : "—"}</span>
           <span className="text-[0.75rem] text-[var(--pw-ink-2)]">/ hour</span>
           {state.first_session_free && (
-            <span className="ml-auto pw-pill px-2 py-0.5">First free</span>
+            <span className="ml-auto pw-pill px-2 py-0">First free</span>
           )}
         </div>
         {state.packages.some((p) => p.enabled) && (
-          <div className="mt-1 text-[0.75rem] text-[var(--pw-accent)]">
+          <div className="mt-2 text-[0.75rem] text-[var(--pw-accent)]">
             Save up to{" "}
             {Math.max(...state.packages.filter((p) => p.enabled).map((p) => p.discount_percent))}%
             with packages
@@ -1394,7 +1394,7 @@ function ToggleRow({
   helper: string;
 }) {
   return (
-    <label className="pw-border p-3 flex items-center gap-3 cursor-pointer transition-colors hover:border-[var(--pw-ink)]">
+    <label className="pw-border p-4 flex items-center gap-4 cursor-pointer transition-colors hover:border-[var(--pw-ink)]">
       <input
         type="checkbox"
         checked={checked}
@@ -1425,7 +1425,7 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
   const subjectNames = subjects.filter((s) => state.subject_ids.includes(s.id)).map((s) => s.name);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
         Here's how students will see your profile.
       </p>
@@ -1445,7 +1445,7 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
             </div>
           </div>
         ) : null}
-        <div className="p-5">
+        <div className="p-6">
           <div className="flex items-start gap-4">
             <div className="size-16 rounded-full overflow-hidden bg-[var(--pw-surface-2)] shrink-0">
               {state.avatar_url && (
@@ -1459,9 +1459,9 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
               <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2 line-clamp-2">
                 {state.headline || "Your headline"}
               </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <div className="mt-2 flex flex-wrap gap-2">
                 {subjectNames.slice(0, 4).map((n) => (
-                  <span key={n} className="pw-pill px-2 py-0.5">
+                  <span key={n} className="pw-pill px-2 py-0">
                     {n}
                   </span>
                 ))}
@@ -1473,11 +1473,11 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
             </div>
           </div>
           {state.superpowers.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-4 flex flex-wrap gap-2">
               {state.superpowers.map((t) => (
                 <span
                   key={t}
-                  className="pw-pill px-2 py-0.5 inline-flex items-center gap-1"
+                  className="pw-pill px-2 py-0 inline-flex items-center gap-2"
                   style={{
                     borderColor: "var(--pw-accent-3)",
                     background: "var(--pw-accent-soft)",
@@ -1490,10 +1490,10 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
               ))}
             </div>
           )}
-          <div className="mt-3 text-[0.8125rem] text-[var(--pw-ink)] whitespace-pre-wrap line-clamp-4">
+          <div className="mt-4 text-[0.8125rem] text-[var(--pw-ink)] whitespace-pre-wrap line-clamp-4">
             {state.bio}
           </div>
-          <div className="mt-3 flex flex-wrap gap-3 label-caps text-[var(--pw-ink-2)]">
+          <div className="mt-4 flex flex-wrap gap-4 label-caps text-[var(--pw-ink-2)]">
             {state.years_experience && <span>{state.years_experience} yrs exp</span>}
             {state.education_level && (
               <span>
@@ -1503,7 +1503,7 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
             )}
             {state.availability.length > 0 && (
               <span>
-                <Clock className="inline size-3 mr-1" />
+                <Clock className="inline size-3 mr-2" />
                 {state.availability.length} slots/wk
               </span>
             )}
@@ -1523,18 +1523,18 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
           }}
         >
           <div className="label-caps text-[var(--pw-danger)]">Still missing ({missing.length})</div>
-          <ul className="mt-1 text-[0.8125rem] list-disc list-inside text-[var(--pw-ink)]">
+          <ul className="mt-2 text-[0.8125rem] list-disc list-inside text-[var(--pw-ink)]">
             {missing.map((m) => (
               <li key={m}>{m}</li>
             ))}
           </ul>
-          <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-1">
+          <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
             You can still publish, but a complete profile gets 3× more bookings.
           </p>
         </div>
       )}
 
-      <div className="text-[0.75rem] text-[var(--pw-ink-2)] inline-flex items-center gap-1">
+      <div className="text-[0.75rem] text-[var(--pw-ink-2)] inline-flex items-center gap-2">
         <Eye className="size-3.5" /> Your profile will enter verification review after publishing.
       </div>
     </div>
@@ -1551,5 +1551,5 @@ function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: str
   );
 }
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={"pw-input mt-1 text-[0.875rem] " + (props.className ?? "")} />;
+  return <input {...props} className={"pw-input mt-2 text-[0.875rem] " + (props.className ?? "")} />;
 }

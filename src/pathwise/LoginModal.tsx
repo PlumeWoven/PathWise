@@ -248,16 +248,16 @@ export function LoginModal() {
     <>
       {/* Radix Dialog: role + label, focus moved in and trapped, Esc, page behind made inert. */}
       <Dialog open={loginOpen} onOpenChange={(open) => !open && handleClose()}>
-        <DialogContent className="pw-card block w-[calc(100%-2rem)] max-w-[32.5rem] max-h-[calc(100dvh-2rem)] overflow-y-auto p-7 border-[var(--pw-border)] shadow-pw-float">
+        <DialogContent className="pw-card block w-[calc(100%-2rem)] max-w-[32.5rem] max-h-[calc(100dvh-2rem)] overflow-y-auto p-8 border-[var(--pw-border)] shadow-pw-float">
           <DialogTitle className="font-display font-bold uppercase tracking-[-0.025em] text-[1.75rem] leading-none">
             {title}
           </DialogTitle>
-          <DialogDescription className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">
+          <DialogDescription className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
             {subtitle}
           </DialogDescription>
 
           {mode === "signup" && (
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-3 gap-4">
               <RoleCard
                 icon="student"
                 label="Student"
@@ -292,7 +292,7 @@ export function LoginModal() {
           )}
 
           {mode === "signin" && (
-            <form onSubmit={handleSignIn} className="mt-6 space-y-3">
+            <form onSubmit={handleSignIn} className="mt-6 space-y-4">
               <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
               <Field
                 label="Password"
@@ -302,14 +302,14 @@ export function LoginModal() {
                 onChange={setPassword}
               />
               {error && <ErrorLine msg={error} />}
-              <SubmitButton submitting={submitting} label="Sign In →" />
+              <SubmitButton submitting={submitting} label="Sign in →" />
               {GOOGLE_ENABLED && (
                 <>
                   <OrDivider />
                   <GoogleButton onClick={handleGoogle} submitting={submitting} />
                 </>
               )}
-              <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
+              <div className="flex items-center justify-between text-[0.8125rem] text-[var(--pw-ink-2)]">
                 <button
                   type="button"
                   onClick={() => {
@@ -337,7 +337,7 @@ export function LoginModal() {
           )}
 
           {mode === "signup" && (
-            <form onSubmit={handleSignUp} className="mt-6 space-y-3">
+            <form onSubmit={handleSignUp} className="mt-6 space-y-4">
               <Field label="Full name" type="text" autoComplete="name" value={name} onChange={setName} />
               <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
               <Field
@@ -353,7 +353,7 @@ export function LoginModal() {
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="mt-0.5"
+                  className="mt-0"
                 />
                 <span>
                   I'm 18 or older (or a parent/guardian signing up for my child) and I accept the{" "}
@@ -369,7 +369,7 @@ export function LoginModal() {
               </label>
               <SubmitButton
                 submitting={submitting}
-                label="Create Free Account →"
+                label="Create free account →"
                 disabled={!role || !consent}
               />
               {GOOGLE_ENABLED && (
@@ -383,7 +383,7 @@ export function LoginModal() {
                   )}
                 </>
               )}
-              <div className="label-caps text-[var(--pw-ink-2)] text-center">
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)] text-center">
                 Already have an account?{" "}
                 <button
                   type="button"
@@ -402,7 +402,7 @@ export function LoginModal() {
           )}
 
           {mode === "forgot" && (
-            <form onSubmit={handleForgot} className="mt-6 space-y-3">
+            <form onSubmit={handleForgot} className="mt-6 space-y-4">
               <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
               {error && <ErrorLine msg={error} />}
               {info && (
@@ -411,7 +411,7 @@ export function LoginModal() {
                 </div>
               )}
               <SubmitButton submitting={submitting} label="Send reset link →" />
-              <div className="label-caps text-[var(--pw-ink-2)] text-center">
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)] text-center">
                 <button
                   type="button"
                   onClick={() => {
@@ -468,10 +468,10 @@ function RoleCard({
       }}
     >
       <Icon name={icon} className="h-6 w-6" />
-      <div className="font-display font-bold uppercase tracking-[-0.025em] text-[1rem] mt-1.5">
+      <div className="font-display font-bold uppercase tracking-[-0.025em] text-[1rem] mt-2">
         {label}
       </div>
-      <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0.5">{sub}</div>
+      <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{sub}</div>
     </button>
   );
 }
@@ -502,7 +502,7 @@ function Field({
         required
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="pw-input mt-1 text-[0.875rem]"
+        className="pw-input mt-2 text-[0.875rem]"
       />
     </div>
   );
@@ -529,7 +529,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={submitting || disabled}
-      className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {submitting ? "Please wait..." : label}
     </button>
@@ -538,7 +538,7 @@ function SubmitButton({
 
 function OrDivider() {
   return (
-    <div className="flex items-center gap-3 py-1">
+    <div className="flex items-center gap-4 py-2">
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
       <span className="label-caps text-[var(--pw-ink-2)]">or</span>
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
@@ -560,7 +560,7 @@ function GoogleButton({
       type="button"
       onClick={onClick}
       disabled={submitting || disabled}
-      className="pw-btn-secondary w-full px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="pw-btn-secondary w-full px-6 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden>
         <path

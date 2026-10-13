@@ -131,12 +131,6 @@ body,
   font-size: 0.75rem;
   font-weight: 600;
 }
-
-@utility text-outline {
-  -webkit-text-stroke: 1px var(--color-qed-hairline);
-  color: transparent;
-}
-
 :root {
   /* Native controls (selects, date pickers, checkboxes, scrollbars) follow the theme. */
   color-scheme: light;
@@ -349,14 +343,8 @@ textarea.bg-white {
 }
 
 @layer base {
-  /* Whole-site scale: 120% of the user's default font size from tablet width up. Every size is
-     rem-based, so text, spacing and components scale together; media-query breakpoints don't.
-     Phones stay at 100% — at 120% a 375px screen only fits ~312px worth of layout. */
-  @media (min-width: 48rem) {
-    html {
-      font-size: 120%;
-    }
-  }
+  /* No root font-size step: 1rem is the browser's own text size at every width, so spacing
+     (one 8px grid, see tests/spacing.test.ts) never jumps between screens. */
 
   /* Native range/checkbox/radio controls pick up the QED amber instead of browser blue. */
   input[type="range"],
@@ -480,8 +468,8 @@ textarea.bg-white {
   border-radius: 0;
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, scale 0.08s ease-out;
 }
 
@@ -498,13 +486,13 @@ textarea.bg-white {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.875rem 1.75rem;
+  padding: 1rem 2rem;
   border: 1px solid var(--pw-border);
   border-radius: 0;
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--pw-ink);
   background-color: transparent;
   transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, scale 0.08s ease-out;
@@ -531,14 +519,14 @@ textarea.bg-white {
 .pw-nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   border-radius: 0;
   font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--pw-muted);
   background-color: transparent;
   transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
@@ -557,7 +545,7 @@ textarea.bg-white {
    Square, hairline border, ground-2 fill; focus = amber border + 1px amber ring. */
 .pw-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   border: 1px solid var(--pw-border);
   border-radius: 0;
   outline: none;
@@ -580,8 +568,8 @@ textarea.bg-white {
 .pw-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.25rem 0.625rem;
+  gap: 0.5rem;
+  padding: 0.5rem;
   border: 1px solid var(--pw-border);
   border-radius: 9999px;
   font-size: 0.75rem;
@@ -604,7 +592,7 @@ textarea.bg-white {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--pw-border);
   border-radius: 0;
   background-color: transparent;
@@ -653,7 +641,7 @@ textarea.bg-white {
 
   /* CARD — hairline border + default interior padding (override with p-* utilities). */
   .pw-card {
-    padding: 1.75rem;
+    padding: 2rem;
     border: 1px solid var(--pw-border);
   }
 
@@ -663,7 +651,7 @@ textarea.bg-white {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.875rem 1.75rem;
+    padding: 1rem 2rem;
   }
 
   /* PILL — transparent with a hairline; hover darkens the border only (so a call-site
@@ -717,8 +705,8 @@ textarea.bg-white {
     border-radius: 0;
     font-size: 0.8125rem;
     font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0;
+    text-transform: none;
     transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, scale 0.08s ease-out;
   }
 

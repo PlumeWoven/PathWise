@@ -238,13 +238,13 @@ function DashboardHome() {
     <>
       {/* Welcome */}
       <div className="mt-4">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-4">
           <h1 className="font-display text-[1.75rem] sm:text-[2.125rem] uppercase tracking-[-0.025em] leading-[1.1]">
             {greeting}, {profile?.display_name ?? "Tutor"}!
           </h1>
           {profile && <VerificationBadge tier={statusToTier(profile.verification_status)} />}
         </div>
-        <p className="mt-1 text-[0.875rem] text-[var(--pw-ink-2)]">
+        <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
           Here's how your tutoring practice is doing today.
         </p>
         <UnverifiedBanner />
@@ -260,13 +260,13 @@ function DashboardHome() {
         sessions.length === 0 &&
         reviews.length === 0 && (
           <div
-            className="mt-5 pw-card p-5 flex flex-wrap items-center gap-4"
+            className="mt-6 pw-card p-6 flex flex-wrap items-center gap-4"
             style={{ background: "var(--pw-accent-soft)" }}
           >
             <Icon name="sparkles" className="h-8 w-8" />
             <div className="flex-1 min-w-[13.75rem]">
               <div className="font-display text-[1.125rem]">Your live dashboard is ready</div>
-              <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0.5">
+              <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0">
                 Earnings, sessions and reviews will appear here as students book and rate you.
                 Finish your profile and add availability so students can find you.
               </p>
@@ -304,7 +304,7 @@ function DashboardHome() {
           label="Avg Rating"
           value={
             avgRating ? (
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-2">
                 {avgRating}
                 <StarIcon className="h-5 w-5 fill-current" aria-hidden="true" />
               </span>
@@ -321,7 +321,7 @@ function DashboardHome() {
                 without it a short card (an empty "Next up") leaves a ragged gap
                 beside a tall one (the lead funnel), which is what made this look
                 lopsided. */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch [&>div>*]:h-full">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch [&>div>*]:h-full">
         <div className="md:col-span-2 lg:col-span-2">
           <EarningsChart earnings={earnings} />
         </div>
@@ -384,10 +384,10 @@ function MetricCard({
   skeleton?: boolean;
 }) {
   if (skeleton)
-    return <div className="pw-card p-5 h-[7rem] animate-pulse bg-[var(--pw-surface-2)]" />;
+    return <div className="pw-card p-6 h-[7rem] animate-pulse bg-[var(--pw-surface-2)]" />;
   const isUp = (change ?? 0) >= 0;
   return (
-    <div className="pw-card p-5">
+    <div className="pw-card p-6">
       <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
       <div
         className="mt-2 font-display text-[1.75rem] leading-none"
@@ -471,11 +471,11 @@ function EarningsChart({ earnings }: { earnings: EarningRow[] }) {
   }, [earnings, range]);
 
   return (
-    <div className="pw-card p-5">
+    <div className="pw-card p-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <div className="label-caps text-[var(--pw-ink-2)]">Earnings</div>
-          <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0.5">
+          <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
             {range === "daily"
               ? "Last 30 days"
               : range === "weekly"
@@ -483,12 +483,12 @@ function EarningsChart({ earnings }: { earnings: EarningRow[] }) {
                 : "Last 6 months"}
           </div>
         </div>
-        <div className="flex gap-1 p-1 rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface-2)]">
+        <div className="flex gap-2 p-2 rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface-2)]">
           {(["daily", "weekly", "monthly"] as Range[]).map((r) => (
             <button
               key={r}
               onClick={() => setRange(r)}
-              className={`chart-range-pill label-caps px-3 py-1 rounded-full transition-colors ${range === r ? "active bg-[var(--pw-ink)] text-[var(--pw-bg)]" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
+              className={`chart-range-pill label-caps px-4 py-2 rounded-full transition-colors ${range === r ? "active bg-[var(--pw-ink)] text-[var(--pw-bg)]" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
             >
               {r}
             </button>
@@ -534,7 +534,7 @@ function EarningsTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   const p = payload[0].payload;
   return (
-    <div className="pw-card p-2.5 text-[0.75rem] shadow-lg">
+    <div className="pw-card p-2 text-[0.75rem] shadow-lg">
       <div className="font-medium">{label}</div>
       <div className="text-[var(--pw-accent)] font-display text-[1rem]">{formatPrice(p.amount)}</div>
       <div className="text-[var(--pw-ink-2)]">
@@ -553,9 +553,9 @@ function UpcomingSessions({
 }) {
   const startConversation = useStartConversation();
   return (
-    <div className="pw-card p-5">
+    <div className="pw-card p-6">
       <div className="label-caps text-[var(--pw-ink-2)]">Upcoming sessions</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0.5">Next up</div>
+      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">Next up</div>
       <div className="mt-4 divide-y divide-[var(--pw-border)]">
         {sessions.length === 0 ? (
           <div className="text-[0.875rem] text-[var(--pw-ink-2)] py-6 text-center">
@@ -567,7 +567,7 @@ function UpcomingSessions({
             const name = stu?.display_name ?? "Student";
             const when = s.scheduled_start ? new Date(s.scheduled_start) : null;
             return (
-              <div key={s.id} className="flex flex-wrap gap-3 items-center py-3">
+              <div key={s.id} className="flex flex-wrap gap-4 items-center py-4">
                 <Avatar name={name} url={stu?.avatar_url} />
                 <div className="flex-1 min-w-0">
                   <div className="text-[0.875rem] font-medium truncate">{name}</div>
@@ -576,15 +576,15 @@ function UpcomingSessions({
                     {s.status_v2 ? ` · ${s.status_v2.replace(/_/g, " ")}` : ""}
                   </div>
                   {when && (
-                    <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-0.5">
+                    <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-0">
                       {formatDistanceToNow(when, { addSuffix: true })} ·{" "}
                       {format(when, "MMM d, h:mm a")}
                     </div>
                   )}
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-2">
                   <button
-                    className="pw-btn-primary text-[0.75rem] px-3 py-1.5"
+                    className="pw-btn-outline text-[0.75rem] px-4 py-2"
                     onClick={() =>
                       s.meeting_url
                         ? window.open(s.meeting_url, "_blank", "noopener")
@@ -595,7 +595,7 @@ function UpcomingSessions({
                   </button>
                   {s.student_id && (
                     <button
-                      className="pw-btn-outline text-[0.75rem] px-3 py-1.5"
+                      className="pw-btn-outline text-[0.75rem] px-4 py-2"
                       onClick={() => startConversation(s.student_id!)}
                     >
                       Message
@@ -604,7 +604,7 @@ function UpcomingSessions({
                   <Link
                     to="/sessions/$id"
                     params={{ id: s.id }}
-                    className="pw-btn-outline text-[0.75rem] px-3 py-1.5"
+                    className="pw-btn-outline text-[0.75rem] px-4 py-2"
                   >
                     Reschedule
                   </Link>
@@ -632,9 +632,9 @@ function LeadFunnel({ leads }: { leads: LeadRow[] }) {
   }));
   const max = Math.max(1, counts[0].count);
   return (
-    <div className="pw-card p-5">
+    <div className="pw-card p-6">
       <div className="label-caps text-[var(--pw-ink-2)]">Lead funnel</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0.5">
+      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
         Conversion
       </div>
       <div className="mt-4 space-y-2">
@@ -645,7 +645,7 @@ function LeadFunnel({ leads }: { leads: LeadRow[] }) {
           return (
             <div key={s.key}>
               {conv != null && (
-                <div className="text-xs text-[var(--pw-ink-2)] text-center mb-0.5">
+                <div className="text-xs text-[var(--pw-ink-2)] text-center mb-0">
                   ↓ {conv.toFixed(0)}% conv
                 </div>
               )}
@@ -658,7 +658,7 @@ function LeadFunnel({ leads }: { leads: LeadRow[] }) {
                     opacity: 0.35,
                   }}
                 />
-                <div className="relative h-full px-3 flex items-center justify-between text-[0.75rem]">
+                <div className="relative h-full px-4 flex items-center justify-between text-[0.75rem]">
                   <span className="font-medium">{s.label}</span>
                   <span className="tabular-nums">{s.count}</span>
                 </div>
@@ -676,12 +676,12 @@ function ProfileCompleteness({ data }: { data: ReturnType<typeof computeComplete
     circ = 2 * Math.PI * radius;
   const offset = circ - (data.score / 100) * circ;
   return (
-    <div className="pw-card p-5">
+    <div className="pw-card p-6">
       <div className="label-caps text-[var(--pw-ink-2)]">Profile</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0.5">
+      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
         Completeness
       </div>
-      <div className="flex items-center gap-4 mt-3">
+      <div className="flex items-center gap-4 mt-4">
         <svg width="100" height="100" viewBox="0 0 100 100" className="shrink-0">
           <circle
             cx="50"
@@ -715,7 +715,7 @@ function ProfileCompleteness({ data }: { data: ReturnType<typeof computeComplete
             {data.score}%
           </text>
         </svg>
-        <div className="flex-1 space-y-1.5">
+        <div className="flex-1 space-y-2">
           {data.items.map((i) => (
             <div key={i.key} className="flex items-center gap-2 text-[0.75rem]">
               <span style={{ color: i.done ? "var(--pw-accent-2)" : "var(--pw-border)" }}>
@@ -729,7 +729,7 @@ function ProfileCompleteness({ data }: { data: ReturnType<typeof computeComplete
       {data.score < 70 && (
         <Link
           to="/onboarding/tutor"
-          className="pw-btn-primary mt-4 inline-block text-center w-full text-[0.8125rem] px-4 py-2"
+          className="pw-btn-outline mt-4 inline-block text-center w-full text-[0.8125rem] px-4 py-2"
         >
           Complete your profile
         </Link>
@@ -747,11 +747,11 @@ function ReviewsPreview({
 }) {
   const top3 = reviews.slice(0, 3);
   return (
-    <div className="pw-card p-5">
+    <div className="pw-card p-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
           <div className="label-caps text-[var(--pw-ink-2)]">Reviews</div>
-          <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0.5">
+          <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
             Latest feedback
           </div>
         </div>
@@ -768,14 +768,14 @@ function ReviewsPreview({
             const stu = r.student_id ? studentMap.get(r.student_id) : null;
             const stars = r.rating ?? 0;
             return (
-              <div key={r.id} className="py-3">
+              <div key={r.id} className="py-4">
                 <div className="flex items-center gap-2">
                   <Avatar name={stu?.display_name ?? "Student"} url={stu?.avatar_url} small />
                   <span className="text-[0.8125rem] font-medium">{stu?.display_name ?? "Student"}</span>
                   <span
                     role="img"
                     aria-label={`${stars} out of 5 stars`}
-                    className="text-[var(--pw-accent)] ml-auto inline-flex items-center gap-0.5"
+                    className="text-[var(--pw-accent)] ml-auto inline-flex items-center gap-0"
                   >
                     {Array.from({ length: 5 }, (_, n) => (
                       <StarIcon
@@ -786,14 +786,14 @@ function ReviewsPreview({
                     ))}
                   </span>
                 </div>
-                {r.body && <p className="mt-1.5 text-[0.8125rem] line-clamp-2">"{r.body}"</p>}
+                {r.body && <p className="mt-2 text-[0.8125rem] line-clamp-2">"{r.body}"</p>}
               </div>
             );
           })
         )}
       </div>
       <button
-        className="label-caps mt-4 text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
+        className="text-[0.8125rem] font-semibold mt-4 text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
         onClick={() => toast.info("Reviews page coming soon")}
       >
         View all reviews →
@@ -810,12 +810,12 @@ function EarningsBreakdown({ earnings }: { earnings: EarningRow[] }) {
   const total = last30.reduce((s, e) => s + e.amount, 0);
   const avgPerSession = last30.length ? total / last30.length : 0;
   return (
-    <div className="pw-card p-5">
+    <div className="pw-card p-6">
       <div className="label-caps text-[var(--pw-ink-2)]">Last 30 days</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0.5">
+      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
         At a glance
       </div>
-      <div className="mt-4 space-y-3 text-[0.875rem]">
+      <div className="mt-4 space-y-4 text-[0.875rem]">
         <Row label="Total earned" value={formatPrice(total)} />
         <Row label="Sessions paid" value={String(last30.length)} />
         <Row label="Avg / session" value={formatPrice(avgPerSession)} />
@@ -843,17 +843,17 @@ function QuickActionsBar() {
     }
   };
   return (
-    <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2">
-      <Link to="/onboarding/tutor" className="pw-btn-outline text-[0.8125rem] px-3 py-2 text-center">
+    <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <Link to="/onboarding/tutor" className="pw-btn-outline text-[0.8125rem] px-4 py-2 text-center">
         Update availability
       </Link>
       <Link
         to="/dashboard/courses/new"
-        className="pw-btn-outline text-[0.8125rem] px-3 py-2 text-center"
+        className="pw-btn-outline text-[0.8125rem] px-4 py-2 text-center"
       >
         Create new course
       </Link>
-      <button onClick={shareLink} className="pw-btn-outline text-[0.8125rem] px-3 py-2">
+      <button onClick={shareLink} className="pw-btn-outline text-[0.8125rem] px-4 py-2">
         Share profile link
       </button>
     </div>

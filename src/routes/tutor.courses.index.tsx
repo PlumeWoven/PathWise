@@ -52,10 +52,10 @@ export function TutorCoursesPage() {
         <div className="mb-4 flex items-center gap-2">
           <Link
             to="/dashboard/courses"
-            className="label-caps inline-flex items-center gap-1.5 text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
+            className="text-[0.8125rem] font-semibold inline-flex items-center gap-2 text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
           >
             <LayoutDashboard className="size-3.5" />
-            Back to Dashboard
+            Back to dashboard
           </Link>
         </div>
       )}
@@ -63,8 +63,8 @@ export function TutorCoursesPage() {
         <h1 className="font-display text-2xl uppercase tracking-[-0.025em] leading-none">
           My Courses
         </h1>
-        <Link to="/dashboard/courses/new" className="pw-btn-primary flex items-center gap-1">
-          <Plus className="size-4" /> New Course
+        <Link to="/dashboard/courses/new" className="pw-btn-primary flex items-center gap-2">
+          <Plus className="size-4" /> New course
         </Link>
       </div>
       {courses.length === 0 ? (
@@ -88,18 +88,18 @@ export function TutorCoursesPage() {
                 <img
                   src={course.thumbnail_url}
                   alt={course.title}
-                  className="w-full h-32 object-cover mb-3"
+                  className="w-full h-32 object-cover mb-4"
                 />
               )}
               <h3 className="font-display text-lg leading-tight transition-colors group-hover:text-pw-accent">
                 {course.title}
               </h3>
-              <p className="text-sm text-[var(--pw-ink-2)] mt-1 line-clamp-2">
+              <p className="text-sm text-[var(--pw-ink-2)] mt-2 line-clamp-2">
                 {course.subtitle || "No description"}
               </p>
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-4 flex items-center justify-between">
                 <span
-                  className={`label-caps rounded-full border px-2.5 py-0.5 ${course.status === "published" ? "border-[var(--pw-secondary)] text-[var(--pw-secondary)]" : "border-[var(--pw-accent-3)] text-[var(--pw-accent-3)]"}`}
+                  className={`label-caps rounded-full border px-2 py-0 ${course.status === "published" ? "border-[var(--pw-secondary)] text-[var(--pw-secondary)]" : "border-[var(--pw-accent-3)] text-[var(--pw-accent-3)]"}`}
                 >
                   {course.status}
                 </span>
@@ -108,7 +108,7 @@ export function TutorCoursesPage() {
                     to="/dashboard/courses/$courseId/edit"
                     params={{ courseId: course.id }}
                     aria-label={`Edit ${course.title}`}
-                    className="p-1 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
+                    className="p-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
                   >
                     <Edit className="size-4" />
                   </Link>
@@ -116,14 +116,14 @@ export function TutorCoursesPage() {
                     to="/courses/$slug"
                     params={{ slug: course.slug || course.id }}
                     aria-label={`View ${course.title}`}
-                    className="p-1 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
+                    className="p-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors"
                   >
                     <Eye className="size-4" />
                   </Link>
                   <button
                     onClick={() => deleteCourse(course.id)}
                     aria-label={`Delete ${course.title}`}
-                    className="p-1 text-[var(--pw-danger)] hover:bg-[var(--pw-surface-2)] transition-colors"
+                    className="p-2 text-[var(--pw-danger)] hover:bg-[var(--pw-surface-2)] transition-colors"
                   >
                     <Trash2 className="size-4" />
                   </button>

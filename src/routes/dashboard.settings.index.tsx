@@ -11,7 +11,7 @@ function DashboardSettingsIndex() {
         Settings
       </h1>
       <p className="mb-2 text-[var(--pw-ink-2)]">Choose a setting category:</p>
-      <ul className="space-y-1">
+      <ul className="space-y-2">
         <li>
           <Link
             to="/dashboard/settings/verification"

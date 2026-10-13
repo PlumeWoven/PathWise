@@ -58,7 +58,7 @@ function AdminCourses() {
                   <p className="text-sm text-[var(--pw-ink-2)]">
                     by {c.tutor?.display_name || "Unknown"}
                   </p>
-                  <p className="label-caps text-[var(--pw-ink-2)] mt-1">
+                  <p className="label-caps text-[var(--pw-ink-2)] mt-2">
                     {c.category} · {c.difficulty}
                   </p>
                   {c.thumbnail_url && (

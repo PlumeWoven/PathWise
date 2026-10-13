@@ -13,7 +13,9 @@ function AppLayout() {
   // so Privacy, Terms and Contact are always one tap away.
   const { pathname } = useLocation();
   return (
-    <div className="min-h-screen bg-[var(--pw-bg)] text-[var(--pw-ink)]">
+    // Flex column: the footer's mt-auto pins it to the bottom of the screen on short pages
+    // and keeps it after the content on long ones, so it never floats mid-screen.
+    <div className="flex min-h-dvh flex-col bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <PWHeader />
       <Outlet />
       {pathname !== "/" && <LegalFooter />}
@@ -22,11 +24,11 @@ function AppLayout() {
 }
 
 function LegalFooter() {
-  const link = "inline-block py-3.5 -my-3.5 hover:text-pw-accent transition-colors";
+  const link = "inline-block py-4 -my-4 hover:text-pw-accent transition-colors";
   return (
-    <footer className="border-t border-[var(--pw-border)] px-5 sm:px-8 py-4 flex flex-wrap items-center gap-x-5 gap-y-2 label-caps text-[var(--pw-ink-2)]">
+    <footer className="mt-auto border-t border-[var(--pw-border)] px-6 sm:px-8 py-4 flex flex-wrap items-center gap-x-6 gap-y-2 label-caps text-[var(--pw-ink-2)]">
       <span>© {new Date().getFullYear()} PathWise</span>
-      <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-2">
+      <nav aria-label="Legal" className="flex flex-wrap gap-x-6 gap-y-2">
         <Link to="/privacy" className={link}>
           Privacy
         </Link>

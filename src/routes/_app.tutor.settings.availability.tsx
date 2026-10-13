@@ -198,12 +198,12 @@ export function AvailabilityPage() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       <div className="py-6 max-w-5xl mx-auto pb-24">
-        <div className="flex items-baseline justify-between flex-wrap gap-3">
+        <div className="flex items-baseline justify-between flex-wrap gap-4">
           <div>
             <h1 className="font-display text-3xl uppercase tracking-[-0.025em] leading-none">
               Your weekly availability
             </h1>
-            <p className="text-sm text-[var(--pw-ink-2)] mt-1">
+            <p className="text-sm text-[var(--pw-ink-2)] mt-2">
               The hours students can book you each week, in your time zone.
             </p>
           </div>
@@ -213,8 +213,8 @@ export function AvailabilityPage() {
         </div>
 
         {tzMismatch && (
-          <div className="pw-card mt-4 p-3 flex items-start gap-3 border-l-4 border-l-[var(--pw-accent-3)]">
-            <AlertTriangle className="w-4 h-4 mt-0.5 text-[var(--pw-accent-3)]" />
+          <div className="pw-card mt-4 p-4 flex items-start gap-4 border-l-4 border-l-[var(--pw-accent-3)]">
+            <AlertTriangle className="w-4 h-4 mt-0 text-[var(--pw-accent-3)]" />
             <div className="text-[0.8125rem] text-[var(--pw-ink-2)]">
               {tzMismatch} Update below if needed.
             </div>
@@ -223,13 +223,13 @@ export function AvailabilityPage() {
 
         <div className="pw-card mt-4 p-4 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label htmlFor="av-timezone" className="label-caps text-[var(--pw-ink-2)] flex items-center gap-1.5">
+            <label htmlFor="av-timezone" className="label-caps text-[var(--pw-ink-2)] flex items-center gap-2">
               <Globe className="w-3 h-3" /> Timezone
             </label>
             <select id="av-timezone"
               value={tz}
               onChange={(e) => setTz(e.target.value)}
-              className="pw-input mt-1 text-[0.8125rem]"
+              className="pw-input mt-2 text-[0.8125rem]"
             >
               {[tz, ...COMMON_TIMEZONES.filter((t) => t !== tz)].map((z) => (
                 <option key={z} value={z}>
@@ -237,18 +237,18 @@ export function AvailabilityPage() {
                 </option>
               ))}
             </select>
-            <p className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-1">
+            <p className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-2">
               Current: <strong>{tz}</strong>
             </p>
           </div>
           <div>
-            <label htmlFor="av-buffer" className="label-caps text-[var(--pw-ink-2)] flex items-center gap-1.5">
+            <label htmlFor="av-buffer" className="label-caps text-[var(--pw-ink-2)] flex items-center gap-2">
               <Clock className="w-3 h-3" /> Buffer between sessions
             </label>
             <select id="av-buffer"
               value={bufferMinutes}
               onChange={(e) => setBufferMinutes(Number(e.target.value))}
-              className="pw-input mt-1 text-[0.8125rem]"
+              className="pw-input mt-2 text-[0.8125rem]"
             >
               {BUFFER_OPTIONS.map((b) => (
                 <option key={b} value={b}>
@@ -262,7 +262,7 @@ export function AvailabilityPage() {
             <select id="av-advance"
               value={minAdvanceHours}
               onChange={(e) => setMinAdvanceHours(Number(e.target.value))}
-              className="pw-input mt-1 text-[0.8125rem]"
+              className="pw-input mt-2 text-[0.8125rem]"
             >
               {[2, 6, 12, 24, 48, 72].map((h) => (
                 <option key={h} value={h}>
@@ -276,7 +276,7 @@ export function AvailabilityPage() {
             <button id="av-instant"
               onClick={() => setInstantBookings((v) => !v)}
               aria-pressed={instantBookings}
-              className="pw-input mt-1 text-[0.8125rem] text-left"
+              className="pw-input mt-2 text-[0.8125rem] text-left"
               style={{
                 background: instantBookings ? "var(--pw-accent-soft)" : "var(--pw-input-bg)",
               }}
@@ -297,9 +297,9 @@ export function AvailabilityPage() {
             value={meetingUrl}
             onChange={(e) => setMeetingUrl(e.target.value)}
             placeholder="https://meet.google.com/abc-defg-hij"
-            className="pw-input mt-1 text-[0.8125rem] w-full"
+            className="pw-input mt-2 text-[0.8125rem] w-full"
           />
-          <p className="mt-1.5 text-[0.75rem] text-[var(--pw-ink-2)]">
+          <p className="mt-2 text-[0.75rem] text-[var(--pw-ink-2)]">
             Students get this link when they book. Leave it empty and each lesson gets its own Jitsi room.
           </p>
         </div>
@@ -308,7 +308,7 @@ export function AvailabilityPage() {
           <button
             onClick={save}
             disabled={saving}
-            className="pw-btn-primary px-4 py-1.5 flex items-center gap-1.5 disabled:opacity-50"
+            className="pw-btn-primary px-4 py-2 flex items-center gap-2 disabled:opacity-50"
           >
             <Save className="w-3 h-3" /> {saving ? "Saving…" : "Save"}
           </button>

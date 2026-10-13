@@ -78,7 +78,7 @@ function ResetPasswordPage() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 py-12 max-w-md mx-auto">
+      <main className="px-6 sm:px-8 py-12 max-w-md mx-auto">
         <h1 className="font-display text-[2rem] uppercase tracking-[-0.025em] leading-none">
           Set a new password
         </h1>
@@ -87,7 +87,7 @@ function ResetPasswordPage() {
         </p>
 
         {!ready && linkFailed ? (
-          <form onSubmit={handleResend} className="mt-6 space-y-3">
+          <form onSubmit={handleResend} className="mt-6 space-y-4">
             <p role="alert" className="text-[0.875rem]">
               This reset link has expired, was already used, or was opened in a different
               browser. Enter your email and we'll send a new one.
@@ -103,7 +103,7 @@ function ResetPasswordPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pw-input mt-1 text-[0.875rem]"
+                className="pw-input mt-2 text-[0.875rem]"
               />
             </div>
             {error && (
@@ -119,7 +119,7 @@ function ResetPasswordPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 disabled:opacity-50"
+              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50"
             >
               {submitting ? "Sending..." : "Send a new link"}
             </button>
@@ -129,7 +129,7 @@ function ResetPasswordPage() {
             Verifying your reset link...
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-6 space-y-3">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
               <label htmlFor="rp-new" className="label-caps text-[var(--pw-ink-2)]">New password</label>
               <input id="rp-new"
@@ -138,7 +138,7 @@ function ResetPasswordPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pw-input mt-1 text-[0.875rem]"
+                className="pw-input mt-2 text-[0.875rem]"
               />
             </div>
             <div>
@@ -149,7 +149,7 @@ function ResetPasswordPage() {
                 required
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
-                className="pw-input mt-1 text-[0.875rem]"
+                className="pw-input mt-2 text-[0.875rem]"
               />
             </div>
             {error && (
@@ -165,7 +165,7 @@ function ResetPasswordPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 disabled:opacity-50"
+              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50"
             >
               {submitting ? "Updating..." : "Update password"}
             </button>

@@ -80,7 +80,7 @@ function AdminSessions() {
   if (loading) return <div>Loading…</div>;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       <section>
         <h1 className="font-display text-2xl uppercase tracking-[-0.025em] leading-none mb-2">
           Disputes
@@ -135,28 +135,28 @@ function SessionTable({
     <table className="w-full text-sm">
       <thead className="label-caps border-b border-[var(--pw-border)] text-[var(--pw-ink-2)]">
         <tr>
-          <th className="text-left py-3 font-semibold">When</th>
-          <th className="text-left py-3 font-semibold">Student</th>
-          <th className="text-left py-3 font-semibold">Tutor</th>
-          <th className="text-left py-3 font-semibold">Status</th>
-          <th className="text-left py-3 font-semibold"></th>
+          <th className="text-left py-4 font-semibold">When</th>
+          <th className="text-left py-4 font-semibold">Student</th>
+          <th className="text-left py-4 font-semibold">Tutor</th>
+          <th className="text-left py-4 font-semibold">Status</th>
+          <th className="text-left py-4 font-semibold"></th>
         </tr>
       </thead>
       <tbody className="divide-y divide-[var(--pw-border)]">
         {rows.map((r) => (
           <tr key={r.id}>
-            <td className="py-3">
+            <td className="py-4">
               <Link to="/sessions/$id" params={{ id: r.id }} className="underline">
                 {r.scheduled_start ? new Date(r.scheduled_start).toLocaleString() : "—"}
               </Link>
             </td>
-            <td className="py-3">{r.student?.display_name ?? "—"}</td>
-            <td className="py-3">{r.tutor?.display_name ?? "—"}</td>
-            <td className="py-3 text-[var(--pw-ink-2)]">
+            <td className="py-4">{r.student?.display_name ?? "—"}</td>
+            <td className="py-4">{r.tutor?.display_name ?? "—"}</td>
+            <td className="py-4 text-[var(--pw-ink-2)]">
               <span className="label-caps">{r.status_v2.replace("_", " ")}</span>
-              {r.reportReason && <div className="text-[0.75rem] mt-0.5">“{r.reportReason}”</div>}
+              {r.reportReason && <div className="text-[0.75rem] mt-0">“{r.reportReason}”</div>}
             </td>
-            <td className="py-3">{action(r)}</td>
+            <td className="py-4">{action(r)}</td>
           </tr>
         ))}
       </tbody>

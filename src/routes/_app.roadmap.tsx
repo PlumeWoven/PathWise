@@ -484,7 +484,7 @@ function RoadmapPageInner() {
   if (loading) {
     return (
       <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-        <main className="px-5 sm:px-8 pt-20 text-center text-[var(--pw-ink-2)]">
+        <main className="px-6 sm:px-8 pt-24 text-center text-[var(--pw-ink-2)]">
           Loading your roadmap…
         </main>
       </div>
@@ -523,14 +523,14 @@ function RoadmapPageInner() {
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
       {/* Anonymous save banner — same container as <main> so its edges line up with the columns */}
-      <div className="px-5 sm:px-8 max-w-6xl mx-auto">
+      <div className="px-6 sm:px-8 max-w-6xl mx-auto">
         <AnimatePresence>
           {showAnonToast && !isLoggedIn && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mt-4 pw-card px-4 py-3 flex items-center justify-between gap-4"
+              className="mt-4 pw-card px-4 py-4 flex items-center justify-between gap-4"
               style={{ background: "var(--pw-accent-soft)", borderColor: "var(--pw-accent)" }}
             >
               <div className="text-[0.8125rem] flex items-center gap-2">
@@ -542,13 +542,13 @@ function RoadmapPageInner() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => openLogin()}
-                  className="label-caps inline-flex items-center whitespace-nowrap border border-pw-accent-fill bg-pw-accent-fill px-3 py-1.5 text-pw-on-accent transition-colors hover:bg-transparent hover:text-pw-accent"
+                  className="pw-btn-outline whitespace-nowrap px-4 py-2"
                 >
                   Sign up
                 </button>
                 <button
                   onClick={() => setShowAnonToast(false)}
-                  className="text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-lg leading-none px-1"
+                  className="text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-lg leading-none px-2"
                   aria-label="Dismiss"
                 >
                   ×
@@ -559,7 +559,7 @@ function RoadmapPageInner() {
         </AnimatePresence>
       </div>
 
-      <main className="px-5 sm:px-8 pb-24 max-w-6xl mx-auto">
+      <main className="px-6 sm:px-8 pb-24 max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -572,7 +572,7 @@ function RoadmapPageInner() {
           </h1>
 
           {/* Columns start on the same line: aside card top = Stage 01 card top. */}
-          <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-12 items-start">
             {/* LEFT — profile */}
             <aside>
               <div className="pw-card p-6">
@@ -587,18 +587,18 @@ function RoadmapPageInner() {
                     <div className="font-display text-[1.25rem] leading-none uppercase tracking-[-0.025em]">
                       {level}
                     </div>
-                    <div className="label-caps mt-1 text-[var(--pw-ink-2)]">YOUR RANK</div>
+                    <div className="label-caps mt-2 text-[var(--pw-ink-2)]">YOUR RANK</div>
                   </div>
                 </div>
 
-                <div className="mt-5">
+                <div className="mt-6">
                   <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)]">
                     <span>Roadmap progress</span>
                     <span className="font-mono-pw">
                       {done} / {total} stages
                     </span>
                   </div>
-                  <div className="pw-progress mt-1.5">
+                  <div className="pw-progress mt-2">
                     <motion.div
                       className="pw-progress-fill"
                       initial={false}
@@ -606,7 +606,7 @@ function RoadmapPageInner() {
                       transition={{ duration: 0.7, ease: "easeOut" }}
                     />
                   </div>
-                  <div className="font-mono-pw text-[0.6875rem] text-[var(--pw-ink-2)] mt-1">
+                  <div className="font-mono-pw text-[0.6875rem] text-[var(--pw-ink-2)] mt-2">
                     {pct}% complete
                   </div>
                 </div>
@@ -617,7 +617,7 @@ function RoadmapPageInner() {
                     Master {subject} up to <strong>{lastStage?.title ?? "your goal"}</strong>,
                     starting from {level}.
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     <Pill>
                       <Icon name="books" className="h-3.5 w-3.5" /> {subject}
                     </Pill>
@@ -630,10 +630,10 @@ function RoadmapPageInner() {
                   </div>
                 </div>
 
-                <div className="my-5 h-px bg-[var(--pw-border)]" />
+                <div className="my-6 h-px bg-[var(--pw-border)]" />
 
                 <div>
-                  <div className="label-caps text-[var(--pw-ink-2)] mb-3">ESTIMATED JOURNEY</div>
+                  <div className="label-caps text-[var(--pw-ink-2)] mb-4">ESTIMATED JOURNEY</div>
                   <ul className="space-y-2 text-[0.8125rem]">
                     <li className="flex items-center gap-2">
                       <Icon name="calendar" className="h-4 w-4" /> 8–12 weeks
@@ -664,7 +664,7 @@ function RoadmapPageInner() {
 
             {/* RIGHT — roadmap */}
             <section>
-              <div className="relative pl-10">
+              <div className="relative pl-12">
                 <div className="absolute left-3 top-2 bottom-2 border-l border-[var(--pw-border)]" />
 
                 {stages.map((s, i) => {
@@ -703,8 +703,18 @@ function RoadmapPageInner() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0, scale: isActive && completing === null ? 1 : 1 }}
                       transition={{ delay: i * 0.08, type: "spring", stiffness: 260, damping: 26 }}
-                      className="relative mb-7"
+                      className="relative mb-8"
                     >
+                      {/* The path you've walked, in amber-orange: from this completed stage's dot
+                          down to the next one (the landing's journey line, continued). Sits on the
+                          grey line at left-3 of the list (-1.75rem from the row); 3.5rem = the
+                          2rem row gap + the next dot's 1.5rem centre. */}
+                      {isCompleted && i < stages.length - 1 && (
+                        <div
+                          aria-hidden="true"
+                          className="absolute -left-7 top-6 -bottom-14 w-0.5 bg-pw-accent-fill"
+                        />
+                      )}
                       <motion.div
                         className="absolute -left-[1.875rem] top-3 w-6 h-6 rounded-full flex items-center justify-center text-[0.75rem]"
                         style={{
@@ -732,16 +742,16 @@ function RoadmapPageInner() {
                       </motion.div>
 
                       <div
-                        className={`text-left w-full pw-card p-5 relative transition-colors hover:border-[var(--pw-ink)] ${isActive ? "border-[var(--pw-accent)]" : isCompleted ? "border-[var(--pw-accent-2)]" : ""}`}
+                        className={`text-left w-full pw-card p-6 relative transition-colors hover:border-[var(--pw-ink)] ${isActive ? "border-[var(--pw-accent)]" : isCompleted ? "border-[var(--pw-accent-2)]" : ""}`}
                       >
-                        <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start justify-between gap-4">
                           <div className="min-w-0">
                             <div
                               className={`label-caps ${isCompleted ? "text-pw-secondary" : isActive ? "text-pw-accent" : "text-[var(--pw-ink-2)]"}`}
                             >
                               STAGE {String(s.stage_number).padStart(2, "0")}
                             </div>
-                            <h3 className="font-display text-[1.25rem] leading-[1.05] uppercase tracking-[-0.025em] mt-1">
+                            <h3 className="font-display text-[1.25rem] leading-[1.05] uppercase tracking-[-0.025em] mt-2">
                               {/* A real button stretched over the card (::after), so the
                                   card opens from the keyboard too. Nested controls sit
                                   above it with relative z-10. */}
@@ -755,7 +765,7 @@ function RoadmapPageInner() {
                             </h3>
                           </div>
                           {isCompleted && (
-                            <span className="pw-pill px-2.5 py-1 whitespace-nowrap text-pw-secondary border-[var(--pw-accent-2)]">
+                            <span className="pw-pill px-2 py-2 whitespace-nowrap text-pw-secondary border-[var(--pw-accent-2)]">
                               <Icon name="check" className="h-3.5 w-3.5" /> Completed
                             </span>
                           )}
@@ -766,21 +776,22 @@ function RoadmapPageInner() {
                                 e.stopPropagation();
                                 handleStartHere(s);
                               }}
-                              className="relative z-10 pw-pill px-2.5 py-1 whitespace-nowrap bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
+                              // An outlined chip: "Mark stage complete" is the card's one filled action.
+                              className="relative z-10 pw-pill px-2 py-2 whitespace-nowrap text-pw-accent border-[var(--pw-accent)]"
                             >
-                              <Icon name="play" className="h-3.5 w-3.5 text-pw-on-accent" /> START
+                              <Icon name="play" className="h-3.5 w-3.5 text-pw-accent" /> START
                               HERE
                             </button>
                           )}
                           {!isCompleted && !isActive && (
-                            <span className="pw-pill px-2.5 py-1 text-[var(--pw-ink-2)] whitespace-nowrap">
+                            <span className="pw-pill px-2 py-2 text-[var(--pw-ink-2)] whitespace-nowrap">
                               <Icon name="lock" className="h-3.5 w-3.5" /> Locked
                             </span>
                           )}
                         </div>
 
                         {s.skills && s.skills.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-1.5">
+                          <div className="mt-4 flex flex-wrap gap-2">
                             {s.skills.map((sk) => (
                               <span key={sk} className="pw-badge">
                                 {sk}
@@ -791,9 +802,9 @@ function RoadmapPageInner() {
 
                         {/* Course requirement — the level this stage unlocks against */}
                         {reqBand && !isCompleted && (
-                          <div className="mt-3 flex flex-wrap items-center gap-2 text-[0.75rem]">
+                          <div className="mt-4 flex flex-wrap items-center gap-2 text-[0.75rem]">
                             <span
-                              className={`pw-pill px-2.5 py-1 ${req.met ? "text-pw-secondary border-[var(--pw-accent-2)]" : "text-[var(--pw-ink-2)]"}`}
+                              className={`pw-pill px-2 py-2 ${req.met ? "text-pw-secondary border-[var(--pw-accent-2)]" : "text-[var(--pw-ink-2)]"}`}
                             >
                               <Icon name={req.met ? "check" : "book"} className="h-3.5 w-3.5" />{" "}
                               Requires a {BAND_META[reqBand].label} course
@@ -809,7 +820,7 @@ function RoadmapPageInner() {
                           </div>
                         )}
 
-                        <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                        <div className="mt-4 flex items-center justify-between gap-4 flex-wrap">
                           <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
                             {isCompleted && s.completed_at
                               ? `Completed ${new Date(s.completed_at).toLocaleDateString()}`
@@ -837,7 +848,7 @@ function RoadmapPageInner() {
                                   handleMarkComplete(s);
                                 }
                               }}
-                              className={`relative z-10 pw-pill px-3 py-1.5 transition-colors cursor-pointer ${req.met ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"}`}
+                              className={`relative z-10 pw-pill px-4 py-2 transition-colors cursor-pointer ${req.met ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"}`}
                               style={{ opacity: completing === s.stage_number ? 0.6 : 1 }}
                             >
                               {completing === s.stage_number ? (
@@ -880,11 +891,11 @@ function RoadmapPageInner() {
                 navigate({ to: "/matches" });
               }
             }}
-            className="pw-btn-primary inline-flex justify-center w-full px-7 py-4"
+            className="pw-btn-primary inline-flex justify-center w-full px-8 py-4"
           >
-            See My Matched Tutors & Courses →
+            See my matched tutors & courses →
           </button>
-          <p className="mt-3 text-[0.75rem] text-[var(--pw-ink-2)]">
+          <p className="mt-4 text-[0.75rem] text-[var(--pw-ink-2)]">
             Free to browse · Book only when ready
           </p>
         </div>
@@ -902,15 +913,15 @@ function RoadmapPageInner() {
       {/* Completion moment: a dialog people dismiss themselves, so it is announced and never
           vanishes before it can be read. */}
       <Dialog open={overlay !== null} onOpenChange={(open) => !open && setOverlay(null)}>
-        <DialogContent className="pw-card block text-center px-10 py-12 w-[calc(100%-2rem)] max-w-md border-[var(--pw-accent)] shadow-pw-float">
+        <DialogContent className="pw-card block text-center px-12 py-12 w-[calc(100%-2rem)] max-w-md border-[var(--pw-accent)] shadow-pw-float">
           {overlay && (
             <>
               <Icon name="target" className="h-12 w-12 mx-auto" />
-              <DialogTitle className="font-display font-normal text-[2.25rem] leading-none uppercase tracking-[-0.025em] mt-3">
+              <DialogTitle className="font-display font-normal text-[2.25rem] leading-none uppercase tracking-[-0.025em] mt-4">
                 Stage {overlay.stageNumber} Complete!
               </DialogTitle>
               <div
-                className="font-mono-pw text-[0.75rem] mt-2 flex items-center justify-center gap-1.5"
+                className="font-mono-pw text-[0.75rem] mt-2 flex items-center justify-center gap-2"
                 style={{ color: "var(--pw-accent-3)" }}
               >
                 <Icon name="sparkles" className="h-4 w-4" /> +{overlay.xp} XP earned
@@ -920,11 +931,11 @@ function RoadmapPageInner() {
                   Next: <strong className="text-[var(--pw-ink)]">{overlay.nextTitle}</strong>
                 </DialogDescription>
               ) : (
-                <DialogDescription className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4 flex items-center justify-center gap-1.5">
+                <DialogDescription className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4 flex items-center justify-center gap-2">
                   <Icon name="flag" className="h-4 w-4" /> Final stage reached!
                 </DialogDescription>
               )}
-              <DialogClose className="pw-btn-primary mt-6 px-5 py-2.5">Continue →</DialogClose>
+              <DialogClose className="pw-btn-primary mt-6 px-6 py-2">Continue →</DialogClose>
             </>
           )}
         </DialogContent>
@@ -934,5 +945,5 @@ function RoadmapPageInner() {
 }
 
 function Pill({ children }: { children: React.ReactNode }) {
-  return <span className="pw-pill px-3 py-1">{children}</span>;
+  return <span className="pw-pill px-4 py-2">{children}</span>;
 }

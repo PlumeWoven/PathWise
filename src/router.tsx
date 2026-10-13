@@ -30,11 +30,11 @@ function DefaultErrorComponent({ error, reset }: { error: unknown; reset: () => 
           An unexpected error occurred. Please try again.
         </p>
         {import.meta.env.DEV && error instanceof Error && error.message && (
-          <pre className="mt-4 max-h-40 overflow-auto border border-[var(--pw-border)] bg-[var(--pw-surface-2)] p-3 text-left font-mono text-xs text-[var(--pw-danger)]">
+          <pre className="mt-4 max-h-40 overflow-auto border border-[var(--pw-border)] bg-[var(--pw-surface-2)] p-4 text-left font-mono text-xs text-[var(--pw-danger)]">
             {error.message}
           </pre>
         )}
-        <div className="mt-6 flex items-center justify-center gap-3">
+        <div className="mt-6 flex items-center justify-center gap-4">
           <button
             onClick={() => {
               router.invalidate();
