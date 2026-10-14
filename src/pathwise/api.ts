@@ -22,6 +22,7 @@ import type { TablesUpdate, Enums } from "@/integrations/supabase/types";
 import type { Subject, Level, GoalId } from "./data";
 import type { GeneratedStage } from "./roadmap-gen";
 import { makeLevelId, requiredBandForStage, type LevelBand } from "./levels";
+import { getGuestToken } from "@/lib/guestToken";
 
 type SessionStatus = Enums<"session_status">;
 export type EnrollmentStatus = Enums<"enrollment_status">;
@@ -35,7 +36,8 @@ export type EnrollmentStatus = Enums<"enrollment_status">;
  *
  * getUser() treats a missing session as an error (AuthSessionMissingError),
  * but anonymous visitors are a supported state here — the quiz writes
- * diagnostics and roadmaps with user_id = null and claims them at sign-in. So
+ * diagnostics and roadmaps with user_id = null (plus a guest token) and claims
+ * them at sign-in. So
  * "no session" is reported as null rather than thrown; genuine failures
  * (network, invalid JWT) still throw.
  */
@@ -49,6 +51,14 @@ export async function getCurrentUser() {
         throw error;
     }
     return user;
+}
+
+/** Moves this browser's guest level checks and roadmaps onto the signed-in account. Safe to call repeatedly. */
+export async function claimGuestResults(): Promise<void> {
+    const token = getGuestToken();
+    if (!token) return;
+    const { error } = await supabase.rpc("claim_guest_roadmaps", { p_guest_token: token });
+    if (error) console.error("[claim] guest results", error.message);
 }
 
 export async function signOut() {
@@ -115,6 +125,8 @@ export async function saveDiagnosticResult(input: SaveDiagnosticInput): Promise<
         .from("diagnostic_results")
         .insert({
             user_id: input.user_id ?? null,
+            // Guests can read their rows back only with this token (RLS).
+            guest_token: input.user_id ? null : getGuestToken(),
             subject: input.subject,
             goal: input.goal,
             score: input.score,
@@ -170,6 +182,7 @@ export async function createRoadmap(params: {
         .from("roadmaps")
         .insert({
             user_id: params.user_id,
+            guest_token: params.user_id ? null : getGuestToken(),
             diagnostic_id: params.diagnostic_id,
             subject: params.subject,
             goal: params.goal,

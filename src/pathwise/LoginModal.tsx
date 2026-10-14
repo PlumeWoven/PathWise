@@ -4,6 +4,8 @@ import { useAuth, type Role } from "./auth";
 import { normalizeRole, pendingBookingTutorId, postAuthDestination } from "./roles";
 import { supabase } from "@/integrations/supabase/client";
 import { signInWithGoogle } from "./oauth";
+import { claimGuestResults } from "./api";
+import { getGuestToken } from "@/lib/guestToken";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -59,29 +61,8 @@ export function LoginModal() {
     // unknown roles to "/" instead of mislabeling the user.
     const r = normalizeRole(profile?.role);
     const onboarded = !!profile?.onboarding_completed;
-    // Claim any anonymous diagnostic + roadmap rows created before signup.
-    try {
-      const diagId = localStorage.getItem("pathwise_diagnostic_id");
-      const roadmapId = localStorage.getItem("pathwise_roadmap_id");
-      if (diagId) {
-        await supabase
-          .from("diagnostic_results")
-          .update({ user_id: userId })
-          .eq("id", diagId)
-          .is("user_id", null);
-      }
-      if (roadmapId) {
-        await supabase
-          .from("roadmaps")
-          .update({ user_id: userId })
-          .eq("id", roadmapId)
-          .is("user_id", null);
-      }
-      localStorage.removeItem("pathwise_diagnostic_id");
-      localStorage.removeItem("pathwise_roadmap_id");
-    } catch (err) {
-      console.error("[auth] claim anonymous error", err);
-    }
+    // Attach any guest level check + roadmap made in this browser.
+    await claimGuestResults();
     closeLogin();
     const pendingTutor = onboarded ? pendingBookingTutorId() : null;
     if (pendingTutor) navigate({ to: "/book/$tutorId", params: { tutorId: pendingTutor } });
@@ -169,6 +150,9 @@ export function LoginModal() {
           // Record of what the user agreed to and when.
           terms_accepted_at: new Date().toISOString(),
           age_confirmed: true,
+          // Lets the account claim this browser's guest results even if the
+          // confirmation link is opened on another device.
+          guest_token: getGuestToken(),
         },
       },
     });

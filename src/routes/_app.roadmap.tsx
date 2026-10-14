@@ -21,6 +21,7 @@ import {
   getRoadmapWithStages,
   completeStage,
   getRoadmapEnrollments,
+  claimGuestResults,
   type StageEnrollment,
 } from "../pathwise/api";
 import { requireAuth } from "../lib/authGuard";
@@ -179,52 +180,13 @@ function RoadmapPageInner() {
     try {
       const { supabase } = await import("@/integrations/supabase/client");
 
-      // ─── FIX 2: Claim the roadmap FIRST before fetching ───────────────────────────
-      // This eliminates the race condition — the claim and fetch happen sequentially
+      // Claim this browser's guest results first, so the fetch below sees
+      // them as the user's own.
       const {
         data: { session },
       } = await supabase.auth.getSession();
-      if (session?.user) {
-        const pendingId = localStorage.getItem("pathwise_roadmap_id");
-        if (pendingId) {
-          console.log("[roadmap] Claiming roadmap for user:", session.user.id);
-          const { data: claimData, error: claimErr } = await supabase
-            .from("roadmaps")
-            .update({ user_id: session.user.id })
-            .eq("id", pendingId)
-            .is("user_id", null)
-            .select() // ← ADD .select() to get the updated row back
-            .maybeSingle(); // ← ADD .maybeSingle() to get the actual data
+      if (session?.user) await claimGuestResults();
 
-          if (claimErr) {
-            console.error("[roadmap] Claim failed:", claimErr.message);
-          } else {
-            console.log("[roadmap] Claim succeeded");
-            localStorage.removeItem("pathwise_roadmap_id");
-
-            // If we got the claimed row back, use it directly instead of re-fetching
-            if (claimData) {
-              console.log("[roadmap] Using claimed roadmap directly:", claimData.id);
-              setRoadmap(claimData);
-              // Fetch stages for this roadmap
-              const { data: claimedStages } = await supabase
-                .from("roadmap_stages")
-                .select("*")
-                .eq("roadmap_id", claimData.id)
-                .order("stage_number");
-              if (claimedStages) {
-                console.log("[roadmap] Stages loaded:", claimedStages.length);
-                setStages(claimedStages);
-              }
-              return; // ← DONE — don't fall through to the normal fetch
-            }
-          }
-        }
-      }
-
-      // ─── Now fetch the roadmap ────────────────────────────────────────────────
-      // After claiming, the row has user_id set, so the authenticated
-      // SELECT policy (auth.uid() = user_id) will match.
       console.log("[roadmap] Fetching roadmap and stages from Supabase...");
       const [{ data: rm, error: rErr }, { data: st, error: sErr }] = await Promise.all([
         supabase.from("roadmaps").select("*").eq("id", roadmapId).maybeSingle(),

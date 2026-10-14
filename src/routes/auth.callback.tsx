@@ -9,84 +9,11 @@ import {
     readPendingRole,
     readReturnPath,
 } from '@/pathwise/oauth';
+import { claimGuestResults } from '@/pathwise/api';
 
 export const Route = createFileRoute('/auth/callback')({
     component: AuthCallback,
 });
-
-/**
- * Attaches the anonymous roadmap (and its diagnostic) created before sign-in to
- * the now-authenticated user.
- *
- * NOTE: this previously received the *claim id* as its argument while its body
- * expected a *user id*, so the UPDATE set roadmaps.user_id to a roadmap's own
- * id — which the FK to profiles rejected, silently losing every anonymous
- * roadmap. It takes the user id now, and reads the claim id itself.
- */
-async function claimPendingRoadmap(userId: string): Promise<void> {
-    const params = new URLSearchParams(window.location.search);
-    const claimId = params.get('claim') || localStorage.getItem('pathwise_roadmap_id');
-    if (!claimId) return;
-
-    try {
-        const { data: roadmap, error: roadmapError } = await supabase
-            .from('roadmaps')
-            .update({ user_id: userId })
-            .eq('id', claimId)
-            .is('user_id', null) // only claim while still anonymous
-            .select('subject, created_at')
-            .maybeSingle();
-
-        if (roadmapError) {
-            console.error('[claim] failed to claim roadmap', roadmapError.message);
-            localStorage.removeItem('pathwise_roadmap_id');
-            return;
-        }
-
-        // Claim the diagnostic that produced it (same subject, still anonymous,
-        // created in the last five minutes).
-        if (roadmap?.subject) {
-            const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-            const { error: diagError } = await supabase
-                .from('diagnostic_results')
-                .update({ user_id: userId })
-                .eq('subject', roadmap.subject)
-                .is('user_id', null)
-                .gte('created_at', fiveMinAgo);
-            if (diagError) console.error('[claim] diagnostic claim failed', diagError.message);
-        }
-
-        localStorage.removeItem('pathwise_roadmap_id');
-    } catch (err) {
-        console.error('[claim] error claiming roadmap', err);
-    }
-}
-
-/** Also claim rows tracked under the quiz's own localStorage keys. */
-async function claimQuizRecords(userId: string): Promise<void> {
-    try {
-        const diagId = localStorage.getItem('pathwise_diagnostic_id');
-        const roadmapId = localStorage.getItem('pathwise_roadmap_id');
-        if (diagId) {
-            await supabase
-                .from('diagnostic_results')
-                .update({ user_id: userId })
-                .eq('id', diagId)
-                .is('user_id', null);
-            localStorage.removeItem('pathwise_diagnostic_id');
-        }
-        if (roadmapId) {
-            await supabase
-                .from('roadmaps')
-                .update({ user_id: userId })
-                .eq('id', roadmapId)
-                .is('user_id', null);
-            localStorage.removeItem('pathwise_roadmap_id');
-        }
-    } catch (err) {
-        console.error('[claim] quiz record claim failed', err);
-    }
-}
 
 /**
  * Waits for the session that detectSessionInUrl is establishing from the
@@ -153,8 +80,7 @@ function AuthCallback() {
                 await backfillProfileFromOAuth(user.id, user.user_metadata ?? {});
 
                 // Carry over anything created before signing in.
-                await claimPendingRoadmap(user.id);
-                await claimQuizRecords(user.id);
+                await claimGuestResults();
 
                 // Apply the role picked before the redirect, if the profile
                 // has none yet (the RPC won't overwrite an existing role).

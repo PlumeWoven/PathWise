@@ -303,6 +303,7 @@ export type Database = {
         Row: {
           created_at: string
           goal: string
+          guest_token: string | null
           id: string
           level: string
           level_band: number | null
@@ -317,6 +318,7 @@ export type Database = {
         Insert: {
           created_at?: string
           goal: string
+          guest_token?: string | null
           id?: string
           level: string
           level_band?: number | null
@@ -331,6 +333,7 @@ export type Database = {
         Update: {
           created_at?: string
           goal?: string
+          guest_token?: string | null
           id?: string
           level?: string
           level_band?: number | null
@@ -610,6 +613,7 @@ export type Database = {
       roadmap_stages: {
         Row: {
           completed_at: string | null
+          guest_token: string | null
           id: string
           required_level_band: number | null
           required_level_id: string | null
@@ -621,6 +625,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          guest_token?: string | null
           id?: string
           required_level_band?: number | null
           required_level_id?: string | null
@@ -632,6 +637,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          guest_token?: string | null
           id?: string
           required_level_band?: number | null
           required_level_id?: string | null
@@ -657,6 +663,7 @@ export type Database = {
           current_stage: number
           diagnostic_id: string | null
           goal: string | null
+          guest_token: string | null
           id: string
           level_band: number | null
           level_id: string | null
@@ -669,6 +676,7 @@ export type Database = {
           current_stage?: number
           diagnostic_id?: string | null
           goal?: string | null
+          guest_token?: string | null
           id?: string
           level_band?: number | null
           level_id?: string | null
@@ -681,6 +689,7 @@ export type Database = {
           current_stage?: number
           diagnostic_id?: string | null
           goal?: string | null
+          guest_token?: string | null
           id?: string
           level_band?: number | null
           level_id?: string | null
@@ -1110,6 +1119,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_guest_roadmaps: {
+        Args: { p_guest_token: string }
+        Returns: undefined
+      }
       book_session: {
         Args: {
           p_amount: number

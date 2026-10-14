@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { normalizeRole, postAuthDestination, type Role } from "./roles";
+import { claimGuestResults } from "./api";
 
 // Re-exported so existing `import { type Role } from "./auth"` sites keep working.
 export type { Role };
@@ -111,10 +112,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fetchProfile(newSession.user.id).then((p) => {
             setProfile(p);
             if (event === "SIGNED_IN" && typeof window !== "undefined") {
+              const claimed = claimGuestResults();
               const path = window.location.pathname;
               const onPublicEntry = path === "/" || path === "/login";
               if (onPublicEntry) {
-                claimAnonymousRecords(newSession.user.id).finally(() => {
+                claimed.finally(() => {
                   if (!p) return;
                   if (!newSession.user.confirmed_at) {
                     return;
@@ -258,27 +260,3 @@ export function useAuth() {
   return ctx;
 }
 
-async function claimAnonymousRecords(userId: string) {
-  try {
-    const diagId = localStorage.getItem("pathwise_diagnostic_id");
-    const roadmapId = localStorage.getItem("pathwise_roadmap_id");
-    if (diagId) {
-      await supabase
-        .from("diagnostic_results")
-        .update({ user_id: userId })
-        .eq("id", diagId)
-        .is("user_id", null);
-      localStorage.removeItem("pathwise_diagnostic_id");
-    }
-    if (roadmapId) {
-      await supabase
-        .from("roadmaps")
-        .update({ user_id: userId })
-        .eq("id", roadmapId)
-        .is("user_id", null);
-      localStorage.removeItem("pathwise_roadmap_id");
-    }
-  } catch (err) {
-    console.error("[auth] claimAnonymousRecords", err);
-  }
-}
