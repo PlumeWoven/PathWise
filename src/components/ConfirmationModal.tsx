@@ -59,12 +59,12 @@ export function ConfirmationModal({
             {isConfirmed ? (
               <>
                 <CheckCircle className="size-5 text-[var(--pw-accent-2)]" />
-                Email Confirmed!
+                Email confirmed
               </>
             ) : (
               <>
                 <Mail className="size-5 text-[var(--pw-accent)]" />
-                Confirm Your Email
+                Confirm your email
               </>
             )}
           </DialogTitle>
@@ -74,31 +74,18 @@ export function ConfirmationModal({
               : `We've sent a confirmation link to ${email}. Click it to get started.`}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col items-center justify-center py-6">
-          {isConfirmed ? (
-            <div className="w-16 h-16 rounded-full bg-[var(--pw-accent-soft)] border border-[var(--pw-border)] flex items-center justify-center">
-              <CheckCircle className="size-10 text-[var(--pw-accent-2)]" />
-            </div>
-          ) : (
-            <>
-              <div className="w-16 h-16 rounded-full bg-[var(--pw-accent-soft)] border border-[var(--pw-border)] flex items-center justify-center animate-pulse">
-                <Mail className="size-8 text-[var(--pw-accent)]" />
-              </div>
-              <p className="text-sm text-[var(--pw-ink-2)] mt-4 text-center max-w-sm">
-                Check your inbox and spam folder. The link expires in 24 hours.
-              </p>
-              <Button
-                variant="outline"
-                onClick={handleResend}
-                disabled={resending}
-                className="mt-4"
-              >
-                <RefreshCw className={`size-4 mr-2 ${resending ? "animate-spin" : ""}`} />
-                {resending ? "Sending..." : "Resend email"}
-              </Button>
-            </>
-          )}
-        </div>
+        {/* The title already carries the icon; the pulsing icon-in-a-circle repeated it. */}
+        {!isConfirmed && (
+          <div>
+            <p className="text-sm text-[var(--pw-ink-2)]">
+              Check your inbox and spam folder. The link expires in 24 hours.
+            </p>
+            <Button variant="outline" onClick={handleResend} disabled={resending} className="mt-4">
+              <RefreshCw className={`size-4 mr-2 ${resending ? "animate-spin" : ""}`} />
+              {resending ? "Sending..." : "Resend email"}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

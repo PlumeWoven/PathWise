@@ -25,7 +25,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { formatPrice } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/_app/onboarding/tutor")({
-  head: () => ({ meta: [{ title: "Tutor onboarding — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Tutor onboarding · PathWise" }] }),
   component: TutorWizard,
 });
 
@@ -390,7 +390,8 @@ function TutorWizard() {
       /* ignore */
     }
     await refreshProfile();
-    toast.success("Profile published!");
+    // Publishing sets verification_status "pending"; only verified tutors are listed.
+    toast.success("Profile saved. Students can find you once you're verified.");
     setTimeout(() => navigate({ to: "/dashboard" }), 1200);
   };
 
@@ -645,7 +646,7 @@ function Step1({
         <Input id="tob-name"
           value={state.full_name}
           onChange={(e) => update("full_name", e.target.value)}
-          placeholder="Jane Doe"
+          placeholder="Ana Rusu"
         />
       </div>
 
@@ -664,7 +665,7 @@ function Step1({
           value={state.headline}
           maxLength={140}
           onChange={(e) => update("headline", e.target.value)}
-          placeholder="MIT-trained math tutor specializing in SAT prep"
+          placeholder="Math tutor, 8 years preparing students for the BAC"
         />
       </div>
 
@@ -675,7 +676,7 @@ function Step1({
           value={state.bio}
           onChange={(e) => update("bio", e.target.value)}
           placeholder="**About me…** Share your teaching style, experience, what you love."
-          className="pw-input mt-2 text-[0.875rem] font-mono-pw"
+          className="pw-input mt-2 text-[0.875rem]"
         />
       </div>
 
@@ -712,7 +713,7 @@ function Step1({
         <Input id="tob-institution"
           value={state.institution}
           onChange={(e) => update("institution", e.target.value)}
-          placeholder="Stanford University"
+          placeholder="Moldova State University"
         />
       </div>
     </div>
@@ -839,7 +840,7 @@ function Step2({
 
       <TagField
         label="Specializations"
-        helper="e.g., AP Calculus, SAT Prep, Dyslexia Specialist"
+        helper="e.g., BAC preparation, gymnasium exam, English grammar"
         tags={state.specializations}
         input={specInput}
         setInput={setSpecInput}
@@ -852,8 +853,8 @@ function Step2({
         }
       />
       <TagField
-        label="Superpowers"
-        helper="Highlighted on your profile — what you're truly best at"
+        label="Strengths"
+        helper="Shown on your profile: what you teach best."
         tags={state.superpowers}
         input={superInput}
         setInput={setSuperInput}
@@ -1084,7 +1085,7 @@ function Step3({
   return (
     <div className="space-y-6">
       <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
-        A 60-90s intro video doubles your booking rate.
+        Students see this on your profile. Keep it to 60 to 90 seconds.
       </p>
 
       <div
@@ -1093,7 +1094,7 @@ function Step3({
       >
         <div className="label-caps text-pw-accent">Tips</div>
         <p className="text-[0.8125rem] mt-2">
-          Introduce yourself, share your teaching philosophy, and what makes you unique.
+          Say who you are, what you teach and what a lesson with you looks like.
         </p>
       </div>
 
@@ -1206,7 +1207,7 @@ function Step4({
           <Label htmlFor="tob-timezone">Timezone</Label>
           <Input id="tob-timezone" value={state.timezone} onChange={(e) => update("timezone", e.target.value)} />
           <p className="text-[0.7188rem] text-[var(--pw-ink-2)] mt-2">
-            Auto-detected — you can change it.
+            Detected from your browser. You can change it.
           </p>
         </div>
         <div>
@@ -1222,33 +1223,6 @@ function Step4({
               </option>
             ))}
           </select>
-        </div>
-      </div>
-
-      <div>
-        <Label>Booking mode</Label>
-        <div className="mt-2 flex gap-2">
-          {[
-            { v: false, label: "Manual approval" },
-            { v: true, label: "Instant bookings" },
-          ].map((o) => {
-            const on = state.instant_bookings === o.v;
-            return (
-              <button
-                key={String(o.v)}
-                type="button"
-                onClick={() => update("instant_bookings", o.v)}
-                className="pw-pill px-4 py-2"
-                style={{
-                  borderColor: on ? "var(--pw-accent)" : "var(--pw-border)",
-                  background: on ? "var(--pw-accent-soft)" : "transparent",
-                  color: on ? "var(--pw-accent)" : "var(--pw-ink)",
-                }}
-              >
-                {o.label}
-              </button>
-            );
-          })}
         </div>
       </div>
 
@@ -1351,12 +1325,12 @@ function Step5({
           checked={state.first_session_free}
           onChange={(v) => update("first_session_free", v)}
           label="First session free"
-          helper="A risk-free way for students to try you out"
+          helper="Students can try one lesson before paying."
         />
         <ToggleRow
           checked={state.free_discovery_call}
           onChange={(v) => update("free_discovery_call", v)}
-          label="Free 15-min discovery call"
+          label="Free 30-min trial call"
           helper="Quick chat before booking a full session"
         />
       </div>
@@ -1364,7 +1338,7 @@ function Step5({
       <div className="pw-border p-4 bg-[var(--pw-surface-2)]">
         <div className="label-caps text-[var(--pw-ink-2)]">Search preview</div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="font-display text-[1.5rem]">{rate ? formatPrice(rate) : "—"}</span>
+          <span className="font-display text-[1.5rem] tabular-nums">{rate ? formatPrice(rate) : "—"}</span>
           <span className="text-[0.75rem] text-[var(--pw-ink-2)]">/ hour</span>
           {state.first_session_free && (
             <span className="ml-auto pw-pill px-2 py-0">First free</span>
@@ -1468,7 +1442,9 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="font-display text-[1.375rem]">${state.hourly_rate || "—"}</div>
+              <div className="font-display text-[1.375rem] tabular-nums">
+                {state.hourly_rate ? formatPrice(Number(state.hourly_rate)) : "—"}
+              </div>
               <div className="text-[0.6875rem] text-[var(--pw-ink-2)]">/hr</div>
             </div>
           </div>
@@ -1529,7 +1505,7 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
             ))}
           </ul>
           <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
-            You can still publish, but a complete profile gets 3× more bookings.
+            You can publish now and fill these in later.
           </p>
         </div>
       )}

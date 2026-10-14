@@ -6,7 +6,7 @@ import { useAuth } from "../pathwise/auth";
 import { createDraft } from "../pathwise/courses";
 
 export const Route = createFileRoute("/dashboard/courses/new")({
-  head: () => ({ meta: [{ title: "New Course — PathWise" }] }),
+  head: () => ({ meta: [{ title: "New Course · PathWise" }] }),
   component: NewCourseRedirect,
 });
 

@@ -15,7 +15,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           toast:
             "group toast group-[.toaster]:bg-[var(--pw-surface)] group-[.toaster]:text-[var(--pw-ink)] group-[.toaster]:border-[var(--pw-border)] group-[.toaster]:shadow-lg",
           description: "group-[.toast]:text-[var(--pw-ink-2)]",
-          actionButton: "group-[.toast]:bg-[var(--pw-accent)] group-[.toast]:text-white",
+          actionButton: "group-[.toast]:bg-pw-accent-fill group-[.toast]:text-pw-on-accent",
+          error: "group-[.toaster]:text-[var(--pw-danger)]",
           cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-[var(--pw-ink-2)]",
         },
       }}

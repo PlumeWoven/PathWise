@@ -66,15 +66,15 @@ export const Route = createFileRoute("/_app/roadmap")({
   }),
   head: () => ({
     meta: [
-      { title: "Your Roadmap — PathWise" },
+      { title: "Your roadmap · PathWise" },
       {
         name: "description",
-        content: "A personalized 5-stage learning roadmap built around your level and goal.",
+        content: "A five-stage roadmap from your level to your goal.",
       },
-      { property: "og:title", content: "Your Roadmap — PathWise" },
+      { property: "og:title", content: "Your roadmap · PathWise" },
       {
         property: "og:description",
-        content: "Visual learning journey from where you are to where you want to be.",
+        content: "A five-stage roadmap from your level to your goal.",
       },
       { property: "og:url", content: "/roadmap" },
     ],
@@ -566,7 +566,6 @@ function RoadmapPageInner() {
           transition={{ duration: 0.4 }}
           className="mt-6"
         >
-          <div className="label-caps text-[var(--pw-ink-2)] mb-2">YOUR ROADMAP</div>
           <h1 className="font-display text-[2rem] leading-none uppercase tracking-[-0.025em] mb-6">
             From {level} to your goal
           </h1>
@@ -587,7 +586,7 @@ function RoadmapPageInner() {
                     <div className="font-display text-[1.25rem] leading-none uppercase tracking-[-0.025em]">
                       {level}
                     </div>
-                    <div className="label-caps mt-2 text-[var(--pw-ink-2)]">YOUR RANK</div>
+                    <div className="label-caps mt-2 text-[var(--pw-ink-2)]">Your level</div>
                   </div>
                 </div>
 
@@ -612,39 +611,22 @@ function RoadmapPageInner() {
                 </div>
 
                 <div className="mt-6">
-                  <div className="label-caps text-[var(--pw-ink-2)]">YOUR MISSION</div>
+                  <div className="label-caps text-[var(--pw-ink-2)]">Your goal</div>
                   <p className="mt-2 text-[0.9375rem]">
-                    Master {subject} up to <strong>{lastStage?.title ?? "your goal"}</strong>,
-                    starting from {level}.
+                    {subject}, starting from {level}. Final stage:{" "}
+                    <strong>{lastStage?.title ?? "your goal"}</strong>.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Pill>
                       <Icon name="books" className="h-3.5 w-3.5" /> {subject}
                     </Pill>
                     <Pill>
-                      <Icon name={levelMeta.icon} className="h-3.5 w-3.5" /> {level} Level
+                      <Icon name={levelMeta.icon} className="h-3.5 w-3.5" /> {level} level
                     </Pill>
                     <Pill>
                       <Icon name="rocket" className="h-3.5 w-3.5" /> {goalLabel}
                     </Pill>
                   </div>
-                </div>
-
-                <div className="my-6 h-px bg-[var(--pw-border)]" />
-
-                <div>
-                  <div className="label-caps text-[var(--pw-ink-2)] mb-4">ESTIMATED JOURNEY</div>
-                  <ul className="space-y-2 text-[0.8125rem]">
-                    <li className="flex items-center gap-2">
-                      <Icon name="calendar" className="h-4 w-4" /> 8–12 weeks
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Icon name="books" className="h-4 w-4" /> 3–4 sessions / week
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <Icon name="stopwatch" className="h-4 w-4" /> ~45 min per session
-                    </li>
-                  </ul>
                 </div>
               </div>
 
@@ -701,7 +683,7 @@ function RoadmapPageInner() {
                       key={s.id}
                       layout
                       initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0, scale: isActive && completing === null ? 1 : 1 }}
+                      animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.08, type: "spring", stiffness: 260, damping: 26 }}
                       className="relative mb-8"
                     >
@@ -715,31 +697,19 @@ function RoadmapPageInner() {
                           className="absolute -left-7 top-6 -bottom-14 w-0.5 bg-pw-accent-fill"
                         />
                       )}
-                      <motion.div
+                      <div
                         className="absolute -left-[1.875rem] top-3 w-6 h-6 rounded-full flex items-center justify-center text-[0.75rem]"
                         style={{
                           background: nodeBg,
                           border: "2px solid " + nodeBorder,
                           color: nodeFg,
+                          boxShadow: isActive ? "0 0 0 3px var(--pw-accent-soft)" : undefined,
                         }}
-                        animate={
-                          isActive
-                            ? {
-                                boxShadow: [
-                                  "0 0 0 0 rgba(232,145,60,0.55)",
-                                  "0 0 0 10px rgba(232,145,60,0)",
-                                ],
-                              }
-                            : { boxShadow: "0 0 0 0 rgba(0,0,0,0)" }
-                        }
-                        transition={
-                          isActive ? { duration: 1.6, repeat: Infinity, ease: "easeOut" } : {}
-                        }
                       >
                         {nodeIcon && (
                           <Icon name={nodeIcon} className={`h-3 w-3 ${nodeIconColor}`} />
                         )}
-                      </motion.div>
+                      </div>
 
                       <div
                         className={`text-left w-full pw-card p-6 relative transition-colors hover:border-[var(--pw-ink)] ${isActive ? "border-[var(--pw-accent)]" : isCompleted ? "border-[var(--pw-accent-2)]" : ""}`}
@@ -779,8 +749,7 @@ function RoadmapPageInner() {
                               // An outlined chip: "Mark stage complete" is the card's one filled action.
                               className="relative z-10 pw-pill px-2 py-2 whitespace-nowrap text-pw-accent border-[var(--pw-accent)]"
                             >
-                              <Icon name="play" className="h-3.5 w-3.5 text-pw-accent" /> START
-                              HERE
+                              <Icon name="play" className="h-3.5 w-3.5 text-pw-accent" /> Start here
                             </button>
                           )}
                           {!isCompleted && !isActive && (
@@ -824,7 +793,7 @@ function RoadmapPageInner() {
                           <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
                             {isCompleted && s.completed_at
                               ? `Completed ${new Date(s.completed_at).toLocaleDateString()}`
-                              : "Tap to view details & log sessions"}
+                              : "Open for details and to log sessions"}
                           </div>
                           {isActive && (
                             <span
@@ -856,7 +825,7 @@ function RoadmapPageInner() {
                               ) : req.met ? (
                                 <>
                                   <Icon name="check" className="h-3.5 w-3.5 text-pw-on-accent" />{" "}
-                                  Mark Stage Complete
+                                  Mark stage complete
                                 </>
                               ) : req.enrollment ? (
                                 <>
@@ -918,7 +887,7 @@ function RoadmapPageInner() {
             <>
               <Icon name="target" className="h-12 w-12 mx-auto" />
               <DialogTitle className="font-display font-normal text-[2.25rem] leading-none uppercase tracking-[-0.025em] mt-4">
-                Stage {overlay.stageNumber} Complete!
+                Stage {overlay.stageNumber} complete
               </DialogTitle>
               <div
                 className="font-mono-pw text-[0.75rem] mt-2 flex items-center justify-center gap-2"
@@ -932,7 +901,7 @@ function RoadmapPageInner() {
                 </DialogDescription>
               ) : (
                 <DialogDescription className="text-[0.875rem] text-[var(--pw-ink-2)] mt-4 flex items-center justify-center gap-2">
-                  <Icon name="flag" className="h-4 w-4" /> Final stage reached!
+                  <Icon name="flag" className="h-4 w-4" /> That was the final stage.
                 </DialogDescription>
               )}
               <DialogClose className="pw-btn-primary mt-6 px-6 py-2">Continue →</DialogClose>

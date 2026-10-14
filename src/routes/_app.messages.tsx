@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_app/messages")({
   validateSearch: (s: Record<string, unknown>) => ({
     thread: typeof s.thread === "string" ? s.thread : undefined,
   }),
-  head: () => ({ meta: [{ title: "Messages — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Messages · PathWise" }] }),
   component: MessagesPage,
 });
 

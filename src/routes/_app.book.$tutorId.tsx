@@ -44,7 +44,7 @@ export const Route = createFileRoute("/_app/book/$tutorId")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Book a session — PathWise" },
+      { title: "Book a session · PathWise" },
       { name: "description", content: "Pick a session type, time, and confirm your booking." },
     ],
   }),
@@ -219,7 +219,7 @@ function BookPage() {
 
   async function handleConfirmAndPay() {
     if (!user) {
-      toast.info("Sign in to complete your booking — we'll bring you back here.");
+      toast.info("Sign in to finish booking. We'll bring you back here.");
       openLogin();
       return;
     }
@@ -278,7 +278,7 @@ function BookPage() {
         if (error) {
           if (String(error.message).includes("SLOT_TAKEN")) {
             throw new Error(
-              "This slot was just booked by someone else — please refresh and pick another time.",
+              "Someone just booked that time. Pick another slot.",
             );
           }
           throw error;
@@ -397,9 +397,17 @@ function BookPage() {
             <div className="mb-4 flex justify-center">
               <Icon name="celebrate" className="h-12 w-12" />
             </div>
+            {/* Paid sessions are saved as "scheduled" and wait for the tutor to confirm;
+                only free trials are saved as "confirmed". */}
             <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
-              {rescheduleId ? "You're moved!" : "You're booked!"}
+              {rescheduleId ? "Session moved" : price === 0 ? "You're booked" : "Booking sent"}
             </h1>
+            {price !== 0 && (
+              <p className="text-sm text-[var(--pw-ink-2)] mt-2">
+                {tutor?.display_name ?? "Your tutor"} will confirm{" "}
+                {rescheduleId ? "the new time" : "it"}. You'll see the status in your sessions.
+              </p>
+            )}
             {rescheduleId && (
               <p className="text-sm text-[var(--pw-ink-2)] mt-2">
                 Your previous session has been cancelled.
@@ -506,7 +514,7 @@ function BookPage() {
                     onClick={() => setType("package")}
                     icon="package"
                     title={`${pkg.sessions}-session package`}
-                    subtitle={`Save ${pkg.discount_percent}% — ${pkg.sessions} × 60 min`}
+                    subtitle={`${pkg.sessions} sessions × 60 min, save ${pkg.discount_percent}%`}
                     price={formatPrice(priceForType(hourlyRate, "package", pkg.discount_percent, pkg.sessions))}
                   />
                 )}
@@ -573,7 +581,7 @@ function BookPage() {
                             <button
                               key={s.toISOString()}
                               onClick={() => setSlot(s)}
-                              className={`pw-pill px-4 py-2 ${sel ? "is-active" : ""}`}
+                              className={`pw-pill px-4 py-2 tabular-nums ${sel ? "is-active" : ""}`}
                             >
                               {fmtInTz(s, tz, "h:mm a")}
                             </button>
@@ -631,7 +639,7 @@ function BookPage() {
                             >
                               <option value="count">After N sessions</option>
                               <option value="date">On a date</option>
-                              <option value="ongoing">Ongoing (cap 26)</option>
+                              <option value="ongoing">Ongoing (up to 26 sessions)</option>
                             </select>
                           </div>
                           <div>
@@ -673,7 +681,7 @@ function BookPage() {
                             )}
                             {endMode === "ongoing" && (
                               <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-6">
-                                Books up to 26 occurrences from your selected start.
+                                Books up to 26 sessions from the first date you picked.
                               </p>
                             )}
                           </div>
@@ -681,8 +689,8 @@ function BookPage() {
                             <div className="sm:col-span-3 flex items-start gap-2 text-[0.75rem] text-[var(--pw-accent-3)] bg-[var(--pw-accent-soft)] border border-[var(--pw-border)] p-2">
                               <AlertTriangle className="w-4 h-4 mt-0" />
                               <span>
-                                Heads up — daylight-saving change between occurrences. Local
-                                clock-time is preserved across all instances.
+                                Clocks change during this series. Each session stays at the same
+                                local time.
                               </span>
                             </div>
                           )}
@@ -733,7 +741,7 @@ function BookPage() {
                       {tzMismatch && (
                         <p className="text-[var(--pw-accent-3)] flex items-center gap-2">
                           <AlertTriangle className="w-3 h-3" /> You and your tutor are in different
-                          timezones — double-check the times match.
+                          time zones. Check both times above.
                         </p>
                       )}
                     </div>
@@ -747,7 +755,7 @@ function BookPage() {
             {step === 3 && (
               <div className="space-y-4">
                 <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
-                  Order summary
+                  Booking summary
                 </h1>
                 <div className="pw-card p-6 space-y-2 text-[0.875rem]">
                   <Row label="Tutor" value={tutor?.display_name ?? "—"} />
@@ -776,7 +784,7 @@ function BookPage() {
                       value={`${recurrenceInstances.length} × ${frequency}`}
                     />
                   )}
-                  <div className="border-t border-[var(--pw-border)] pt-4 mt-2 flex justify-between font-display text-[1.125rem]">
+                  <div className="border-t border-[var(--pw-border)] pt-4 mt-2 flex justify-between font-display text-[1.125rem] tabular-nums">
                     <span>Total</span>
                     <span>
                       {price === 0
@@ -811,7 +819,7 @@ function BookPage() {
                 <div className="pw-card p-6">
                   {price === 0 ? (
                     <p className="text-sm text-[var(--pw-ink-2)]">
-                      No payment required for this trial — just confirm below.
+                      This trial is free. Confirm below.
                     </p>
                   ) : (
                     <>
@@ -819,7 +827,7 @@ function BookPage() {
                         PathWise is free during the beta: you pay your tutor directly, the way you
                         agree with them (cash or bank transfer). Nothing is charged here.
                       </p>
-                      <div className="mt-4 p-4 border border-[var(--pw-border)] bg-[var(--pw-surface-2)] text-[0.8125rem]">
+                      <div className="mt-4 text-[0.8125rem] tabular-nums">
                         <strong>
                           {formatPrice(
                             price *

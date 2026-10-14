@@ -1,55 +1,28 @@
-import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useDemo } from "./DemoContext";
-import { toast } from "sonner";
+import { useAuth } from "./auth";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
+// Opens the real sign-up. It used to save the email to localStorage and toast
+// "Setting up your account…" without creating one.
 export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { capturedEmail, captureEmail } = useDemo();
-  const [email, setEmail] = useState(capturedEmail ?? "");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const { openLogin } = useAuth();
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.includes("@")) {
-      setError("Enter an email address, like you@example.com.");
-      return;
-    }
-    setError("");
-    captureEmail(email);
-    toast.success("Welcome to Pathwise!", { description: "Setting up your account…" });
+  const signUp = () => {
     onClose();
-    navigate({ to: "/dashboard" });
+    openLogin();
   };
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="pw-card block w-[calc(100%-2rem)] max-w-md p-8 border-[var(--pw-border)] shadow-pw-float">
-        <div className="label-caps text-pw-accent">Ready for the real thing?</div>
-        <DialogTitle className="mt-2 font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none">
-          Start your own journey
+        <DialogTitle className="font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none">
+          Create your account
         </DialogTitle>
         <DialogDescription className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
-          Create your free account to keep your courses, students and earnings — for real this time.
+          Demo data isn't kept. Your account starts empty.
         </DialogDescription>
-        <form onSubmit={submit} className="mt-6 space-y-4">
-          <input
-            type="email"
-            aria-label="Email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="pw-input text-[0.875rem]"
-          />
-          {error && (
-            <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
-              {error}
-            </div>
-          )}
-          <button type="submit" className="pw-btn-primary w-full px-6 py-4">
-            Create my free account →
+        <div className="mt-6 space-y-4">
+          <button type="button" onClick={signUp} className="pw-btn-primary w-full px-6 py-4">
+            Sign up free
           </button>
           <button
             type="button"
@@ -58,10 +31,7 @@ export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () =>
           >
             Keep exploring the demo
           </button>
-        </form>
-        <p className="mt-4 text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
-          No credit card · Cancel anytime
-        </p>
+        </div>
       </DialogContent>
     </Dialog>
   );

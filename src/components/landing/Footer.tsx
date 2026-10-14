@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { LandingCtas } from "./LandingCtas";
 
-// Only pages that exist — the old columns linked "About", "Blog", "Status"… to "#".
+// Only pages that exist: the old columns linked "About", "Blog", "Status"… to "#".
 const columns = [
   {
     heading: "Product",
@@ -29,12 +29,10 @@ export function Footer({ lit = false }: { lit?: boolean }) {
         <div className="flex flex-col items-start justify-between gap-12 md:flex-row md:items-end">
           <div>
             <h2 className="mb-6 max-w-lg font-syne text-4xl uppercase sm:text-5xl leading-none tracking-[-0.025em] md:text-7xl">
-              No guesswork.
-              <br />
-              No wasted sessions.
+              Know your level before you book.
             </h2>
-            <p className="max-w-sm text-sm uppercase tracking-widest text-qed-ink-2">
-              Learn deliberately. Find exactly where you stand and the path to where you want to be.
+            <p className="max-w-sm leading-relaxed text-qed-ink-2">
+              Math and English tutoring in Moldova. You pay your tutor directly.
             </p>
           </div>
           <LandingCtas />
@@ -93,10 +91,8 @@ export function Footer({ lit = false }: { lit?: boolean }) {
         aria-hidden="true"
       >
         <p
-          className={`whitespace-nowrap text-center font-syne text-[10.8vw] font-extrabold uppercase leading-none transition-[color,text-shadow] duration-1000 ${
-            lit
-              ? "text-[rgba(239,235,227,0.3)] [text-shadow:0_0_32px_rgba(239,235,227,0.35)]"
-              : "text-qed-hairline"
+          className={`whitespace-nowrap text-center font-syne text-[10.8vw] font-extrabold uppercase leading-none transition-colors duration-1000 ${
+            lit ? "text-qed-ink/30" : "text-qed-hairline"
           }`}
         >
           PathWise

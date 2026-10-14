@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { formatDistanceToNow, format, startOfMonth, subMonths, startOfWeek } from "date-fns";
 import { toast } from "sonner";
-import { StarIcon } from "lucide-react";
+import { Circle, StarIcon } from "lucide-react";
 import { Icon } from "@/components/Icon";
 import {
   LineChart,
@@ -265,7 +265,7 @@ function DashboardHome() {
           >
             <Icon name="sparkles" className="h-8 w-8" />
             <div className="flex-1 min-w-[13.75rem]">
-              <div className="font-display text-[1.125rem]">Your live dashboard is ready</div>
+              <div className="font-display text-[1.125rem]">Your dashboard</div>
               <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0">
                 Earnings, sessions and reviews will appear here as students book and rate you.
                 Finish your profile and add availability so students can find you.
@@ -283,13 +283,13 @@ function DashboardHome() {
       {/* Metric Cards */}
       <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          label="Earnings (MTD)"
+          label="Booked this month"
           value={formatPrice(earningsMTD)}
           change={earningsChange}
           skeleton={dataLoading}
         />
         <MetricCard
-          label="Total Students"
+          label="Total students"
           value={String(totalStudents)}
           change={studentsChange}
           skeleton={dataLoading}
@@ -301,7 +301,7 @@ function DashboardHome() {
           skeleton={dataLoading}
         />
         <MetricCard
-          label="Avg Rating"
+          label="Average rating"
           value={
             avgRating ? (
               <span className="inline-flex items-center gap-2">
@@ -390,16 +390,19 @@ function MetricCard({
     <div className="pw-card p-6">
       <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
       <div
-        className="mt-2 font-display text-[1.75rem] leading-none"
+        className="mt-2 font-display text-[1.75rem] leading-none tabular-nums"
         style={{ color: "var(--pw-accent)" }}
       >
         {value}
       </div>
       <div className="mt-2 text-[0.75rem]">
         {change == null ? (
-          <span className="text-[var(--pw-ink-2)]">vs last month —</span>
+          <span className="text-[var(--pw-ink-2)]">Nothing last month to compare</span>
         ) : (
-          <span style={{ color: isUp ? "var(--pw-accent-2)" : "var(--pw-danger)" }}>
+          <span
+            className="tabular-nums"
+            style={{ color: isUp ? "var(--pw-accent-2)" : "var(--pw-danger)" }}
+          >
             {isUp ? "▲" : "▼"} {Math.abs(change).toFixed(0)}%{" "}
             <span className="text-[var(--pw-ink-2)]">vs last month</span>
           </span>
@@ -473,24 +476,18 @@ function EarningsChart({ earnings }: { earnings: EarningRow[] }) {
   return (
     <div className="pw-card p-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <div className="label-caps text-[var(--pw-ink-2)]">Earnings</div>
-          <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
-            {range === "daily"
-              ? "Last 30 days"
-              : range === "weekly"
-                ? "Last 12 weeks"
-                : "Last 6 months"}
-          </div>
-        </div>
+        <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">
+          Earnings,{" "}
+          {range === "daily" ? "last 30 days" : range === "weekly" ? "last 12 weeks" : "last 6 months"}
+        </h2>
         <div className="flex gap-2 p-2 rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface-2)]">
           {(["daily", "weekly", "monthly"] as Range[]).map((r) => (
             <button
               key={r}
               onClick={() => setRange(r)}
-              className={`chart-range-pill label-caps px-4 py-2 rounded-full transition-colors ${range === r ? "active bg-[var(--pw-ink)] text-[var(--pw-bg)]" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
+              className={`chart-range-pill text-[0.8125rem] font-semibold px-4 py-2 rounded-full transition-colors ${range === r ? "active bg-[var(--pw-ink)] text-[var(--pw-bg)]" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
             >
-              {r}
+              {r[0].toUpperCase() + r.slice(1)}
             </button>
           ))}
         </div>
@@ -536,7 +533,9 @@ function EarningsTooltip({ active, payload, label }: any) {
   return (
     <div className="pw-card p-2 text-[0.75rem] shadow-lg">
       <div className="font-medium">{label}</div>
-      <div className="text-[var(--pw-accent)] font-display text-[1rem]">{formatPrice(p.amount)}</div>
+      <div className="text-[var(--pw-accent)] font-display text-[1rem] tabular-nums">
+        {formatPrice(p.amount)}
+      </div>
       <div className="text-[var(--pw-ink-2)]">
         {p.count} session{p.count === 1 ? "" : "s"}
       </div>
@@ -554,8 +553,7 @@ function UpcomingSessions({
   const startConversation = useStartConversation();
   return (
     <div className="pw-card p-6">
-      <div className="label-caps text-[var(--pw-ink-2)]">Upcoming sessions</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">Next up</div>
+      <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">Next up</h2>
       <div className="mt-4 divide-y divide-[var(--pw-border)]">
         {sessions.length === 0 ? (
           <div className="text-[0.875rem] text-[var(--pw-ink-2)] py-6 text-center">
@@ -572,11 +570,11 @@ function UpcomingSessions({
                 <div className="flex-1 min-w-0">
                   <div className="text-[0.875rem] font-medium truncate">{name}</div>
                   <div className="text-[0.75rem] text-[var(--pw-ink-2)] truncate">
-                    {s.session_type ?? "1on1"}
+                    {s.session_type ?? "One-to-one"}
                     {s.status_v2 ? ` · ${s.status_v2.replace(/_/g, " ")}` : ""}
                   </div>
                   {when && (
-                    <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-0">
+                    <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-0 tabular-nums">
                       {formatDistanceToNow(when, { addSuffix: true })} ·{" "}
                       {format(when, "MMM d, h:mm a")}
                     </div>
@@ -633,10 +631,7 @@ function LeadFunnel({ leads }: { leads: LeadRow[] }) {
   const max = Math.max(1, counts[0].count);
   return (
     <div className="pw-card p-6">
-      <div className="label-caps text-[var(--pw-ink-2)]">Lead funnel</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
-        Conversion
-      </div>
+      <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">Lead funnel</h2>
       <div className="mt-4 space-y-2">
         {counts.map((s, i) => {
           const w = (s.count / max) * 100;
@@ -645,11 +640,11 @@ function LeadFunnel({ leads }: { leads: LeadRow[] }) {
           return (
             <div key={s.key}>
               {conv != null && (
-                <div className="text-xs text-[var(--pw-ink-2)] text-center mb-0">
+                <div className="text-xs text-[var(--pw-ink-2)] text-center mb-0 tabular-nums">
                   ↓ {conv.toFixed(0)}% conv
                 </div>
               )}
-              <div className="relative h-9 overflow-hidden bg-[var(--pw-surface-2)] border border-[var(--pw-border)]">
+              <div className="relative h-9 overflow-hidden bg-[var(--pw-surface-2)]">
                 <div
                   className="absolute inset-y-0 left-0 transition-all"
                   style={{
@@ -677,10 +672,9 @@ function ProfileCompleteness({ data }: { data: ReturnType<typeof computeComplete
   const offset = circ - (data.score / 100) * circ;
   return (
     <div className="pw-card p-6">
-      <div className="label-caps text-[var(--pw-ink-2)]">Profile</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
-        Completeness
-      </div>
+      <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">
+        Profile completeness
+      </h2>
       <div className="flex items-center gap-4 mt-4">
         <svg width="100" height="100" viewBox="0 0 100 100" className="shrink-0">
           <circle
@@ -719,7 +713,11 @@ function ProfileCompleteness({ data }: { data: ReturnType<typeof computeComplete
           {data.items.map((i) => (
             <div key={i.key} className="flex items-center gap-2 text-[0.75rem]">
               <span style={{ color: i.done ? "var(--pw-accent-2)" : "var(--pw-border)" }}>
-                {i.done ? <Icon name="check" className="h-3 w-3 text-inherit" /> : "○"}
+                {i.done ? (
+                  <Icon name="check" className="h-3 w-3 text-inherit" />
+                ) : (
+                  <Circle className="h-3 w-3" aria-hidden="true" />
+                )}
               </span>
               <span className={i.done ? "text-[var(--pw-ink-2)] line-through" : ""}>{i.label}</span>
             </div>
@@ -748,18 +746,7 @@ function ReviewsPreview({
   const top3 = reviews.slice(0, 3);
   return (
     <div className="pw-card p-6">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <div className="label-caps text-[var(--pw-ink-2)]">Reviews</div>
-          <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
-            Latest feedback
-          </div>
-        </div>
-        <div className="text-[0.6875rem] text-[var(--pw-ink-2)]">
-          You typically respond in{" "}
-          <span className="font-medium text-[var(--pw-ink)]">~3 hours</span>
-        </div>
-      </div>
+      <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">Latest reviews</h2>
       <div className="mt-4 divide-y divide-[var(--pw-border)]">
         {top3.length === 0 ? (
           <div className="text-[0.875rem] text-[var(--pw-ink-2)] text-center py-6">No reviews yet.</div>
@@ -792,12 +779,6 @@ function ReviewsPreview({
           })
         )}
       </div>
-      <button
-        className="text-[0.8125rem] font-semibold mt-4 text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
-        onClick={() => toast.info("Reviews page coming soon")}
-      >
-        View all reviews →
-      </button>
     </div>
   );
 }
@@ -811,14 +792,11 @@ function EarningsBreakdown({ earnings }: { earnings: EarningRow[] }) {
   const avgPerSession = last30.length ? total / last30.length : 0;
   return (
     <div className="pw-card p-6">
-      <div className="label-caps text-[var(--pw-ink-2)]">Last 30 days</div>
-      <div className="font-display text-[1.25rem] uppercase tracking-[-0.025em] mt-0">
-        At a glance
-      </div>
+      <h2 className="font-display text-[1.25rem] uppercase tracking-[-0.025em]">Last 30 days</h2>
       <div className="mt-4 space-y-4 text-[0.875rem]">
-        <Row label="Total earned" value={formatPrice(total)} />
-        <Row label="Sessions paid" value={String(last30.length)} />
-        <Row label="Avg / session" value={formatPrice(avgPerSession)} />
+        <Row label="Value of booked sessions" value={formatPrice(total)} />
+        <Row label="Sessions booked" value={String(last30.length)} />
+        <Row label="Average per session" value={formatPrice(avgPerSession)} />
       </div>
     </div>
   );
@@ -827,14 +805,16 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-[var(--pw-ink-2)]">{label}</span>
-      <span className="font-medium">{value}</span>
+      <span className="font-medium tabular-nums">{value}</span>
     </div>
   );
 }
 
 function QuickActionsBar() {
+  const { user } = useAuth();
   const shareLink = async () => {
-    const url = window.location.origin + "/matches";
+    if (!user) return;
+    const url = `${window.location.origin}/tutor/${user.id}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Profile link copied!");

@@ -25,13 +25,13 @@ export const Route = createFileRoute("/_app/library")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Course Library — PathWise" },
+      { title: "Course library · PathWise" },
       {
         name: "description",
         content:
-          "Every course on PathWise, shelved by level band and indexed by tutor, so you can see what sits at, above and below where you placed.",
+          "Every course on PathWise, sorted by level and tutor, so you can see the courses at, above and below your level.",
       },
-      { property: "og:title", content: "Course Library — PathWise" },
+      { property: "og:title", content: "Course library · PathWise" },
       { property: "og:url", content: "/library" },
     ],
     links: [{ rel: "canonical", href: "/library" }],
@@ -169,7 +169,7 @@ function LibraryPageInner() {
         <h1 className="font-display text-[1.75rem] mt-4">The library opens after your quiz</h1>
         <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
           Courses here are shelved by level, so we need to know where you're starting from before
-          it's any use to you. The quiz takes about two minutes.
+          it's any use to you. The level check is 8 questions.
         </p>
         <Link to="/quiz" className="pw-btn-primary inline-block mt-6 px-6 py-2 text-[0.875rem]">
           Take the quiz →
@@ -203,16 +203,15 @@ function LibraryPageInner() {
       <main className="max-w-6xl mx-auto px-6 sm:px-8 py-12 pb-24">
         {/* Header */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="label-caps text-[var(--pw-ink-2)]">Course Library</div>
-          <h1 className="font-display text-[2.125rem] sm:text-[2.5rem] uppercase tracking-[-0.025em] leading-[1.1] mt-2">
+          <h1 className="font-display text-[2.125rem] sm:text-[2.5rem] uppercase tracking-[-0.025em] leading-[1.1]">
             Courses at your level
           </h1>
           <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-2xl">
             {roadmap.band ? (
               <>
-                You placed at <strong>{BAND_META[roadmap.band].label}</strong>. Courses at your band
-                come first — the shelves above and below are open too, so you can stretch or
-                consolidate.
+                You placed at <strong>{BAND_META[roadmap.band].label}</strong>. Courses at your level
+                come first. You can also open the levels above and below, to move ahead or to
+                review.
               </>
             ) : (
               <>Everything published for your subject, shelved by level.</>

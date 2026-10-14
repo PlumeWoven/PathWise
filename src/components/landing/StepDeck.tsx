@@ -12,23 +12,23 @@ import {
 const steps = [
   {
     icon: ClipboardCheckIcon,
-    title: "Level check in 3 minutes",
-    body: "A focused adaptive quiz pinpoints exactly what you know — and what you don’t — with 94% accuracy.",
+    title: "Level check: 8 questions",
+    body: "The questions get harder when you're right and easier when you're not, then place you at one of five levels.",
   },
   {
     icon: RouteIcon,
-    title: "A roadmap built for you",
-    body: "Get a clear, stage-by-stage path from your current level to your goal. No filler, no guesswork.",
+    title: "Five stages to your goal",
+    body: "Each stage names the level it needs. Finish a course at that level to unlock the next stage.",
   },
   {
     icon: UsersIcon,
-    title: "Matched with the right tutor",
-    body: "We pair you with verified tutors who specialize in the exact stage you’re working through.",
+    title: "Tutors ranked for you",
+    body: "We rank verified tutors by subject, learning style, schedule, budget and rating. Book a trial or send a message first.",
   },
   {
     icon: LineChartIcon,
-    title: "Track every session",
-    body: "See your progress, hours, and momentum in one calm dashboard that keeps you moving forward.",
+    title: "Your sessions in one place",
+    body: "See upcoming and past sessions, message your tutor, and mark stages complete on your roadmap.",
   },
 ];
 
@@ -90,7 +90,7 @@ export function StepDeck() {
     const still = reduced === true;
     const spring = still
       ? { duration: 0 }
-      : ({ type: "spring", stiffness: 110, damping: 14 } as const);
+      : ({ type: "spring", bounce: 0, visualDuration: 0.3 } as const); // critically damped: no overshoot
     setFront(rest[0]);
 
     // 1. Front card drops away…
@@ -138,15 +138,12 @@ export function StepDeck() {
   return (
     <section className="relative grid min-h-screen grid-cols-1 items-center gap-24 overflow-hidden bg-qed-ground-2 px-6 py-32 md:px-24 lg:grid-cols-2">
       <div data-journey="deck-copy" className="relative z-[2]">
-        <p className="label-caps mb-6 text-qed-teal-ink">How it works</p>
         <h2 className="mb-8 font-syne text-[length:clamp(1.75rem,7.5vw,3rem)] uppercase leading-none tracking-[-0.025em] lg:text-[length:clamp(2.25rem,4.4vw,4.5rem)]">
-          Learn
-          <br />
-          deliberately.
+          From level check to lessons
         </h2>
         <p className="mb-12 max-w-md text-lg leading-relaxed text-qed-ink-2">
-          Everything you need to learn deliberately: a level check, a roadmap, the right tutor, and
-          every session tracked.
+          Take the level check, follow your roadmap, book a verified tutor, and keep every session
+          in one list.
         </p>
         <div className="flex flex-wrap gap-4">
           <Link
@@ -216,7 +213,7 @@ export function StepDeck() {
                   <h3 className="font-syne text-2xl uppercase leading-[1.05] tracking-[-0.025em] sm:text-3xl">
                     {step.title}
                   </h3>
-                  <p className="text-sm leading-relaxed text-qed-ink-2">{step.body}</p>
+                  <p className="leading-relaxed text-qed-ink-2">{step.body}</p>
                 </motion.article>
               );
             })}
@@ -233,9 +230,14 @@ export function StepDeck() {
           <div className="mt-4 flex items-center justify-between">
             <span className="label-caps text-qed-ink-2" aria-live="polite">
               Step {front + 1} of {steps.length} ·{" "}
-              {/* CSS, not useReducedMotion, so server and client render the same text. */}
-              <span className="motion-reduce:hidden">hover to pause</span>
-              <span className="hidden motion-reduce:inline">tap next</span>
+              {/* CSS, not useReducedMotion, so server and client render the same text.
+                  Touch screens can't hover, so they get the tap hint too. */}
+              <span className="motion-reduce:hidden [@media(hover:none)]:hidden">
+                hover to pause
+              </span>
+              <span className="hidden motion-reduce:inline [@media(hover:none)]:inline">
+                tap next
+              </span>
             </span>
             <button
               type="button"

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "../pathwise/auth";
@@ -11,15 +11,15 @@ import { formatPrice } from "../pathwise/sessions";
 export const Route = createFileRoute("/_app/find-tutor")({
   head: () => ({
     meta: [
-      { title: "Find Your Tutor — PathWise" },
+      { title: "Find a tutor · PathWise" },
       {
         name: "description",
-        content: "Take a quick 8-question quiz and we'll match you with the perfect tutor.",
+        content: "Answer 8 questions and we'll rank verified tutors by how well they fit you.",
       },
-      { property: "og:title", content: "Find Your Tutor — PathWise" },
+      { property: "og:title", content: "Find a tutor · PathWise" },
       {
         property: "og:description",
-        content: "Take a quick 8-question quiz and we'll match you with the perfect tutor.",
+        content: "Answer 8 questions and we'll rank verified tutors by how well they fit you.",
       },
       { property: "og:url", content: "/find-tutor" },
     ],
@@ -132,7 +132,7 @@ function FindTutorPageInner() {
         .upsert(payload, { onConflict: "user_id" });
       if (error) {
         console.error("[find-tutor] save failed", error);
-        toast.error("Couldn't save your profile, but here are your matches!");
+        toast.error("Your answers weren't saved to your account. Your matches below still use them.");
       }
     })();
   }, [isResults, user, answers]);
@@ -142,10 +142,17 @@ function FindTutorPageInner() {
       {/* Progress bar */}
       <div className="sticky top-(--pw-header-h) z-30 bg-[var(--pw-bg)]/90 backdrop-blur border-b border-[var(--pw-border)]">
         <div className="max-w-2xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
-            <span>{isResults ? "Your profile" : `Question ${step + 1} of ${totalQ}`}</span>
+          <div className="flex items-center justify-between text-[var(--pw-ink-2)]">
+            <span className="label-caps">
+              {isResults
+                ? `${totalQ} of ${totalQ} answered`
+                : `Question ${step + 1} of ${totalQ}`}
+            </span>
             {!isResults && step > 0 && (
-              <button onClick={back} className="hover:text-[var(--pw-ink)] transition-colors">
+              <button
+                onClick={back}
+                className="text-[0.8125rem] font-semibold hover:text-[var(--pw-ink)] transition-colors"
+              >
                 ← Back
               </button>
             )}
@@ -268,17 +275,13 @@ function Q1({
 }) {
   return (
     <div>
-      <Heading kicker="01" title="What subject brings you here today?" />
+      <Heading title="Which subject do you need help with?" />
       <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {SUBJECTS.map((s, i) => {
+        {SUBJECTS.map((s) => {
           const active = value.subject === s.id;
           return (
             <motion.button
               key={s.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => {
                 onChange("subject", s.id);
@@ -288,7 +291,7 @@ function Q1({
               className={`pw-card p-4 flex flex-col items-center text-center transition-colors hover:border-[var(--pw-ink)] ${active ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
             >
               <Icon name={s.icon} className="h-10 w-10" />
-              <span className="label-caps mt-2">{s.label}</span>
+              <span className="mt-2 text-[0.875rem] font-semibold">{s.label}</span>
             </motion.button>
           );
         })}
@@ -314,38 +317,37 @@ function Q1({
 
 // ---------- Q2: Goal ----------
 const GOALS: { id: Goal; label: string; icon: IconName; desc: string }[] = [
-  { id: "ace_exam", label: "Ace an exam", icon: "trophy", desc: "Crush that upcoming test" },
-  { id: "master_skill", label: "Master a skill", icon: "target", desc: "Go deep, become great" },
+  { id: "ace_exam", label: "Pass an exam", icon: "trophy", desc: "Prepare for a test or exam" },
+  {
+    id: "master_skill",
+    label: "Learn one topic well",
+    icon: "target",
+    desc: "Go through it step by step",
+  },
   {
     id: "build_confidence",
     label: "Build confidence",
     icon: "thumbsUp",
-    desc: "Believe you can do it",
+    desc: "Feel sure of the basics",
   },
-  { id: "get_ahead", label: "Get ahead", icon: "rocket", desc: "Stay one step in front" },
-  { id: "homework", label: "Homework help", icon: "books", desc: "Tackle assignments together" },
+  { id: "get_ahead", label: "Get ahead", icon: "rocket", desc: "Learn ahead of your class" },
+  { id: "homework", label: "Homework help", icon: "books", desc: "Get help with assignments" },
 ];
 function Q2({ value, onChange }: { value?: Goal; onChange: (v: Goal) => void }) {
   return (
     <div>
-      <Heading kicker="02" title="What's your goal?" />
+      <Heading title="What's your goal?" />
       <div className="mt-6 space-y-4">
-        {GOALS.map((g, i) => (
+        {GOALS.map((g) => (
           <motion.button
             key={g.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            whileHover={{ x: 4 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange(g.id)}
             className={`w-full pw-card p-4 flex items-center gap-4 text-left transition-colors hover:border-[var(--pw-ink)] ${value === g.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
             <Icon name={g.icon} className="h-10 w-10" />
             <div>
-              <div className="font-display uppercase tracking-[-0.025em] text-[1rem]">
-                {g.label}
-              </div>
+              <div className="font-display tracking-[-0.025em] text-[1rem]">{g.label}</div>
               <div className="text-[0.8125rem] text-[var(--pw-ink-2)]">{g.desc}</div>
             </div>
           </motion.button>
@@ -364,27 +366,19 @@ const STYLES: { id: Style; label: string; sub: string; icon: IconName }[] = [
 function Q3({ value, onChange }: { value?: Style; onChange: (v: Style) => void }) {
   return (
     <div>
-      <Heading kicker="03" title="How do you like to learn?" />
+      <Heading title="How do you like to learn?" />
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {STYLES.map((s, i) => (
+        {STYLES.map((s) => (
           <motion.button
             key={s.id}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.08 }}
-            whileHover={{ y: -4 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onChange(s.id)}
             className={`pw-card p-6 text-center transition-colors hover:border-[var(--pw-ink)] ${value === s.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
-            <motion.div
-              className="flex justify-center"
-              animate={{ rotate: [0, -8, 8, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-            >
+            <div className="flex justify-center">
               <Icon name={s.icon} className="h-12 w-12" />
-            </motion.div>
-            <div className="mt-4 font-display text-[1.25rem] uppercase tracking-[-0.025em]">
+            </div>
+            <div className="mt-4 font-display text-[1.25rem] tracking-[-0.025em]">
               {s.label}
             </div>
             <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{s.sub}</div>
@@ -396,7 +390,7 @@ function Q3({ value, onChange }: { value?: Style; onChange: (v: Style) => void }
 }
 
 // ---------- Q4: Pace slider ----------
-const PACE_LABELS = ["Take it slow", "Easygoing", "Just right", "Push me", "Sprint mode"];
+const PACE_LABELS = ["Slow", "Fairly slow", "Medium", "Fairly fast", "Fast"];
 function Q4({
   value,
   onChange,
@@ -409,14 +403,14 @@ function Q4({
   const pct = ((value - 1) / 4) * 100;
   return (
     <div>
-      <Heading kicker="04" title="What's your pace?" />
+      <Heading title="What's your pace?" />
       <div className="mt-12 px-2">
         <div className="flex items-center justify-between text-[0.75rem] text-[var(--pw-ink-2)]">
           <span className="inline-flex items-center gap-2">
-            <Icon name="slow" className="h-4 w-4" /> I need time to absorb
+            <Icon name="slow" className="h-4 w-4" /> Slower
           </span>
           <span className="inline-flex items-center gap-2">
-            Challenge me! <Icon name="fast" className="h-4 w-4" />
+            Faster <Icon name="fast" className="h-4 w-4" />
           </span>
         </div>
         <div className="relative mt-4">
@@ -455,23 +449,19 @@ function Q4({
 
 // ---------- Q5: Time of day ----------
 const TIMES: { id: TimeOfDay; label: string; icon: IconName }[] = [
-  { id: "early_bird", label: "Early Bird", icon: "sunrise" },
+  { id: "early_bird", label: "Mornings", icon: "sunrise" },
   { id: "midday", label: "Midday", icon: "sun" },
-  { id: "night_owl", label: "Night Owl", icon: "moon" },
-  { id: "weekend", label: "Weekend Warrior", icon: "party" },
+  { id: "night_owl", label: "Evenings", icon: "moon" },
+  { id: "weekend", label: "Weekends", icon: "party" },
 ];
 function Q5({ value, onChange }: { value?: TimeOfDay; onChange: (v: TimeOfDay) => void }) {
   return (
     <div>
-      <Heading kicker="05" title="When do you learn best?" />
+      <Heading title="When do you learn best?" />
       <div className="mt-6 grid grid-cols-2 gap-4">
-        {TIMES.map((t, i) => (
+        {TIMES.map((t) => (
           <motion.button
             key={t.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onChange(t.id)}
             className={`pw-card p-6 text-center transition-colors hover:border-[var(--pw-ink)] ${value === t.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
@@ -479,7 +469,7 @@ function Q5({ value, onChange }: { value?: TimeOfDay; onChange: (v: TimeOfDay) =
             <div className="flex justify-center">
               <Icon name={t.icon} className="h-10 w-10" />
             </div>
-            <div className="mt-2 font-display uppercase tracking-[-0.025em] text-[0.9375rem]">
+            <div className="mt-2 font-display tracking-[-0.025em] text-[0.9375rem]">
               {t.label}
             </div>
           </motion.button>
@@ -513,20 +503,16 @@ function Q6({
   ];
   return (
     <div>
-      <Heading kicker="06" title="What's your experience level?" />
+      <Heading title="What's your experience level?" />
       <div className="mt-6 space-y-4">
-        {levels.map((l, i) => (
+        {levels.map((l) => (
           <motion.button
             key={l.id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            whileHover={{ x: 4 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onChange(l.id)}
             className={`w-full pw-card p-6 text-left transition-colors hover:border-[var(--pw-ink)] ${value === l.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
           >
-            <div className="font-display uppercase tracking-[-0.025em] text-[1rem]">{l.label}</div>
+            <div className="font-display tracking-[-0.025em] text-[1rem]">{l.label}</div>
             <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0">{l.desc}</div>
           </motion.button>
         ))}
@@ -536,24 +522,20 @@ function Q6({
 }
 
 // ---------- Q7: Frequency ----------
-const FREQS: { id: Frequency; label: string; sub: string; icon: IconName }[] = [
-  { id: "weekly", label: "Once a week", sub: "Steady & consistent", icon: "calendar" },
-  { id: "biweekly", label: "Twice a week", sub: "Build momentum", icon: "momentum" },
-  { id: "intensive", label: "Intensive (3+)", sub: "Go all in", icon: "flame" },
-  { id: "flexible", label: "Flexible", sub: "As needed", icon: "flow" },
+const FREQS: { id: Frequency; label: string; icon: IconName }[] = [
+  { id: "weekly", label: "Once a week", icon: "calendar" },
+  { id: "biweekly", label: "Twice a week", icon: "momentum" },
+  { id: "intensive", label: "3 or more a week", icon: "flame" },
+  { id: "flexible", label: "Flexible", icon: "flow" },
 ];
 function Q7({ value, onChange }: { value?: Frequency; onChange: (v: Frequency) => void }) {
   return (
     <div>
-      <Heading kicker="07" title="How often do you want sessions?" />
+      <Heading title="How often do you want sessions?" />
       <div className="mt-6 grid grid-cols-2 gap-4">
-        {FREQS.map((f, i) => (
+        {FREQS.map((f) => (
           <motion.button
             key={f.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.96 }}
             onClick={() => onChange(f.id)}
             className={`pw-card p-6 text-center transition-colors hover:border-[var(--pw-ink)] ${value === f.id ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
@@ -561,10 +543,9 @@ function Q7({ value, onChange }: { value?: Frequency; onChange: (v: Frequency) =
             <div className="flex justify-center">
               <Icon name={f.icon} className="h-10 w-10" />
             </div>
-            <div className="mt-2 font-display uppercase tracking-[-0.025em] text-[0.9375rem]">
+            <div className="mt-2 font-display tracking-[-0.025em] text-[0.9375rem]">
               {f.label}
             </div>
-            <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{f.sub}</div>
           </motion.button>
         ))}
       </div>
@@ -602,9 +583,9 @@ function Q8({
 
   return (
     <div>
-      <Heading kicker="08" title="What's your budget per hour?" />
+      <Heading title="What's your budget per hour?" />
       <div className="mt-12 px-2">
-        <div className="text-center font-display text-[3.5rem]" style={{ color: "var(--pw-accent)" }}>
+        <div className="text-center font-display text-[3.5rem] tabular-nums">
           <span className="text-[1rem] text-[var(--pw-ink-2)] mr-2">up to</span>
           {formatPrice(value)}
           {value >= 1000 ? "+" : ""}
@@ -631,7 +612,7 @@ function Q8({
           animate={{ scale: 1, opacity: 1 }}
           className="mt-6 text-center text-[0.875rem]"
         >
-          <span className="font-display text-[1.375rem]" style={{ color: "var(--pw-accent-2)" }}>
+          <span className="font-display text-[1.375rem]">
             {count ?? "…"}
           </span>{" "}
           <span className="text-[var(--pw-ink-2)]">tutors available in your range</span>
@@ -669,91 +650,69 @@ function deriveTraits(a: Answers): string[] {
 function Results({ answers, onRestart }: { answers: Answers; onRestart: () => void }) {
   const { user } = useAuth();
 
-  const traits = useMemo(() => deriveTraits(answers), [answers]);
   const subjLabel = answers.subject
     ? SUBJECTS.find((s) => s.id === answers.subject)?.label
     : answers.multi_subject
       ? "Multiple subjects"
       : "Any subject";
+  const labelOf = <T extends { id: string; label: string }>(list: T[], id?: string) =>
+    list.find((x) => x.id === id)?.label ?? "—";
 
   return (
     <div className="pt-6">
-      {/* Shown at once: the profile is derived synchronously (it sat behind a 1.8 s fake loader). */}
-      <motion.div key="card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Profile card */}
-        <div className="relative pw-card p-8 overflow-hidden">
-          <motion.div
-            className="absolute -top-8 -right-8 opacity-10"
-            animate={{ rotate: [0, 8, -8, 0] }}
-            transition={{ duration: 6, repeat: Infinity }}
-          >
-            <Icon name="target" className="h-32 w-32" />
-          </motion.div>
-          <div className="label-caps text-[var(--pw-ink-2)]">Your learning profile</div>
-          <div className="font-display text-[2rem] leading-none uppercase tracking-[-0.025em] mt-2">
-            The {traits[0] ?? "Curious Learner"}
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {traits.map((t, i) => (
-              <motion.span
-                key={t}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 + i * 0.08 }}
-                className="pw-pill px-4 py-2 bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]"
-              >
-                {t}
-              </motion.span>
-            ))}
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-4 text-[0.8125rem]">
-            <Field label="Subject" value={subjLabel ?? "—"} />
-            <Field label="Level" value={cap(answers.experience_level)} />
-            <Field label="Frequency" value={freqLabel(answers.frequency)} />
-            <Field
-              label="Budget"
-              value={answers.budget_max ? `Up to ${formatPrice(answers.budget_max)}/hr` : "—"}
-            />
-          </div>
+      {/* Shown at once: the profile is derived synchronously (it sat behind a 1.8 s fake loader).
+          The step slide is its only entrance. */}
+      <div className="pw-card p-8">
+        <h1 className="font-display text-[1.75rem] sm:text-[2rem] leading-tight">Your answers</h1>
+        <div className="mt-6 grid grid-cols-2 gap-4 text-[0.8125rem]">
+          <Field label="Subject" value={subjLabel ?? "—"} />
+          <Field label="Goal" value={labelOf(GOALS, answers.goal)} />
+          <Field
+            label="Learning style"
+            value={STYLES.find((x) => x.id === answers.learning_style)?.sub ?? "—"}
+          />
+          <Field label="Pace" value={answers.pace ? PACE_LABELS[answers.pace - 1] : "—"} />
+          <Field label="Best time" value={labelOf(TIMES, answers.time_of_day)} />
+          <Field label="Level" value={cap(answers.experience_level)} />
+          <Field label="Sessions" value={labelOf(FREQS, answers.frequency)} />
+          <Field
+            label="Budget"
+            value={answers.budget_max ? `Up to ${formatPrice(answers.budget_max)}/hr` : "—"}
+          />
         </div>
+      </div>
 
-        {/* CTAs */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Link
-            to="/matches"
-            search={(prev: Record<string, unknown>) => ({
-              ...prev,
-              subject: answers.subject,
-              budget: answers.budget_max,
-              level: answers.experience_level,
-            })}
-            className="pw-btn-primary text-center px-6 py-4"
-          >
-            View my matches →
-          </Link>
-          <button onClick={onRestart} className="pw-btn-outline px-6 py-4">
-            Retake the quiz
-          </button>
+      {/* CTAs */}
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Link
+          to="/matches"
+          search={(prev: Record<string, unknown>) => ({
+            ...prev,
+            subject: answers.subject,
+            budget: answers.budget_max,
+            level: answers.experience_level,
+          })}
+          className="pw-btn-primary text-center px-6 py-4"
+        >
+          View my matches →
+        </Link>
+        <button onClick={onRestart} className="pw-btn-outline px-6 py-4">
+          Retake the quiz
+        </button>
+      </div>
+
+      {!user && (
+        <div className="mt-6 text-center text-[0.75rem] text-[var(--pw-ink-2)]">
+          Your answers are saved locally. Sign up to keep them.
         </div>
-
-        {!user && (
-          <div className="mt-6 text-center text-[0.75rem] text-[var(--pw-ink-2)]">
-            Your answers are saved locally. Sign up to keep them.
-          </div>
-        )}
-      </motion.div>
+      )}
     </div>
   );
 }
 
 // ---------- Tiny helpers ----------
-function Heading({ kicker, title }: { kicker: string; title: string }) {
-  return (
-    <div>
-      <div className="label-caps text-pw-accent">{kicker}</div>
-      <h1 className="font-display text-[1.75rem] sm:text-[2rem] leading-tight mt-2">{title}</h1>
-    </div>
-  );
+function Heading({ title }: { title: string }) {
+  return <h1 className="font-display text-[1.75rem] sm:text-[2rem] leading-tight">{title}</h1>;
 }
 function Field({ label, value }: { label: string; value: string }) {
   return (
@@ -765,7 +724,4 @@ function Field({ label, value }: { label: string; value: string }) {
 }
 function cap(s?: string) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : "—";
-}
-function freqLabel(f?: Frequency) {
-  return f ? (FREQS.find((x) => x.id === f)?.label ?? "—") : "—";
 }

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ContactLink, LegalPage } from "../pathwise/legal";
 
 export const Route = createFileRoute("/_app/contact")({
-  head: () => ({ meta: [{ title: "Contact — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Contact · PathWise" }] }),
   component: Contact,
 });
 
