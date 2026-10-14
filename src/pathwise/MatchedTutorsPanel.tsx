@@ -45,10 +45,9 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
   return (
     <section aria-labelledby="matched-tutors-heading" className="pw-card p-6 mt-6">
       <header>
-        <div className="label-caps text-[var(--pw-ink-2)]">Your matched tutors</div>
         <h2
           id="matched-tutors-heading"
-          className="font-display font-bold uppercase tracking-[-0.025em] text-[1.25rem] leading-none mt-2"
+          className="font-display font-bold uppercase tracking-[-0.025em] text-[1.25rem] leading-none"
         >
           {tutors === null
             ? "Matching…"
@@ -63,7 +62,7 @@ export function MatchedTutorsPanel({ subject, requiredBand, activeStageTitle }: 
               <Icon name={requiredMeta.icon} className="h-4 w-4" />
               {requiredMeta.label}
             </span>
-            {activeStageTitle ? ` — ${activeStageTitle}` : ""}.
+            {activeStageTitle ? `, for ${activeStageTitle}` : ""}.
           </p>
         )}
       </header>
@@ -147,7 +146,7 @@ function TutorRow({ tutor }: { tutor: MatchedTutor }) {
           params={{ tutorId: tutor.id }}
           className="pw-btn-outline flex-1 text-center px-4 py-2"
         >
-          Book
+          Book a session
         </Link>
       </div>
     </li>

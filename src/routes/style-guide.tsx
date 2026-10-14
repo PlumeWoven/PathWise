@@ -168,8 +168,7 @@ function StyleGuide() {
               <Swatch name="Amber (text)" varName="--pw-accent" />
               <Swatch name="Amber (fill)" varName="--pw-accent-fill" />
               <Swatch name="Amber soft" varName="--pw-accent-soft" />
-              <Swatch name="Teal (text)" varName="--pw-secondary" />
-              <Swatch name="Gold (text)" varName="--pw-accent-3" />
+              <Swatch name="Orange (text)" varName="--pw-secondary" />
               <Swatch name="Danger" varName="--pw-danger" />
             </div>
           </Section>

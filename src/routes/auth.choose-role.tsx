@@ -10,7 +10,7 @@ import { Icon, type IconName } from "@/components/Icon";
 
 export const Route = createFileRoute("/auth/choose-role")({
   head: () => ({
-    meta: [{ title: "Choose your role — PathWise" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Choose your role · PathWise" }, { name: "robots", content: "noindex" }],
   }),
   component: ChooseRolePage,
 });

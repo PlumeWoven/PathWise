@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_app/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset password — PathWise" },
+      { title: "Reset password · PathWise" },
       { name: "description", content: "Set a new password for your PathWise account." },
       { name: "robots", content: "noindex" },
     ],

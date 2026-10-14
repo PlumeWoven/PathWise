@@ -105,5 +105,8 @@ Vendored in `.agents/skills/`, linked into `.claude/skills/` so Claude Code load
 
 - **apple-hig**: design review against Apple's HIG. Its 5 lenses and report format are used for audits. PathWise is a web app, so it applies principles + foundations, not native conventions.
 - **apple-design**: Apple's fluid-interface rules for the web (springs, response, materials, type, reduced motion). Use when building or changing motion and interaction.
+- **impeccable**: anti-"AI slop" design skill (pbakaus/impeccable, markdown only; no detector binary). Use `ai-design-tells.md` + `reference/craft-floor.md` as the checklist when building or reviewing UI.
 
-Latest audit: `docs/audits/apple-design-2026-10-12/`.
+Owner decisions that win over any skill default: dark = AMOLED black, light = chalk cream; the only accents are amber-orange and orange; controls in sentence case; one filled button per view; spacing on the 8px grid enforced by `tests/spacing.test.ts`; fonts Syne (display) + Sora (body).
+
+Audits: `docs/audits/apple-design-2026-10-12/`, `docs/audits/impeccable-2026-10-14/`.

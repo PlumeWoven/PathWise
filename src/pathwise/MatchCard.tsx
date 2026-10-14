@@ -30,7 +30,7 @@ export function MatchCard({
   const [open, setOpen] = useState(false);
   const { tutor: t, match, rating, packageDiscount, course } = data;
   const pct = Math.round(match.total * 100);
-  // Tier colour (text + border on a hairline chip): teal >= 80, gold >= 60, ink-2 below.
+  // Tier colour (text + border on a hairline chip): orange >= 80, amber >= 60, ink-2 below.
   const color =
     pct >= 80 ? "var(--pw-accent-2)" : pct >= 60 ? "var(--pw-accent-3)" : "var(--pw-ink-2)";
 
@@ -82,29 +82,35 @@ export function MatchCard({
               style={{ color, borderColor: color }}
               aria-label={`${pct}% match`}
             >
-              {pct}% Match
+              {pct}% match
             </span>
           </div>
           {t.headline && (
             <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-0 line-clamp-2">{t.headline}</p>
           )}
 
-          <div className="mt-2 flex items-center gap-4 text-[0.75rem] text-[var(--pw-ink-2)] font-mono-pw">
-            <span
-              className="inline-flex items-center gap-0"
-              style={{ color: "var(--pw-accent)" }}
-            >
-              {Array.from({ length: 5 }, (_, n) => (
-                <StarIcon
-                  key={n}
-                  className={`h-3 w-3 fill-current ${n < Math.round(rating.avg) ? "" : "opacity-30"}`}
-                  aria-hidden="true"
-                />
-              ))}
-            </span>
-            <span>
-              {rating.avg.toFixed(1)} · ({rating.count} review{rating.count === 1 ? "" : "s"})
-            </span>
+          <div className="mt-2 flex items-center gap-4 text-[0.75rem] text-[var(--pw-ink-2)] tabular-nums">
+            {rating.count > 0 ? (
+              <>
+                <span
+                  className="inline-flex items-center gap-0"
+                  style={{ color: "var(--pw-accent)" }}
+                >
+                  {Array.from({ length: 5 }, (_, n) => (
+                    <StarIcon
+                      key={n}
+                      className={`h-3 w-3 fill-current ${n < Math.round(rating.avg) ? "" : "opacity-30"}`}
+                      aria-hidden="true"
+                    />
+                  ))}
+                </span>
+                <span>
+                  {rating.avg.toFixed(1)} ({rating.count} review{rating.count === 1 ? "" : "s"})
+                </span>
+              </>
+            ) : (
+              <span>No reviews yet</span>
+            )}
           </div>
 
           {t.subject_specialties && t.subject_specialties.length > 0 && (
@@ -118,7 +124,7 @@ export function MatchCard({
           )}
 
           {course && (
-            <div className="mt-4 flex items-center gap-4 pw-border p-2">
+            <div className="mt-4 flex items-center gap-4">
               {course.thumbnail_url ? (
                 <img
                   src={course.thumbnail_url}
@@ -160,7 +166,7 @@ export function MatchCard({
         {/* Phones: price above a 2-column button grid (the 3 buttons beside the price overflowed 375px). */}
         <div className="sm:text-right sm:w-44 flex flex-col sm:items-end gap-2 justify-between">
           <div>
-            <div className="font-display text-[1.375rem] leading-none">
+            <div className="font-display text-[1.375rem] leading-none tabular-nums">
               {formatPrice(t.hourly_rate)}
               <span className="text-[0.75rem] text-[var(--pw-ink-2)]"> /hr</span>
             </div>
@@ -181,7 +187,7 @@ export function MatchCard({
               onClick={() => onBook?.(t.id)}
               className={`${primary ? "pw-btn-primary" : "pw-btn-outline"} px-4 py-2 flex-1`}
             >
-              Book trial
+              Book a session
             </button>
             {onMessage && (
               <button
@@ -203,7 +209,7 @@ function Bar({ label, pct }: { label: string; pct: number }) {
     <div className="text-[0.75rem]">
       <div className="flex justify-between">
         <span className="text-[var(--pw-ink-2)]">{label}</span>
-        <span className="font-mono-pw">{pct}%</span>
+        <span className="tabular-nums">{pct}%</span>
       </div>
       <div className="pw-progress mt-2">
         <div className="pw-progress-fill" style={{ width: `${pct}%` }} />

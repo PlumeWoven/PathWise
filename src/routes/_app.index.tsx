@@ -13,17 +13,17 @@ import { JourneyLine } from "@/components/landing/JourneyLine";
 export const Route = createFileRoute("/_app/")({
   head: () => ({
     meta: [
-      { title: "PathWise — Find exactly where you stand" },
+      { title: "PathWise · Math and English tutors in Moldova" },
       {
         name: "description",
         content:
-          "A 3-minute quiz reveals your level, builds your roadmap, and finds the right tutor. No guesswork. No wasted sessions.",
+          "A free 8-question level check in Math or English, a five-stage roadmap, and verified tutors in Moldova. Book here and pay your tutor directly.",
       },
-      { property: "og:title", content: "PathWise — Find exactly where you stand" },
+      { property: "og:title", content: "PathWise · Math and English tutors in Moldova" },
       {
         property: "og:description",
         content:
-          "Discover your level, get a personalized roadmap, and meet matched tutors. Free, no signup.",
+          "Find your level in Math or English, get a five-stage roadmap and meet verified tutors. The level check is free and needs no account.",
       },
       { property: "og:url", content: "/" },
     ],
@@ -36,21 +36,8 @@ export const Route = createFileRoute("/_app/")({
           "@type": "Organization",
           name: "PathWise",
           url: "/",
-          description: "PathWise matches students with tutors and personalized learning roadmaps.",
-        }),
-      },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "PathWise",
-          url: "/",
-          potentialAction: {
-            "@type": "SearchAction",
-            target: "/find-tutor?q={search_term_string}",
-            "query-input": "required name=search_term_string",
-          },
+          description:
+            "PathWise matches students in Moldova with verified Math and English tutors, starting from a free level check.",
         }),
       },
     ],

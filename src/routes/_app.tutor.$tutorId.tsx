@@ -5,12 +5,10 @@ import {
   CalendarDays,
   Star,
   Clock,
-  Phone,
   GraduationCap,
   Briefcase,
   Languages as LanguagesIcon,
   BookOpen,
-  Globe2,
   ChevronLeft,
   ChevronRight,
   Quote,
@@ -27,12 +25,12 @@ import { useStartConversation } from "../pathwise/Inbox";
 export const Route = createFileRoute("/_app/tutor/$tutorId")({
   head: ({ params }) => ({
     meta: [
-      { title: `Tutor profile — PathWise` },
+      { title: `Tutor profile · PathWise` },
       {
         name: "description",
         content: "View this tutor's expertise, courses, reviews and availability.",
       },
-      { property: "og:title", content: "Tutor profile — PathWise" },
+      { property: "og:title", content: "Tutor profile · PathWise" },
       {
         property: "og:description",
         content: "View this tutor's expertise, courses, reviews and availability.",
@@ -137,7 +135,6 @@ function TutorProfilePage() {
     Record<string, { name: string; avatar: string | null }>
   >({});
   const [studentCount, setStudentCount] = useState(0);
-  const [countries, setCountries] = useState(0);
   const [responseMin, setResponseMin] = useState<number | null>(null);
   const [bioExpanded, setBioExpanded] = useState(false);
   const [expExpanded, setExpExpanded] = useState(false);
@@ -185,7 +182,6 @@ function TutorProfilePage() {
         ((sRes.data ?? []) as { student_id: string }[]).map((s) => s.student_id).filter(Boolean),
       );
       setStudentCount(studentIds.size);
-      setCountries(Math.max(1, Math.min(studentIds.size, Math.round(studentIds.size / 3 + 1))));
 
       const tt = ((threadsRes.data ?? []) as { tutor_response_minutes: number }[])
         .map((t) => t.tutor_response_minutes)
@@ -241,7 +237,7 @@ function TutorProfilePage() {
     if (!tutor) return;
     const name = tutor.display_name || tutor.full_name || "PathWise Tutor";
     if (typeof document !== "undefined") {
-      document.title = `${name} — Tutor on PathWise`;
+      document.title = `${name} · Tutor on PathWise`;
     }
     const id = "tutor-jsonld";
     const existing = document.getElementById(id);
@@ -336,7 +332,7 @@ function TutorProfilePage() {
                     className="size-28 sm:size-32 rounded-full object-cover ring-4 ring-[var(--pw-surface)]"
                   />
                 ) : (
-                  <div className="size-28 sm:size-32 rounded-full grid place-items-center bg-pw-accent-fill text-pw-on-accent font-display text-3xl ring-4 ring-[var(--pw-surface)]">
+                  <div className="size-28 sm:size-32 rounded-full grid place-items-center bg-[var(--pw-surface-2)] text-[var(--pw-ink)] font-display text-3xl ring-4 ring-[var(--pw-surface)]">
                     {initials}
                   </div>
                 )}
@@ -358,13 +354,15 @@ function TutorProfilePage() {
                   )}
                 </div>
                 {tutor.headline && (
-                  <p className="label-caps text-pw-accent order-first mb-4">{tutor.headline}</p>
+                  <p className="mt-2 max-w-[60ch] text-[0.9375rem] text-[var(--pw-ink-2)]">
+                    {tutor.headline}
+                  </p>
                 )}
                 <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 label-caps text-[var(--pw-ink-2)]">
                   {tutor.timezone && (
                     <span className="inline-flex items-center gap-2">
                       <MapPin className="size-3.5" />
-                      {tutor.timezone}
+                      {tutor.timezone.split("/").pop()?.replace(/_/g, " ")}
                     </span>
                   )}
                   {memberSince && (
@@ -374,38 +372,44 @@ function TutorProfilePage() {
                     </span>
                   )}
                   {responseMin != null && (
-                    <span className="inline-flex items-center gap-2 text-pw-secondary">
+                    <span className="inline-flex items-center gap-2">
                       <Clock className="size-3.5" /> Typically responds in{" "}
                       {formatResponse(responseMin)}
                     </span>
                   )}
-                </div>
-
-                {/* Stats */}
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-px bg-[var(--pw-border)] border border-[var(--pw-border)]">
-                  <Stat value={studentCount.toString()} label="Students" />
-                  <Stat value={courses.length.toString()} label="Courses" />
-                  <Stat
-                    value={tutor.years_experience != null ? `${tutor.years_experience}y` : "—"}
-                    label="Experience"
-                  />
-                  <Stat
-                    value={ratingAvg ? ratingAvg.toFixed(1) : "—"}
-                    label={`Avg rating · ${reviews.length}`}
-                    icon={
+                  {studentCount > 0 && (
+                    <span className="tabular-nums">
+                      {studentCount} {studentCount === 1 ? "student" : "students"} booked
+                    </span>
+                  )}
+                  {courses.length > 0 && (
+                    <span className="tabular-nums">
+                      {courses.length} {courses.length === 1 ? "course" : "courses"}
+                    </span>
+                  )}
+                  {tutor.years_experience ? (
+                    <span className="tabular-nums">
+                      {tutor.years_experience} {tutor.years_experience === 1 ? "year" : "years"}{" "}
+                      teaching
+                    </span>
+                  ) : null}
+                  {ratingAvg > 0 && (
+                    <span className="inline-flex items-center gap-2 tabular-nums">
                       <Star className="size-3.5 fill-[var(--pw-accent-3)] text-[var(--pw-accent-3)]" />
-                    }
-                  />
+                      {ratingAvg.toFixed(1)} ({reviews.length})
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* CTAs */}
               <div className="flex sm:flex-col gap-2 w-full sm:w-44 sm:items-stretch">
                 <Button
+                  variant="outline"
                   onClick={() => navigate({ to: "/book/$tutorId", params: { tutorId: tutor.id } })}
                   className="flex-1"
                 >
-                  <Phone className="size-4 mr-2" /> Book a call
+                  Book a session
                 </Button>
                 <Button variant="outline" onClick={() => startConversation(tutor.id)} className="flex-1">
                   Message
@@ -613,7 +617,7 @@ function TutorProfilePage() {
                           <Star className="size-3 fill-[var(--pw-accent-3)] text-[var(--pw-accent-3)]" />
                           {ratingAvg ? ratingAvg.toFixed(1) : "—"}
                         </span>
-                        <span className="font-semibold text-[var(--pw-ink)]">
+                        <span className="font-semibold text-[var(--pw-ink)] tabular-nums">
                           {c.discount_price ?? c.price ?? "—"} {c.currency}
                         </span>
                       </div>
@@ -685,13 +689,12 @@ function TutorProfilePage() {
           {/* Testimonials carousel */}
           {testimonials.length > 0 && (
             <section className="bg-[var(--pw-surface-2)] p-6 sm:p-8 border border-[var(--pw-border)]">
-              <Quote className="size-7 text-[var(--pw-accent)] mb-2" />
+              <Quote className="size-7 text-[var(--pw-ink-2)] mb-2" />
               <p className="font-display text-xl sm:text-2xl leading-snug min-h-[3em]">
                 "{testimonials[testimonialIdx]?.body}"
               </p>
               <div className="mt-4 flex items-center justify-between">
                 <div className="text-[0.8125rem] text-[var(--pw-ink-2)]">
-                  —{" "}
                   {(testimonials[testimonialIdx]?.student_id &&
                     reviewers[testimonials[testimonialIdx].student_id!]?.name) ||
                     "Student"}
@@ -760,30 +763,21 @@ function TutorProfilePage() {
 
         {/* Sticky right rail */}
         <aside className="space-y-6 lg:sticky lg:top-[calc(var(--pw-header-h)+1.5rem)] self-start">
-          {/* Social proof */}
-          {studentCount > 0 && (
-            <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6 text-center">
-              <Globe2 className="size-6 mx-auto text-[var(--pw-accent-2)]" />
-              <div className="font-display text-lg mt-2">
-                Taught {studentCount.toLocaleString()} students
-              </div>
-              <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
-                across {countries} {countries === 1 ? "country" : "countries"}
-              </div>
-            </div>
-          )}
-
           {/* Pricing snapshot */}
           <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
-            <div className="font-display text-2xl">
+            <div className="font-display text-2xl tabular-nums">
               {formatPrice(tutor.hourly_rate)}
               <span className="text-[0.75rem] text-[var(--pw-ink-2)] font-sans"> /hr</span>
             </div>
             {tutor.first_session_free && (
-              <div className="text-[0.75rem] text-[var(--pw-accent-2)] mt-2">First session free</div>
+              <div className="mt-2 inline-flex items-center gap-2 text-[0.75rem] text-[var(--pw-ink)]">
+                <CheckCircle2 className="size-3.5" aria-hidden /> First session free
+              </div>
             )}
             {tutor.free_discovery_call && (
-              <div className="text-[0.75rem] text-[var(--pw-accent-2)]">Free discovery call</div>
+              <div className="flex items-center gap-2 text-[0.75rem] text-[var(--pw-ink)]">
+                <CheckCircle2 className="size-3.5" aria-hidden /> Free discovery call
+              </div>
             )}
             <Button
               onClick={() => navigate({ to: "/book/$tutorId", params: { tutorId: tutor.id } })}
@@ -842,18 +836,6 @@ function TutorProfilePage() {
           )}
         </aside>
       </main>
-    </div>
-  );
-}
-
-function Stat({ value, label, icon }: { value: string; label: string; icon?: React.ReactNode }) {
-  return (
-    <div className="bg-[var(--pw-surface)] p-4">
-      <div className="font-display text-2xl leading-none flex items-center gap-2">
-        {icon}
-        {value}
-      </div>
-      <div className="label-caps text-[var(--pw-ink-2)] mt-2">{label}</div>
     </div>
   );
 }

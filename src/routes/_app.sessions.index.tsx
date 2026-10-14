@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { STATUS_META, type SessionStatus } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/_app/sessions/")({
-  head: () => ({ meta: [{ title: "My sessions — PathWise" }] }),
+  head: () => ({ meta: [{ title: "My sessions · PathWise" }] }),
   component: SessionsList,
 });
 
@@ -124,7 +124,7 @@ function SessionsList() {
                     <div className="font-display text-[0.9375rem] transition-colors group-hover:text-pw-accent">
                       {r.other_name ?? "Session"}
                     </div>
-                    <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
+                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] tabular-nums">
                       {r.scheduled_start
                         ? new Date(r.scheduled_start).toLocaleString(undefined, {
                             dateStyle: "medium",

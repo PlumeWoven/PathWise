@@ -19,15 +19,15 @@ export const Route = createFileRoute("/pathwise/demo")({
   }),
   head: () => ({
     meta: [
-      { title: "Pathwise Demo — Try the platform with sample data" },
+      { title: "PathWise demo" },
       {
         name: "description",
-        content: "Explore Pathwise as a tutor or student. No signup. Real-looking sample data.",
+        content: "See PathWise as a tutor or a student, with sample data. No account needed.",
       },
-      { property: "og:title", content: "Pathwise Demo Mode" },
+      { property: "og:title", content: "PathWise demo" },
       {
         property: "og:description",
-        content: "See the full tutor dashboard and student experience in 60 seconds.",
+        content: "Sample data, no account needed.",
       },
     ],
   }),
@@ -90,14 +90,13 @@ function DemoLayout({
       user={
         view === "tutor"
           ? { name: data.tutor.name, subtitle: data.tutor.headline }
-          : { name: "Sample Student", subtitle: "Exploring Pathwise" }
+          : { name: "Sample Student", subtitle: "Exploring PathWise" }
       }
       isDemo
       banner={<DemoBar setView={handleSetView} onExitClick={onExitClick} />}
       onExit={onExitClick}
     >
       {view === "tutor" ? <TutorDemo /> : <StudentDemo />}
-      <PersistentSignupLink />
       <ConvertCTA />
       <MobileViewSwitch view={view} setView={handleSetView} />
     </DashboardShell>
@@ -203,29 +202,15 @@ function MobileViewSwitch({
     <div className="sm:hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-40 inline-flex rounded-full border border-[var(--pw-border)] bg-[var(--pw-surface)] shadow-lg p-2">
       <button
         onClick={() => setView("tutor")}
-        className={`label-caps px-4 py-2 rounded-full transition-colors ${view === "tutor" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
+        className={`text-[0.8125rem] font-semibold px-4 py-2 rounded-full transition-colors ${view === "tutor" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
       >
         Tutor
       </button>
       <button
         onClick={() => setView("student")}
-        className={`label-caps px-4 py-2 rounded-full transition-colors ${view === "student" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
+        className={`text-[0.8125rem] font-semibold px-4 py-2 rounded-full transition-colors ${view === "student" ? "bg-pw-accent-fill text-pw-on-accent" : "text-[var(--pw-ink-2)] hover:text-[var(--pw-accent)]"}`}
       >
         Student
-      </button>
-    </div>
-  );
-}
-
-function PersistentSignupLink() {
-  const { exitDemo } = useDemo();
-  return (
-    <div className="mt-12 text-center">
-      <button
-        onClick={exitDemo}
-        className="text-[0.8125rem] font-semibold text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
-      >
-        Sign up for free →
       </button>
     </div>
   );
@@ -236,6 +221,14 @@ function TutorDemo() {
   const { tutor, courses, messages, sessions, review, earnings } = data;
   const totalEarnings = earnings.reduce((a, b) => a + b, 0);
   const max = Math.max(...earnings);
+  // Deltas come from the sample data, not literals.
+  const [prevMonth, lastMonth] = earnings.slice(-2);
+  const earningsDelta = prevMonth
+    ? Math.round((((lastMonth ?? 0) - prevMonth) / prevMonth) * 100)
+    : 0;
+  const avgCompletion = courses.length
+    ? Math.round(courses.reduce((a, c) => a + c.completion, 0) / courses.length)
+    : 0;
   const search = useSearch({ from: "/pathwise/demo" }) as DemoSearch;
   const refViews = search.ref ? viewsForRef(search.ref) : 0;
 
@@ -280,14 +273,18 @@ function TutorDemo() {
 
       {/* KPI grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Kpi label="Total earnings" value={formatPrice(totalEarnings)} delta="+18% MoM" />
-        <Kpi label="Active students" value={String(tutor.students)} delta="+12 this month" />
         <Kpi
-          label="Avg rating"
+          label="Total earnings"
+          value={formatPrice(totalEarnings)}
+          delta={`${earningsDelta >= 0 ? "+" : ""}${earningsDelta}% on last month`}
+        />
+        <Kpi label="Active students" value={String(tutor.students)} />
+        <Kpi
+          label="Average rating"
           value={tutor.rating.toFixed(1)}
           delta={`${tutor.reviews} reviews`}
         />
-        <Kpi label="Course completion" value="65%" delta="+5pp vs avg" />
+        <Kpi label="Course completion" value={`${avgCompletion}%`} delta="Average across courses" />
       </div>
 
       {/* Earnings chart */}
@@ -300,12 +297,14 @@ function TutorDemo() {
         </div>
         <div className="mt-6 flex items-end gap-2 h-40">
           {earnings.map((v, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              <div
-                className="w-full bg-pw-accent-fill transition-opacity hover:opacity-80"
-                style={{ height: `${(v / max) * 100}%` }}
-                title={formatPrice(v)}
-              />
+            <div key={i} className="flex-1 h-full flex flex-col items-center gap-2">
+              <div className="w-full flex-1 flex items-end">
+                <div
+                  className="w-full bg-pw-accent-fill transition-opacity hover:opacity-80"
+                  style={{ height: `${(v / max) * 100}%` }}
+                  title={formatPrice(v)}
+                />
+              </div>
               <span className="label-caps text-[var(--pw-ink-2)]">
                 {["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"][i]}
               </span>
@@ -354,7 +353,6 @@ function TutorDemo() {
           <ul className="mt-4 divide-y divide-[var(--pw-border)]">
             {sessions.map((s) => (
               <li key={s.id} className="flex items-center gap-4 p-4">
-                <div className="w-0.5 h-10 bg-[var(--pw-accent)]" />
                 <div className="flex-1">
                   <div className="text-[0.875rem] font-medium">{s.topic}</div>
                   <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
@@ -425,7 +423,7 @@ function TutorDemo() {
           ))}
         </div>
         <p className="mt-4 text-[0.6875rem] text-[var(--pw-ink-2)]">
-          Demo mode — changes won't be saved.
+          Demo mode: changes aren't saved.
         </p>
       </section>
 
@@ -459,7 +457,7 @@ function TutorDemo() {
 }
 
 function StudentDemo() {
-  const { data, lockedFeature } = useDemo();
+  const { data } = useDemo();
   const { courses, tutor } = data;
   const [enrolled, setEnrolled] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -470,7 +468,7 @@ function StudentDemo() {
           Browse courses
         </h1>
         <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-2">
-          This is what students see when exploring Pathwise.
+          This is what students see when exploring PathWise.
         </p>
       </div>
 
@@ -503,22 +501,22 @@ function StudentDemo() {
                 <div className="flex items-baseline gap-2">
                   {c.discount ? (
                     <>
-                      <span className="font-display text-[1.25rem]">{formatPrice(c.discount)}</span>
-                      <span className="text-[0.75rem] text-[var(--pw-ink-2)] line-through">
+                      <span className="font-display text-[1.25rem] tabular-nums">
+                        {formatPrice(c.discount)}
+                      </span>
+                      <span className="text-[0.75rem] text-[var(--pw-ink-2)] line-through tabular-nums">
                         {formatPrice(c.price)}
                       </span>
                     </>
                   ) : (
-                    <span className="font-display text-[1.25rem]">{formatPrice(c.price)}</span>
+                    <span className="font-display text-[1.25rem] tabular-nums">
+                      {formatPrice(c.price)}
+                    </span>
                   )}
                 </div>
                 <button
                   onClick={() => setEnrolled(c.id)}
-                  className={
-                    enrolled === c.id
-                      ? "pw-btn-outline text-[0.75rem] px-4 py-2"
-                      : "pw-btn-primary text-[0.75rem] px-4 py-2"
-                  }
+                  className="pw-btn-outline text-[0.75rem] px-4 py-2"
                 >
                   {enrolled === c.id ? (
                     <span className="inline-flex items-center gap-2">
@@ -531,7 +529,7 @@ function StudentDemo() {
                 </button>
               </div>
               <p className="mt-2 text-xs text-[var(--pw-ink-2)]">
-                Demo mode — payment disabled
+                Demo only. Nothing is booked.
               </p>
             </div>
           </div>
@@ -564,27 +562,21 @@ function StudentDemo() {
           <div className="mt-4 pw-progress">
             <div className="pw-progress-fill" style={{ width: "12%" }} />
           </div>
-          <p className="mt-2 text-[0.75rem] text-[var(--pw-ink-2)]">
-            12% complete · keep going to earn your certificate
-          </p>
-          <button
-            onClick={() => lockedFeature("certificates")}
-            className="mt-4 text-[0.8125rem] font-semibold text-[var(--pw-accent)] hover:text-[var(--pw-ink)] transition-colors"
-          >
-            Get my certificate →
-          </button>
+          <p className="mt-2 text-[0.75rem] text-[var(--pw-ink-2)] tabular-nums">12% complete</p>
         </section>
       )}
     </div>
   );
 }
 
-function Kpi({ label, value, delta }: { label: string; value: string; delta: string }) {
+function Kpi({ label, value, delta }: { label: string; value: string; delta?: string }) {
   return (
-    <div className="pw-card p-6 transition-colors hover:border-[var(--pw-ink)] cursor-default">
+    <div className="pw-card p-6">
       <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
-      <div className="font-display text-[1.625rem] mt-2">{value}</div>
-      <div className="text-[0.6875rem] text-[var(--pw-secondary)] mt-2">{delta}</div>
+      <div className="font-display text-[1.625rem] mt-2 tabular-nums">{value}</div>
+      {delta && (
+        <div className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-2 tabular-nums">{delta}</div>
+      )}
     </div>
   );
 }
@@ -596,16 +588,12 @@ function ConvertCTA() {
       className="mt-12 pw-card p-8 text-center"
       style={{ background: "var(--pw-surface-2)" }}
     >
-      <div className="label-caps text-[var(--pw-ink-2)]">You're in demo mode</div>
-      <h2 className="mt-2 font-display text-[1.75rem] uppercase tracking-[-0.025em] leading-none">
-        Ready to make it real?
+      <h2 className="font-display text-[1.75rem] uppercase tracking-[-0.025em] leading-none">
+        Create your account
       </h2>
-      <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-lg mx-auto">
-        Sign up to keep your courses, students, and earnings. Free to start — no credit card.
-      </p>
       <div className="mt-6 flex gap-4 justify-center flex-wrap">
         <button onClick={exitDemo} className="pw-btn-primary px-6 py-4 text-[0.875rem]">
-          Create my real account →
+          Sign up free
         </button>
         <Link to="/" className="pw-btn-outline px-6 py-4 text-[0.875rem]">
           Back to home

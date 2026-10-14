@@ -92,7 +92,7 @@ function route(root: HTMLElement): Pt[] | null {
     [x(side), K.t - 40], // around the card stack, clear of the copy and CTAs
     [x(side), K.b + 120], // past the progress row and its Next button
     [x(K.l + K.w * 0.5), K.b + 175], // swing under the deck
-    [x(R.l - m), R.t - 24], // into the gutter before the "Your roadmap" label
+    [x(R.l - m), R.t - 24], // into the gutter above the roadmap stages
     [x(R.l - m), R.t + R.h * 0.5],
     [x(R.l - m), R.b],
     [x(W * 0.5), V.t - 64], // across the testimonials' top padding
@@ -106,7 +106,7 @@ function route(root: HTMLElement): Pt[] | null {
 }
 
 /**
- * A faint track from below the hero to the footer wordmark, with a short glowing amber comet that
+ * A faint track from below the hero to the footer wordmark, with a short amber comet that
  * flows along it. The comet's head sits ~65% down the viewport (spring-smoothed), then catches up to
  * the end over the last screen of scroll. Rendered after the sections at z-1: above their
  * backgrounds, below their (z-2) content.
@@ -243,12 +243,8 @@ export function JourneyLine({ onArrive }: { onArrive: (arrived: boolean) => void
               <stop offset="55%" stopColor="var(--color-qed-amber)" stopOpacity="0.35" />
               <stop offset="100%" stopColor="var(--color-qed-amber)" stopOpacity="1" />
             </motion.linearGradient>
-            <radialGradient id="journey-tip-glow">
-              <stop offset="0%" stopColor="var(--color-qed-amber)" stopOpacity="0.55" />
-              <stop offset="100%" stopColor="var(--color-qed-amber)" stopOpacity="0" />
-            </radialGradient>
           </defs>
-          {/* One accent length, three widths: soft glow, halo, core — all fading tail → head. */}
+          {/* One accent length, three widths: soft, halo, core, all fading tail → head. No radial glow on the tip: a solid head. */}
           {[
             { w: 10, o: 0.16 },
             { w: 4.5, o: 0.32 },
@@ -265,7 +261,6 @@ export function JourneyLine({ onArrive }: { onArrive: (arrived: boolean) => void
               style={{ pathLength: cometLen, pathOffset: cometStart }}
             />
           ))}
-          <motion.circle cx={tipX} cy={tipY} r={18} fill="url(#journey-tip-glow)" />
           <motion.circle cx={tipX} cy={tipY} r={4.5} fill="var(--color-qed-amber)" />
         </motion.g>
       )}

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ContactLink, LegalPage, WHO_RUNS_IT } from "../pathwise/legal";
 
 export const Route = createFileRoute("/_app/privacy")({
-  head: () => ({ meta: [{ title: "Privacy Policy — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Privacy Policy · PathWise" }] }),
   component: Privacy,
 });
 

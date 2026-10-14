@@ -46,11 +46,7 @@ export function StageDetailModal({ subject, stageNumber, stageTitle, onClose }: 
             </div>
 
             {/* Add session form */}
-            <form
-              onSubmit={submit}
-              className="mt-6 pw-card p-4"
-              style={{ background: "var(--pw-surface-2)" }}
-            >
+            <form onSubmit={submit} className="mt-6 border-t border-[var(--pw-border)] pt-6">
               <div className="label-caps text-[var(--pw-ink-2)] mb-4">LOG A SESSION</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <label className="flex flex-col gap-2">
@@ -91,7 +87,7 @@ export function StageDetailModal({ subject, stageNumber, stageTitle, onClose }: 
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="What did you cover? What clicked?"
+                  placeholder="What did you cover? What was hard?"
                   className="pw-input text-[0.875rem] resize-none"
                 />
               </label>

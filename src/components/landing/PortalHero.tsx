@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { CircleCheckIcon, CircleXIcon, ClockIcon } from "lucide-react";
 import { LandingCtas } from "./LandingCtas";
 
 // Self-hosted (public/images) so the site doesn't depend on Unsplash or a CSP exception.
@@ -100,23 +99,17 @@ export function PortalHero() {
             />
             {/* The tagline and blurb were removed from view; the heading stays for screen
                 readers and search engines, so the page still has an h1. */}
-            <h1 className="sr-only">PathWise: find exactly where you stand</h1>
+            <h1 className="sr-only">
+              PathWise: Math and English tutors in Moldova, matched to your level
+            </h1>
             <LandingCtas className="mt-8 justify-center" />
           </div>
         </div>
 
-        <p className="label-caps absolute left-12 top-24 z-[55] hidden items-center gap-2 text-qed-ink-2 md:flex">
-          <ClockIcon className="h-3.5 w-3.5 text-qed-amber" aria-hidden="true" /> 3 min avg
-        </p>
-        <p className="label-caps absolute right-12 top-24 z-[55] hidden items-center gap-2 text-qed-ink-2 md:flex">
-          <CircleCheckIcon className="h-3.5 w-3.5 text-qed-amber" aria-hidden="true" /> 94% accuracy
-        </p>
+        {/* Only the scroll cue: the hero is a sticky, scroll-scrubbed stage. */}
         <p className="label-caps absolute bottom-12 left-6 z-[55] flex items-center gap-2 text-qed-amber md:left-12">
           <span className="h-1.5 w-1.5 rounded-full bg-qed-amber" aria-hidden="true" /> Scroll to
           begin
-        </p>
-        <p className="label-caps absolute bottom-12 right-6 z-[55] flex items-center gap-2 text-qed-ink-2 md:right-12">
-          <CircleXIcon className="h-3.5 w-3.5 text-qed-amber" aria-hidden="true" /> No signup
         </p>
       </div>
     </section>

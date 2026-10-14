@@ -30,15 +30,15 @@ import { Icon } from "@/components/Icon";
 export const Route = createFileRoute("/_app/quiz")({
   head: () => ({
     meta: [
-      { title: "Level Check — PathWise" },
+      { title: "Level check · PathWise" },
       {
         name: "description",
-        content: "Take a 3-minute gamified diagnostic to find your exact level.",
+        content: "Answer 8 questions to find your level. Your roadmap starts from it.",
       },
-      { property: "og:title", content: "Level Check — PathWise" },
+      { property: "og:title", content: "Level check · PathWise" },
       {
         property: "og:description",
-        content: "A short, fun diagnostic to reveal your starting level.",
+        content: "Answer 8 questions to find your level. Your roadmap starts from it.",
       },
       { property: "og:url", content: "/quiz" },
     ],
@@ -395,22 +395,16 @@ function QuizPageInner() {
               <div className="pw-card p-8 text-center">
                 <Icon name="unlock" className="h-12 w-12" />
                 <h2 className="font-display text-[2rem] mt-4 leading-none uppercase tracking-[-0.025em]">
-                  Level Check: Unlocked
+                  Level check
                 </h2>
                 <p className="text-[0.9375rem] text-[var(--pw-ink-2)] mt-4">
-                  {ADAPTIVE_LENGTH} questions that adapt as you go — get one right and the next gets
-                  harder, miss one and it eases off. That's how we place you precisely.
+                  {ADAPTIVE_LENGTH} questions that adapt as you go. Get one right and the next is
+                  harder; miss one and the next is easier.
                 </p>
-                <div
-                  className="mt-6 text-[0.8125rem] px-4 py-4 border border-[var(--pw-border)] text-left"
-                  style={{ background: "var(--pw-surface-2)" }}
-                >
-                  <div className="label-caps text-[var(--pw-ink-2)]">Why it matters</div>
-                  <p className="mt-2 text-[var(--pw-ink-2)]">
-                    Your level decides which of your matched tutors' courses unlock each stage of
-                    your roadmap.
-                  </p>
-                </div>
+                <p className="mt-6 text-[0.8125rem] text-[var(--pw-ink-2)]">
+                  Your level decides which of your matched tutors' courses unlock each stage of your
+                  roadmap.
+                </p>
                 <button onClick={beginQuiz} className="pw-btn-primary mt-8 px-8 py-4">
                   Begin →
                 </button>
@@ -433,13 +427,8 @@ function QuizPageInner() {
                   feedback === "correct" ? "flash-green" : feedback === "wrong" ? "flash-red" : ""
                 }`}
               >
-                <div className="flex items-center justify-between label-caps text-[var(--pw-ink-2)]">
-                  <span>
-                    Question {asked + 1} of {ADAPTIVE_LENGTH}
-                  </span>
-                  <span className="pw-pill px-2 py-0 text-pw-accent gap-2">
-                    <Icon name="sparkles" className="h-3.5 w-3.5" /> {pw.totalXP} XP
-                  </span>
+                <div className="label-caps text-[var(--pw-ink-2)]">
+                  Question {asked + 1} of {ADAPTIVE_LENGTH}
                 </div>
                 <div className="mt-4 pw-progress">
                   <div
@@ -451,9 +440,9 @@ function QuizPageInner() {
                   <span className="label-caps text-[var(--pw-ink-2)]">{question.topic}</span>
                   <span
                     className="pw-badge"
-                    title={`Tier ${question.difficulty} of 5 — the quiz picked this based on your answers so far`}
+                    title={`Tier ${question.difficulty} of 5. The quiz picked it from your answers so far.`}
                   >
-                    TIER {question.difficulty}
+                    Tier {question.difficulty}
                   </span>
                 </div>
                 <h3 className="text-[1.125rem] font-medium mt-2 leading-snug">{question.question}</h3>
@@ -504,16 +493,16 @@ function QuizPageInner() {
                     className="mt-4 text-[0.8125rem] flex items-center gap-2"
                     style={{ color: "var(--pw-accent-2)" }}
                   >
-                    <Icon name="check" className="h-4 w-4" /> Correct — stepping up the difficulty.
+                    <Icon name="check" className="h-4 w-4" /> Correct. The next question is harder.
                   </div>
                 )}
                 {feedback === "wrong" && (
                   <div role="status" className="mt-4 text-[0.8125rem] text-[var(--pw-ink-2)]">
-                    Not quite — the answer was{" "}
+                    Not quite. The answer was{" "}
                     <strong style={{ color: "var(--pw-accent-2)" }}>
                       {question.options[question.correctIndex]}
                     </strong>
-                    . Easing off for the next one.
+                    . The next question is easier.
                   </div>
                 )}
 
@@ -550,7 +539,7 @@ function QuizPageInner() {
                       clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
                     }}
                   >
-                    <div className="label-caps opacity-90">YOUR LEVEL</div>
+                    <div className="label-caps opacity-90">Your level</div>
                     <Icon name={LEVEL_META[lvl].icon} className="h-8 w-8 mt-2 text-pw-on-accent" />
                     <div className="font-display text-[1.75rem] font-bold leading-none mt-2">
                       {lvl}
@@ -565,7 +554,7 @@ function QuizPageInner() {
                   className="mt-4 font-mono-pw text-[0.875rem] flex items-center justify-center gap-2"
                   style={{ color: "var(--pw-accent)" }}
                 >
-                  <Icon name="sparkles" className="h-4 w-4" /> {pw.totalXP} XP Earned
+                  <Icon name="sparkles" className="h-4 w-4" /> {pw.totalXP} XP earned
                 </div>
                 <p className="text-[0.9375rem] text-[var(--pw-ink-2)] mt-4">{interp}</p>
 
@@ -605,7 +594,7 @@ function QuizPageInner() {
                   disabled={buildingRoadmap}
                   className="pw-btn-primary mt-8 w-full px-8 py-4 disabled:opacity-60"
                 >
-                  {buildingRoadmap ? "Building..." : "Build My Roadmap →"}
+                  {buildingRoadmap ? "Building..." : "Build my roadmap →"}
                 </button>
               </div>
             </motion.div>

@@ -1,5 +1,11 @@
 # QED design system (site-wide)
 
+> **Superseded in parts (2026-10-13/14, owner decisions).** Where this doc disagrees, these win (also in `CLAUDE.md` › Design skills):
+> - **Colour:** dark = AMOLED black (#000; surfaces #0e0e0e/#161616), light = chalk cream (#f5f2eb; cards #fbf9f5). The only accents are amber-orange (#e8913c; text #94510a in light) and orange (#fb7a2c; text #a8430b in light). **No teal, no gold**: `--pw-secondary`/`--pw-accent-2` are orange, `--pw-accent-3` equals `--pw-accent`. Red only for errors.
+> - **Type:** controls (buttons, nav, tabs, pills) are **sentence case**, 13px semibold; `label-caps` (12px uppercase) is only for genuine labels and status badges, never a decorative kicker above a heading.
+> - **Spacing:** one 8px grid (0/8/16/24/32/48/64/96/128px), enforced by `tests/spacing.test.ts`; no 120% root scale.
+> - **Emphasis:** one filled button per view; no invented numbers, no section numbers on non-sequences, no decorative motion (see `docs/audits/impeccable-2026-10-14/`).
+
 Applies to every route. The landing page `/` is always dark (fixed `qed-*` tokens); every other page uses the theme-aware `--pw-*` tokens below in both light (paper) and dark (ground) themes. Source of truth: `src/styles.css`.
 
 ## Tokens now available (theme-aware: light paper / dark ground)

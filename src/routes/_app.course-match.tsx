@@ -42,13 +42,12 @@ export const Route = createFileRoute("/_app/course-match")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Find Your Stage Course — PathWise" },
+      { title: "Choose a course for this stage · PathWise" },
       {
         name: "description",
-        content:
-          "Courses matched to both your level and the tutors you were paired with, for the stage you're on.",
+        content: "Courses at your level, taught by your matched tutors, for the stage you're on.",
       },
-      { property: "og:title", content: "Find Your Stage Course — PathWise" },
+      { property: "og:title", content: "Choose a course for this stage · PathWise" },
       { property: "og:url", content: "/course-match" },
     ],
     links: [{ rel: "canonical", href: "/course-match" }],
@@ -210,7 +209,7 @@ function CourseMatchPageInner() {
       const fresh = await getStageEnrollment(stage.id);
       setEnrollment(fresh);
       burst({ particleCount: 70, spread: 65, origin: { y: 0.5 } });
-      toast.success("Course complete — this stage is unlocked.");
+      toast.success("Course complete. This stage is unlocked.");
     } catch (err: unknown) {
       console.error("[course-match] complete", err);
       toast.error(errorMessage(err, "Couldn't mark that course complete."));
@@ -225,7 +224,7 @@ function CourseMatchPageInner() {
     try {
       await dropEnrollment(enrollment.id);
       setEnrollment(null);
-      toast.success("Course released — pick another below.");
+      toast.success("Course removed from this stage. Pick another below.");
     } catch (err: unknown) {
       console.error("[course-match] switch", err);
       toast.error(errorMessage(err, "Couldn't release that course."));
@@ -269,35 +268,23 @@ function CourseMatchPageInner() {
             Your roadmap
           </Link>
           <span className="mx-2">→</span>
-          Stage {String(stage.stage_number).padStart(2, "0")} course
+          Stage {String(stage.stage_number).padStart(2, "0")} of {roadmap.total_stages}
         </div>
 
         {/* Header: the two conditions being intersected */}
         <div className="mt-4">
-          <div className="label-caps text-[var(--pw-ink-2)]">
-            Stage {String(stage.stage_number).padStart(2, "0")} of {roadmap.total_stages}
-          </div>
-          <h1 className="font-display text-[1.875rem] sm:text-[2.25rem] leading-tight mt-2">
+          <h1 className="font-display text-[1.875rem] sm:text-[2.25rem] leading-tight">
             {stage.title} needs a {bandMeta.label} course
           </h1>
           <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-2xl">
-            You can't tick this stage off until you've taken a course that fits it. We only show
-            courses that clear two bars at once: pitched at the level your quiz placed you in, and
-            taught by a tutor you were matched with.
+            To complete this stage, take a course at your level, taught by one of your matched
+            tutors. These are the courses that fit.
           </p>
         </div>
 
         {/* Convergence explainer */}
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-4 items-stretch">
-          <ConvergenceCard
-            kicker="Your level"
-            title={bandMeta.label}
-            body={
-              stage.required_level_id
-                ? `Level id ${stage.required_level_id} — ${bandMeta.blurb}.`
-                : `${bandMeta.blurb}.`
-            }
-          />
+          <ConvergenceCard kicker="Your level" title={bandMeta.label} body={`${bandMeta.blurb}.`} />
           <div className="hidden sm:flex items-center justify-center">
             <span
               className="font-display text-[1.75rem] px-2"
@@ -312,7 +299,7 @@ function CourseMatchPageInner() {
             title={`${meta.matchedTutorCount} matched`}
             body={
               meta.missingLearningProfile
-                ? "Based on subject alone — take the tutor quiz to sharpen this."
+                ? "Based on your subject only. Take the tutor quiz for closer matches."
                 : "From the learning profile you built in the tutor quiz."
             }
             action={
@@ -360,7 +347,7 @@ function CourseMatchPageInner() {
                   </h2>
                   <p className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2">
                     {isComplete
-                      ? "You've finished this course — head back and mark the stage complete."
+                      ? "You've finished this course. Go back to your roadmap and mark the stage complete."
                       : "Work through it, then confirm below to unlock the stage."}
                   </p>
                 </div>
@@ -631,7 +618,7 @@ function EmptyState({
       <div className="flex justify-center">
         <Icon name="target" className="h-12 w-12" />
       </div>
-      <h2 className="font-display text-[1.5rem] mt-4">No course clears both bars yet</h2>
+      <h2 className="font-display text-[1.5rem] mt-4">No matching course yet</h2>
       <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-2 max-w-lg mx-auto">
         {subjectCourseCount === 0
           ? `No published ${subject ?? "course"} courses exist yet.`

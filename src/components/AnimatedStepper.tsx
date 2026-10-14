@@ -84,6 +84,8 @@ export function AnimatedStepper({
                 </button>
                 <span
                   className={`label-caps absolute top-full mt-2 whitespace-nowrap ${
+                    i === 0 ? "left-0" : i === steps.length - 1 ? "right-0" : ""
+                  } ${
                     status === "active"
                       ? "text-pw-ink"
                       : `hidden sm:block ${status === "upcoming" ? "text-[var(--pw-ink-2)]" : "text-pw-ink"}`

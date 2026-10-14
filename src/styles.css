@@ -508,10 +508,12 @@ textarea.bg-white {
    and padding live in `@layer components`; only radius + type are forced here. */
 .pw-pill {
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
+  /* Pills hold times, prices and counts: digits line up. */
+  font-variant-numeric: tabular-nums;
 }
 
 /* SIDEBAR ITEM — left-rail nav rows. Use .is-active for the highlighted row
@@ -623,11 +625,9 @@ textarea.bg-white {
 }
 
 /* Keyboard focus on the interactive component classes: 2px amber outline with offset. */
-.pw-btn-primary:focus-visible,
-.pw-btn-secondary:focus-visible,
-.pw-btn-outline:focus-visible,
-.pw-pill:focus-visible,
-.pw-nav-item:focus-visible,
+/* One amber focus ring for everything focusable, not just .pw-* (links in the header,
+   landing CTAs and footer showed Chrome's blue default). */
+:where(a, button, [role="button"], summary, input, select, textarea, [tabindex]):focus-visible,
 .pw-card:focus-visible {
   outline: 2px solid var(--pw-accent);
   outline-offset: 2px;
@@ -730,20 +730,12 @@ textarea.bg-white {
     letter-spacing: 0.15em;
   }
 
-  @keyframes pw-bounce-chev {
+  
 
-    0%,
-    100% {
-      transform: translateY(0);
-    }
+  
 
-    50% {
-      transform: translateY(6px);
-    }
-  }
-
-  .animate-chev {
-    animation: pw-bounce-chev 1.6s ease-in-out infinite;
+  .animate-float-up {
+    animation: pw-float-up 1.2s ease-out forwards;
   }
 
   @keyframes pw-float-up {
@@ -760,10 +752,6 @@ textarea.bg-white {
       opacity: 0;
       transform: translateY(-50px);
     }
-  }
-
-  .animate-float-up {
-    animation: pw-float-up 1.2s ease-out forwards;
   }
 
   @keyframes pw-flash-green {
@@ -802,70 +790,15 @@ textarea.bg-white {
     animation: pw-flash-red 600ms ease-out;
   }
 
-  @keyframes pw-float-1 {
+  
 
-    0%,
-    100% {
-      transform: translateY(0) rotate(0deg);
-    }
+  
 
-    50% {
-      transform: translateY(-10px) rotate(0.5deg);
-    }
-  }
-
-  @keyframes pw-float-2 {
-
-    0%,
-    100% {
-      transform: translateY(0) rotate(0deg);
-    }
-
-    50% {
-      transform: translateY(-8px) rotate(-0.5deg);
-    }
-  }
-
-  @keyframes pw-float-3 {
-
-    0%,
-    100% {
-      transform: translateY(0) rotate(0deg);
-    }
-
-    50% {
-      transform: translateY(-12px) rotate(1deg);
-    }
-  }
-
-  .animate-pw-float-1 {
-    animation: pw-float-1 4s ease-in-out infinite;
-  }
-
-  .animate-pw-float-2 {
-    animation: pw-float-2 5s ease-in-out infinite;
-  }
-
-  .animate-pw-float-3 {
-    animation: pw-float-3 3.5s ease-in-out infinite;
-  }
+  
 
   /* Wrapper for idle CSS float animation (outer layer) */
-  .animate-pw-float-wrapper {
-    animation: pw-float-wrapper 6s ease-in-out infinite;
-  }
 
-  @keyframes pw-float-wrapper {
-
-    0%,
-    100% {
-      transform: translateY(0) rotate(0deg);
-    }
-
-    50% {
-      transform: translateY(-8px) rotate(0.3deg);
-    }
-  }
+  
 }
 
 /* ----- Reduced motion ----- */
@@ -926,4 +859,15 @@ html.vt-to-dark::view-transition-new(root) {
   html.vt-to-dark::view-transition-old(root) {
     animation: none;
   }
+}
+
+/* Browser surfaces carry the palette too: selection, caret and scrollbars
+   (Impeccable craft-floor › Browser surfaces). */
+::selection {
+  background: var(--pw-accent-fill);
+  color: var(--pw-on-accent);
+}
+:root {
+  caret-color: var(--pw-accent);
+  scrollbar-color: color-mix(in srgb, var(--pw-ink) 30%, transparent) var(--pw-bg);
 }

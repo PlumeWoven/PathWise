@@ -122,7 +122,7 @@ function RootComponent() {
         <AuthProvider>
           <Outlet />
           <LoginModal />
-          <Toaster position="top-center" richColors />
+          <Toaster position="top-center" />
           <Analytics />
         </AuthProvider>
       </DarkModeProvider>

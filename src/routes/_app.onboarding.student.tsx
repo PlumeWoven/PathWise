@@ -6,7 +6,7 @@ import { updateProfile } from "@/pathwise/api";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/onboarding/student")({
-  head: () => ({ meta: [{ title: "Welcome — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Welcome · PathWise" }] }),
   component: StudentOnboarding,
 });
 

@@ -15,11 +15,11 @@ import { formatPrice } from "../pathwise/sessions";
 import { useStartConversation } from "../pathwise/Inbox";
 
 const SORTS = [
-  { id: "best", label: "Best Match" },
-  { id: "rating", label: "Highest Rated" },
-  { id: "reviews", label: "Most Reviews" },
-  { id: "price_asc", label: "Price: Low to High" },
-  { id: "price_desc", label: "Price: High to Low" },
+  { id: "best", label: "Best match" },
+  { id: "rating", label: "Highest rated" },
+  { id: "reviews", label: "Most reviews" },
+  { id: "price_asc", label: "Price: low to high" },
+  { id: "price_desc", label: "Price: high to low" },
 ] as const;
 type SortId = (typeof SORTS)[number]["id"];
 
@@ -42,15 +42,15 @@ export const Route = createFileRoute("/_app/matches")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Your Matches — PathWise" },
+      { title: "Your matches · PathWise" },
       {
         name: "description",
         content: "Tutors ranked for your learning style, subject, schedule and budget.",
       },
-      { property: "og:title", content: "Your Matches — PathWise" },
+      { property: "og:title", content: "Your matches · PathWise" },
       {
         property: "og:description",
-        content: "Personalized tutor matches with a transparent score breakdown.",
+        content: "Verified tutors ranked by subject, learning style, schedule, budget and rating.",
       },
     ],
   }),
@@ -385,7 +385,11 @@ function MatchesPage() {
               <>
                 We found{" "}
                 <span style={{ color: "var(--pw-accent)" }}>{loading ? "…" : sorted.length}</span>{" "}
-                {sorted.length === 1 ? "tutor" : "tutors"} based on your learning profile
+                {Object.keys(savedPrefs).length > 0
+                  ? `${sorted.length === 1 ? "tutor" : "tutors"} based on your learning profile`
+                  : prefs.subject
+                    ? `${sorted.length === 1 ? "tutor" : "tutors"} teaching ${prefs.subject}`
+                    : `verified ${sorted.length === 1 ? "tutor" : "tutors"}`}
               </>
             )}
           </h1>
@@ -396,7 +400,7 @@ function MatchesPage() {
         </div>
 
         <div className="mt-6 flex flex-wrap gap-4">
-          {/* A text link, not a filled button: the top match's "Book trial" is this view's one
+          {/* A text link, not a filled button: the top match's "Book a session" is this view's one
               prominent action, and this sends people back to a quiz. */}
           <Link
             to="/find-tutor"
@@ -405,7 +409,7 @@ function MatchesPage() {
             Refine matches →
           </Link>
           <span className="text-[0.75rem] text-[var(--pw-ink-2)] self-center">
-            Take a 60-second quiz to refine your matches
+            Answer 8 questions to change your matches
           </span>
         </div>
 
@@ -516,7 +520,7 @@ function FilterSidebar({
       <div className="font-display text-[1.125rem] uppercase tracking-[-0.025em]">Filters</div>
 
       <Section title="Price range">
-        <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
+        <div className="text-[0.75rem] text-[var(--pw-ink-2)] tabular-nums">
           {search.priceMin} – {formatPrice(search.priceMax)}/hr
         </div>
         <input
@@ -563,7 +567,7 @@ function FilterSidebar({
         </div>
       </Section>
 
-      <Section title="Vibe">
+      <Section title="Teaching style">
         <div className="flex flex-wrap gap-2">
           {VIBE_TAGS.map((v) => {
             const vibes = search.vibes as string[];
@@ -609,34 +613,16 @@ function NoResults({ onClear }: { onClear: () => void }) {
         No exact matches found
       </h2>
       <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-2 max-w-md mx-auto">
-        But here's what we can do to widen your search:
+        Widen your search:
       </p>
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md mx-auto">
         <button onClick={onClear} className="pw-btn-outline px-4 py-2">
           Clear all filters
         </button>
         <Link to="/find-tutor" className="pw-btn-outline px-4 py-2 text-center">
-          Try related subjects
+          Retake the tutor quiz
         </Link>
-        <button
-          onClick={() => toast.success("Alert created — we'll email you when matches join.")}
-          className="pw-btn-outline px-4 py-2"
-        >
-          Create alert
-        </button>
-        <button
-          onClick={() => toast.success("Added to waitlist.")}
-          className="pw-btn-outline px-4 py-2"
-        >
-          Join waitlist
-        </button>
       </div>
-      <button
-        onClick={() => toast.success("Alert created — we'll notify you when matching tutors join.")}
-        className="pw-btn-primary mt-6 px-6 py-2"
-      >
-        Notify me when matching tutors join
-      </button>
     </div>
   );
 }

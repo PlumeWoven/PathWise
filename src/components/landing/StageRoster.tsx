@@ -13,7 +13,6 @@ export function StageRoster() {
   return (
     <section className="relative overflow-hidden bg-qed-ground px-6 py-32 md:px-24">
       <div data-journey="roster" className="relative z-[2] mx-auto max-w-7xl">
-        <p className="label-caps mb-12 text-qed-ink-2">Your roadmap</p>
         <ol className="divide-y divide-qed-hairline">
           {stages.map((s, i) => (
             <li key={s.n}>
@@ -33,7 +32,9 @@ export function StageRoster() {
           <li>
             <Link to="/quiz" className="group flex items-center justify-between py-8">
               <span className="flex items-center gap-4 sm:gap-6">
-                <span className="label-caps shrink-0 whitespace-nowrap text-qed-ink-2">3 min</span>
+                <span className="label-caps shrink-0 whitespace-nowrap text-qed-ink-2">
+                  8 questions
+                </span>
                 <span className={`${title} transition-transform group-hover:translate-x-2`}>
                   Find your stage
                 </span>

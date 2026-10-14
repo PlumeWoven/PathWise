@@ -7,7 +7,6 @@ import {
   Lock,
   Award,
   Star,
-  Heart,
   Clock,
   Globe,
   BarChart3,
@@ -56,15 +55,15 @@ const DEFAULT_FAQ = [
 export const Route = createFileRoute("/_app/courses/$slug")({
   head: ({ params }) => ({
     meta: [
-      { title: "Course — PathWise" },
+      { title: "Course · PathWise" },
       {
         name: "description",
-        content: "Explore this course on PathWise — lessons, reviews, and tutor details.",
+        content: "Course lessons, reviews and tutor details on PathWise.",
       },
-      { property: "og:title", content: "Course — PathWise" },
+      { property: "og:title", content: "Course · PathWise" },
       {
         property: "og:description",
-        content: "Explore this course on PathWise — lessons, reviews, and tutor details.",
+        content: "Course lessons, reviews and tutor details on PathWise.",
       },
       { property: "og:type", content: "article" },
       { property: "og:url", content: `/courses/${params.slug}` },
@@ -107,7 +106,6 @@ function PublicCoursePage() {
   const [related, setRelated] = useState<CourseRow[]>([]);
   const [studentCount, setStudentCount] = useState<number>(0);
   const [me, setMe] = useState<{ id: string } | null>(null);
-  const [wishlisted, setWishlisted] = useState(false);
   const [reviewsShown, setReviewsShown] = useState(5);
   const [tab, setTab] = useState("overview");
   const [draftRating, setDraftRating] = useState(5);
@@ -118,32 +116,6 @@ function PublicCoursePage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setMe(data.user ? { id: data.user.id } : null));
   }, []);
-
-  // Wishlist (localStorage)
-  useEffect(() => {
-    if (!course) return;
-    try {
-      const list: string[] = JSON.parse(localStorage.getItem("pw_wishlist") ?? "[]");
-      setWishlisted(list.includes(course.id));
-    } catch {
-      /* ignore */
-    }
-  }, [course]);
-
-  const toggleWishlist = () => {
-    if (!course) return;
-    try {
-      const list: string[] = JSON.parse(localStorage.getItem("pw_wishlist") ?? "[]");
-      const next = list.includes(course.id)
-        ? list.filter((x) => x !== course.id)
-        : [...list, course.id];
-      localStorage.setItem("pw_wishlist", JSON.stringify(next));
-      setWishlisted(next.includes(course.id));
-      toast.success(next.includes(course.id) ? "Saved to wishlist" : "Removed from wishlist");
-    } catch {
-      /* ignore */
-    }
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -197,7 +169,7 @@ function PublicCoursePage() {
   // SEO: dynamic doc head + JSON-LD (client only)
   useEffect(() => {
     if (!course) return;
-    const title = `${course.seo_title || course.title} — PathWise`;
+    const title = `${course.seo_title || course.title} · PathWise`;
     const desc = course.seo_description || course.subtitle || course.title;
     document.title = title;
     setMeta("description", desc);
@@ -413,7 +385,7 @@ function PublicCoursePage() {
                 <Stat icon={<Clock className="size-3.5" />} label={`${totalMin} min`} />
                 <Stat
                   icon={<BookOpen className="size-3.5" />}
-                  label={`${lessons.length} lessons`}
+                  label={`${lessons.length} ${lessons.length === 1 ? "lesson" : "lessons"}`}
                 />
                 {course.difficulty && (
                   <Stat icon={<BarChart3 className="size-3.5" />} label={course.difficulty} />
@@ -422,25 +394,6 @@ function PublicCoursePage() {
                   <Stat icon={<Globe className="size-3.5" />} label={course.language} />
                 )}
                 <Stat icon={<Calendar className="size-3.5" />} label={`Updated ${updatedDate}`} />
-              </div>
-
-              {/* CTAs (mobile-visible duplicates) */}
-              <div className="mt-6 flex items-center gap-4 lg:hidden">
-                <Button asChild className="flex-1">
-                  <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }}>
-                    Book a session
-                  </Link>
-                </Button>
-                <button
-                  onClick={toggleWishlist}
-                  aria-label="Add to wishlist"
-                  aria-pressed={wishlisted}
-                  className="size-10 max-sm:size-11 grid place-items-center border border-[var(--pw-border)] hover:border-[var(--pw-ink)] transition-colors"
-                >
-                  <Heart
-                    className={`size-4 ${wishlisted ? "fill-[var(--pw-accent)] text-[var(--pw-accent)]" : ""}`}
-                  />
-                </button>
               </div>
             </div>
 
@@ -461,7 +414,7 @@ function PublicCoursePage() {
                 <div className="p-6">
                   <div className="flex items-baseline gap-4">
                     {finalPrice != null ? (
-                      <span className="font-display text-3xl">
+                      <span className="font-display text-3xl tabular-nums">
                         {finalPrice} {course.currency}
                       </span>
                     ) : (
@@ -469,7 +422,7 @@ function PublicCoursePage() {
                     )}
                     {hasDiscount && (
                       <>
-                        <span className="line-through text-[var(--pw-ink-2)] text-[0.875rem]">
+                        <span className="line-through text-[var(--pw-ink-2)] text-[0.875rem] tabular-nums">
                           {course.price}
                         </span>
                         <span className="label-caps text-[var(--pw-accent)] bg-[var(--pw-accent-soft)] px-2 py-0 rounded-full">
@@ -483,15 +436,6 @@ function PublicCoursePage() {
                       Book a session
                     </Link>
                   </Button>
-                  <button
-                    onClick={toggleWishlist}
-                    className="w-full mt-2 inline-flex items-center justify-center gap-2 h-10 border border-[var(--pw-border)] text-[0.8125rem] font-semibold hover:border-[var(--pw-ink)] transition-colors"
-                  >
-                    <Heart
-                      className={`size-4 ${wishlisted ? "fill-[var(--pw-accent)] text-[var(--pw-accent)]" : ""}`}
-                    />
-                    {wishlisted ? "Wishlisted" : "Add to wishlist"}
-                  </button>
                   <div className="mt-4 flex items-center gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
                     <ShieldCheck className="size-4 text-[var(--pw-accent-2)]" />
                     Pay your tutor directly
@@ -554,7 +498,7 @@ function PublicCoursePage() {
                   </section>
                 )}
                 {(course.learning_outcomes ?? []).length > 0 && (
-                  <section className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
+                  <section>
                     <h2 className="font-display text-xl uppercase tracking-[-0.025em] mb-4">
                       What you'll learn
                     </h2>
@@ -572,21 +516,25 @@ function PublicCoursePage() {
                   (course.target_audience ?? []).length > 0) && (
                   <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {(course.prerequisites ?? []).length > 0 && (
-                      <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
-                        <h3 className="label-caps text-[var(--pw-ink-2)] mb-4">Prerequisites</h3>
-                        <ul className="text-[0.8125rem] space-y-2 text-[var(--pw-ink-2)]">
+                      <div>
+                        <h3 className="font-display text-xl uppercase tracking-[-0.025em] mb-4">
+                          Prerequisites
+                        </h3>
+                        <ul className="list-disc pl-4 text-[0.8125rem] space-y-2 text-[var(--pw-ink-2)]">
                           {(course.prerequisites ?? []).map((p) => (
-                            <li key={p}>• {p}</li>
+                            <li key={p}>{p}</li>
                           ))}
                         </ul>
                       </div>
                     )}
                     {(course.target_audience ?? []).length > 0 && (
-                      <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
-                        <h3 className="label-caps text-[var(--pw-ink-2)] mb-4">Who this is for</h3>
-                        <ul className="text-[0.8125rem] space-y-2 text-[var(--pw-ink-2)]">
+                      <div>
+                        <h3 className="font-display text-xl uppercase tracking-[-0.025em] mb-4">
+                          Who this is for
+                        </h3>
+                        <ul className="list-disc pl-4 text-[0.8125rem] space-y-2 text-[var(--pw-ink-2)]">
                           {(course.target_audience ?? []).map((a) => (
-                            <li key={a}>• {a}</li>
+                            <li key={a}>{a}</li>
                           ))}
                         </ul>
                       </div>
@@ -594,7 +542,7 @@ function PublicCoursePage() {
                   </section>
                 )}
                 {tutor && (
-                  <section className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6">
+                  <section>
                     <h2 className="font-display text-xl uppercase tracking-[-0.025em] mb-4">
                       About the tutor
                     </h2>
@@ -733,7 +681,7 @@ function PublicCoursePage() {
               <TabsContent value="reviews" className="mt-6 space-y-6">
                 <div className="border border-[var(--pw-border)] bg-[var(--pw-surface)] p-6 grid grid-cols-1 sm:grid-cols-[11.25rem_1fr] gap-6">
                   <div className="text-center">
-                    <div className="font-display text-5xl">
+                    <div className="font-display text-5xl tabular-nums">
                       {ratingAvg ? ratingAvg.toFixed(1) : "—"}
                     </div>
                     <Stars value={ratingAvg} className="justify-center mt-2" />
@@ -795,7 +743,7 @@ function PublicCoursePage() {
                   ))}
                   {reviews.length === 0 && (
                     <li className="text-[0.8125rem] text-[var(--pw-ink-2)] py-6 text-center">
-                      No reviews yet — be the first.
+                      No reviews yet.
                     </li>
                   )}
                 </ul>
@@ -831,7 +779,7 @@ function PublicCoursePage() {
         {related.length > 0 && (
           <section className="mt-16">
             <h2 className="font-display text-2xl uppercase tracking-[-0.025em] mb-4">
-              Students also viewed
+              More {course.category} courses
             </h2>
             <div className="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 snap-x">
               {related.map((r) => (
@@ -856,7 +804,7 @@ function PublicCoursePage() {
                     <div className="font-medium text-[0.875rem] line-clamp-2 transition-colors group-hover:text-pw-accent">
                       {r.title}
                     </div>
-                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
+                    <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2 tabular-nums">
                       {r.discount_price ?? r.price ?? "—"} {r.currency}
                     </div>
                   </div>
@@ -870,7 +818,7 @@ function PublicCoursePage() {
       {/* Mobile sticky bottom bar */}
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--pw-surface)] border-t border-[var(--pw-border)] p-4 flex items-center gap-4">
         <div className="flex-1 min-w-0">
-          <div className="text-[0.9375rem] font-semibold leading-none">
+          <div className="text-[0.9375rem] font-semibold leading-none tabular-nums">
             {finalPrice != null ? `${finalPrice} ${course.currency}` : "—"}
             {hasDiscount && (
               <span className="ml-2 line-through text-[var(--pw-ink-2)] text-[0.75rem] font-normal">
@@ -882,16 +830,6 @@ function PublicCoursePage() {
             <ShieldCheck className="size-3 text-[var(--pw-accent-2)]" /> Pay your tutor directly
           </div>
         </div>
-        <button
-          onClick={toggleWishlist}
-          aria-label="Add to wishlist"
-          aria-pressed={wishlisted}
-          className="size-10 max-sm:size-11 grid place-items-center border border-[var(--pw-border)]"
-        >
-          <Heart
-            className={`size-4 ${wishlisted ? "fill-[var(--pw-accent)] text-[var(--pw-accent)]" : ""}`}
-          />
-        </button>
         <Button asChild className="flex-1">
           <Link to="/book/$tutorId" params={{ tutorId: course.tutor_id }}>
             Book a session

@@ -15,7 +15,7 @@ import { SessionStateTracker } from "../pathwise/SessionStateTracker";
 import { useStartConversation } from "../pathwise/Inbox";
 
 export const Route = createFileRoute("/_app/sessions/$id")({
-  head: () => ({ meta: [{ title: "Session — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Session · PathWise" }] }),
   component: SessionDetail,
   errorComponent: ({ error }) => (
     <div className="p-6">Couldn't load session: {(error as Error).message}</div>
@@ -150,7 +150,7 @@ function SessionDetail() {
         reason: opts.reason,
         patch: opts.patch,
       });
-      toast.success(`Session ${to.replace("_", " ")}`);
+      toast.success(STATUS_META[to].label);
       await load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not update session");
@@ -245,31 +245,30 @@ function SessionDetail() {
           <span className="mx-2">→</span>Session details
         </div>
 
-        <div className="mt-4 flex items-center gap-2">
-          <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">Session</h1>
+        {/* The page leads with what people open it for: when, and with whom. */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <h1 className="font-display text-2xl uppercase tracking-[-0.025em] tabular-nums">
+            {start
+              ? start.toLocaleString(undefined, {
+                  dateStyle: "full",
+                  timeStyle: "short",
+                  timeZone: session.timezone ?? undefined,
+                })
+              : "Session"}
+          </h1>
           <span className="pw-pill px-2 py-0" style={{ background: meta.bg, color: meta.fg }}>
             {meta.label}
           </span>
         </div>
+        <p className="mt-2 text-[0.9375rem] text-[var(--pw-ink-2)]">
+          {isStudent
+            ? `With ${tutor?.display_name ?? "your tutor"}`
+            : isTutor
+              ? `With ${student?.display_name ?? "your student"}`
+              : `${tutor?.display_name ?? "Tutor"} and ${student?.display_name ?? "student"}`}
+        </p>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <PersonCard label="Tutor" person={tutor} />
-          <PersonCard label="Student" person={student} />
-        </div>
-
-        <div className="mt-4 pw-card p-6 space-y-2">
-          <Row
-            label="Date & time"
-            value={
-              start
-                ? start.toLocaleString(undefined, {
-                    dateStyle: "full",
-                    timeStyle: "short",
-                    timeZone: session.timezone ?? undefined,
-                  })
-                : "—"
-            }
-          />
+        <div className="mt-8 divide-y divide-[var(--pw-border)] border-y border-[var(--pw-border)]">
           <Row label="Timezone" value={session.timezone ?? "—"} />
           <Row label="Type" value={session.session_type ?? "Standard"} />
           <Row label="Duration" value={`${session.duration_minutes ?? 60} min`} />
@@ -283,7 +282,7 @@ function SessionDetail() {
           )}
         </div>
 
-        <div className="mt-4">
+        <div className="mt-8">
           <SessionStateTracker status={session.status_v2} />
         </div>
 
@@ -399,16 +398,16 @@ function SessionDetail() {
         )}
 
         {/* Notes */}
-        <div className="mt-4 pw-card p-6">
-          <div className="label-caps text-[var(--pw-ink-2)]">Notes</div>
+        <div className="mt-8">
+          <h2 className="label-caps text-[var(--pw-ink-2)]">Notes</h2>
           <p className="text-sm text-[var(--pw-ink)] mt-2 whitespace-pre-wrap">
-            {session.notes || "—"}
+            {session.notes || "No notes yet."}
           </p>
         </div>
 
         {/* Review form (student, awaiting_review) */}
         {isStudent && session.status_v2 === "awaiting_review" && (
-          <div className="mt-4 pw-card p-6">
+          <div className="mt-8 pw-card p-6">
             <h2 className="font-display text-lg uppercase tracking-[-0.025em]">How did it go?</h2>
             <div className="flex gap-2 mt-2">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -449,35 +448,11 @@ function SessionDetail() {
   );
 }
 
-function PersonCard({
-  label,
-  person,
-}: {
-  label: string;
-  person: { display_name: string | null; avatar_url: string | null } | null;
-}) {
-  return (
-    <div className="pw-card p-4 flex items-center gap-4">
-      {person?.avatar_url ? (
-        <img src={person.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover" />
-      ) : (
-        <div className="w-12 h-12 rounded-full bg-[var(--pw-surface-2)] flex items-center justify-center font-display">
-          {(person?.display_name ?? "?")[0]}
-        </div>
-      )}
-      <div>
-        <div className="label-caps text-[var(--pw-ink-2)]">{label}</div>
-        <div className="font-display text-[0.9375rem]">{person?.display_name ?? "—"}</div>
-      </div>
-    </div>
-  );
-}
-
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between text-[0.875rem]">
+    <div className="flex justify-between py-2 text-[0.875rem]">
       <span className="text-[var(--pw-ink-2)]">{label}</span>
-      <span className="text-right ml-4">{value}</span>
+      <span className="text-right ml-4 tabular-nums">{value}</span>
     </div>
   );
 }
