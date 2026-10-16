@@ -871,7 +871,7 @@ function BookPage() {
                         type="checkbox"
                         checked={shareBrief}
                         onChange={(e) => setShareBrief(e.target.checked)}
-                        className="mt-1"
+                        className="mt-2"
                       />
                       <span>
                         Share my {attempt.subject} level check with{" "}
