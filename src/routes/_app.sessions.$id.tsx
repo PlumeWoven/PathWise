@@ -105,6 +105,38 @@ function SessionDetail() {
     void load();
   }, [id]);
 
+  // Subjects whose level checks this student shares with this tutor.
+  const [sharedSubjects, setSharedSubjects] = useState<string[]>([]);
+  async function loadShares(s: SessionRow) {
+    if (!user || !s.tutor_id || user.id !== s.student_id) return setSharedSubjects([]);
+    const { data } = await supabase
+      .from("brief_shares")
+      .select("subject")
+      .eq("student_id", user.id)
+      .eq("tutor_id", s.tutor_id)
+      .is("revoked_at", null);
+    setSharedSubjects((data ?? []).map((r) => r.subject));
+  }
+  useEffect(() => {
+    if (session) void loadShares(session);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id, user?.id]);
+
+  async function stopSharing() {
+    if (!user || !session?.tutor_id) return;
+    const { error } = await supabase
+      .from("brief_shares")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("student_id", user.id)
+      .eq("tutor_id", session.tutor_id)
+      .is("revoked_at", null);
+    if (error) toast.error("Couldn't stop sharing. Try again.");
+    else {
+      toast.success("Your tutor can no longer see your level checks.");
+      void loadShares(session);
+    }
+  }
+
   if (loading)
     return (
       <div className="bg-[var(--pw-bg)]">
@@ -394,6 +426,18 @@ function SessionDetail() {
                 {reportMode ? "Never mind" : "Keep session"}
               </button>
             </div>
+          </div>
+        )}
+
+        {isStudent && sharedSubjects.length > 0 && (
+          <div className="mt-8 flex items-center justify-between gap-4 flex-wrap text-[0.875rem]">
+            <p className="text-[var(--pw-ink-2)]">
+              Your {sharedSubjects.join(" and ")} level checks are shared with{" "}
+              {tutor?.display_name ?? "your tutor"}.
+            </p>
+            <button onClick={stopSharing} className="pw-btn-outline px-4 py-2">
+              Stop sharing
+            </button>
           </div>
         )}
 
