@@ -13,6 +13,8 @@ import {
 } from "../pathwise/sessions";
 import { SessionStateTracker } from "../pathwise/SessionStateTracker";
 import { useStartConversation } from "../pathwise/Inbox";
+import { GOAL_LABELS } from "../pathwise/store";
+import type { GoalId } from "../pathwise/data";
 
 export const Route = createFileRoute("/_app/sessions/$id")({
   head: () => ({ meta: [{ title: "Session · PathWise" }] }),
@@ -121,6 +123,18 @@ function SessionDetail() {
     if (session) void loadShares(session);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.id, user?.id]);
+
+  // Tutor side: the level checks this student shares with this tutor. The
+  // database function returns [] unless the share is live and they have a
+  // session together, so an empty list just means "nothing shared".
+  const [briefs, setBriefs] = useState<StudentBrief[] | null>(null);
+  useEffect(() => {
+    if (!session?.student_id || !user || user.id !== session.tutor_id) return;
+    void supabase.rpc("student_brief", { p_student: session.student_id }).then(({ data, error }) => {
+      if (error) console.error("[session] brief", error);
+      setBriefs((data as unknown as StudentBrief[] | null) ?? []);
+    });
+  }, [session?.student_id, session?.tutor_id, user?.id]);
 
   async function stopSharing() {
     if (!user || !session?.tutor_id) return;
@@ -429,6 +443,19 @@ function SessionDetail() {
           </div>
         )}
 
+        {isTutor && briefs && (
+          <div className="mt-8">
+            <h2 className="label-caps text-[var(--pw-ink-2)]">Level check</h2>
+            {briefs.length === 0 ? (
+              <p className="text-sm text-[var(--pw-ink-2)] mt-2">
+                {student?.display_name ?? "This student"} hasn't shared a level check with you.
+              </p>
+            ) : (
+              briefs.map((b) => <BriefCard key={b.subject} brief={b} />)
+            )}
+          </div>
+        )}
+
         {isStudent && sharedSubjects.length > 0 && (
           <div className="mt-8 flex items-center justify-between gap-4 flex-wrap text-[0.875rem]">
             <p className="text-[var(--pw-ink-2)]">
@@ -497,6 +524,51 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between py-2 text-[0.875rem]">
       <span className="text-[var(--pw-ink-2)]">{label}</span>
       <span className="text-right ml-4 tabular-nums">{value}</span>
+    </div>
+  );
+}
+
+interface StudentBrief {
+  subject: string;
+  level: string;
+  goal: string | null;
+  strong_topics: string[];
+  wrong_topics: string[];
+  taken_at: string;
+  history: { taken_at: string; level: string }[];
+}
+
+const shortDate = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+
+/** What a tutor needs to plan the trial: level, goal, strengths, gaps, trend. */
+function BriefCard({ brief }: { brief: StudentBrief }) {
+  const goal = brief.goal ? (GOAL_LABELS[brief.goal as GoalId] ?? brief.goal) : null;
+  const earlier = brief.history.slice(1).reverse();
+  return (
+    <div className="pw-card p-4 mt-2 text-[0.875rem] space-y-2">
+      <p>
+        <strong>{brief.subject}: {brief.level}</strong>
+        <span className="text-[var(--pw-ink-2)]">
+          {" "}
+          · taken {shortDate(brief.taken_at)}
+          {goal && ` · goal: ${goal}`}
+        </span>
+      </p>
+      <p>
+        <span className="text-[var(--pw-ink-2)]">Strong in: </span>
+        {brief.strong_topics.length > 0 ? brief.strong_topics.join(", ") : "nothing clear yet"}
+      </p>
+      <p>
+        <span className="text-[var(--pw-ink-2)]">Needs work: </span>
+        {brief.wrong_topics.length > 0 ? brief.wrong_topics.join(", ") : "no misses"}
+      </p>
+      {earlier.length > 0 && (
+        <p className="text-[var(--pw-ink-2)]">
+          Earlier: {earlier.map((h) => `${h.level} (${shortDate(h.taken_at)})`).join(" → ")} →{" "}
+          {brief.level}
+        </p>
+      )}
     </div>
   );
 }

@@ -1155,6 +1155,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      student_brief: {
+        Args: { p_student: string }
+        Returns: Json
+      }
       claim_guest_roadmaps: {
         Args: { p_guest_token: string }
         Returns: undefined
