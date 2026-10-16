@@ -274,6 +274,28 @@ function RoadmapPageInner() {
     }
   }
 
+  // ─── Level-check history for this subject (newest first) ───────────────────
+  // RLS returns only this student's attempts, or this browser's for a guest.
+  const [attempts, setAttempts] = useState<
+    { id: string; created_at: string; level: string; strong_topics: string[]; wrong_topics: string[] | null }[]
+  >([]);
+  useEffect(() => {
+    if (!roadmap?.subject) return;
+    let cancelled = false;
+    supabase
+      .from("diagnostic_results")
+      .select("id, created_at, level, strong_topics, wrong_topics")
+      .eq("subject", roadmap.subject)
+      .order("created_at", { ascending: false })
+      .limit(5)
+      .then(({ data }) => {
+        if (!cancelled) setAttempts(data ?? []);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [roadmap?.subject, user?.id]);
+
   // ─── Trial gate: a finished trial lesson not yet used by another stage ─────
   // The database picks the session when the stage is completed; this only
   // decides whether "Mark stage complete" is offered.
@@ -605,6 +627,39 @@ function RoadmapPageInner() {
                       <Icon name="rocket" className="h-3.5 w-3.5" /> {goalLabel}
                     </Pill>
                   </div>
+                </div>
+
+                <div className="mt-6">
+                  <div className="label-caps text-[var(--pw-ink-2)]">Level checks</div>
+                  {attempts[0] && (
+                    <p className="mt-2 text-[0.875rem]">
+                      {attempts[0].strong_topics.length > 0 &&
+                        `Strong in ${attempts[0].strong_topics.join(", ")}. `}
+                      {(attempts[0].wrong_topics ?? []).length > 0 &&
+                        `Needs work: ${(attempts[0].wrong_topics ?? []).join(", ")}.`}
+                    </p>
+                  )}
+                  {attempts.length > 0 && (
+                    <ul className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
+                      {attempts.map((a) => (
+                        <li key={a.id} className="flex justify-between gap-4 py-2 border-b border-[var(--pw-border)] last:border-b-0">
+                          <span>
+                            {new Date(a.created_at).toLocaleDateString(undefined, {
+                              day: "numeric",
+                              month: "short",
+                            })}
+                          </span>
+                          <span className="text-[var(--pw-ink)]">{a.level}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <Link
+                    to="/quiz"
+                    className="mt-4 inline-block text-[0.875rem] underline underline-offset-4"
+                  >
+                    Retake the level check
+                  </Link>
                 </div>
               </div>
 

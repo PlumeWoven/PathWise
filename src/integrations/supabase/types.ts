@@ -301,7 +301,9 @@ export type Database = {
       }
       diagnostic_results: {
         Row: {
+          answers: Json
           created_at: string
+          confidence: number | null
           goal: string
           guest_token: string | null
           id: string
@@ -309,6 +311,7 @@ export type Database = {
           level_band: number | null
           level_id: string | null
           score: number
+          strong_topics: string[]
           subject: string
           topic_bands: Json
           user_id: string | null
@@ -316,7 +319,9 @@ export type Database = {
           xp_earned: number
         }
         Insert: {
+          answers?: Json
           created_at?: string
+          confidence?: number | null
           goal: string
           guest_token?: string | null
           id?: string
@@ -324,6 +329,7 @@ export type Database = {
           level_band?: number | null
           level_id?: string | null
           score: number
+          strong_topics?: string[]
           subject: string
           topic_bands?: Json
           user_id?: string | null
@@ -331,7 +337,9 @@ export type Database = {
           xp_earned: number
         }
         Update: {
+          answers?: Json
           created_at?: string
+          confidence?: number | null
           goal?: string
           guest_token?: string | null
           id?: string
@@ -339,6 +347,7 @@ export type Database = {
           level_band?: number | null
           level_id?: string | null
           score?: number
+          strong_topics?: string[]
           subject?: string
           topic_bands?: Json
           user_id?: string | null
