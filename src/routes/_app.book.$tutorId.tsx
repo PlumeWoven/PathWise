@@ -27,6 +27,9 @@ import {
   COMMON_TIMEZONES,
   type Frequency,
 } from "../pathwise/scheduling";
+import { teachesSubject, type TutorRow as MatchTutorRow } from "../pathwise/matching";
+import { tutorQuizSubjectFor } from "../pathwise/levels";
+import type { Subject } from "../pathwise/data";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { Calendar as CalendarIcon, AlertTriangle, Repeat } from "lucide-react";
@@ -83,6 +86,16 @@ interface TutorRow {
   timezone: string | null;
   buffer_minutes: number | null;
   min_advance_hours: number | null;
+  subject_specialties: string[] | null;
+}
+
+/** The level check offered for sharing with this tutor. */
+interface SharedAttempt {
+  subject: string;
+  level: string;
+  strong_topics: string[];
+  wrong_topics: string[] | null;
+  created_at: string;
 }
 
 const STEPS = ["Type", "Time", "Timezone", "Summary", "Pay"] as const;
@@ -111,6 +124,36 @@ function BookPage() {
   const [submitting, setSubmitting] = useState(false);
   const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
   const [recurring, setRecurring] = useState(false);
+  // Level check to share: the latest in a subject this tutor teaches, else the
+  // latest overall. Sharing is ticked by default (owner decision) and previewed.
+  const [attempt, setAttempt] = useState<SharedAttempt | null | undefined>(undefined);
+  const [shareBrief, setShareBrief] = useState(true);
+  useEffect(() => {
+    if (!tutor) return;
+    let cancelled = false;
+    void supabase
+      .from("diagnostic_results")
+      .select("subject, level, strong_topics, wrong_topics, created_at")
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const rows = (data ?? []) as SharedAttempt[];
+        const asTutor = {
+          subject_specialties: tutor.subject_specialties,
+          specializations: [],
+          headline: tutor.headline,
+          bio: null,
+        } as unknown as MatchTutorRow;
+        const taught = rows.find((r) =>
+          teachesSubject(asTutor, tutorQuizSubjectFor(r.subject as Subject) ?? r.subject),
+        );
+        setAttempt(taught ?? rows[0] ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tutor, user?.id]);
 
   // A reschedule moves one existing session. Leaving recurrence on would create a
   // whole series while cancelling only the single original.
@@ -137,7 +180,7 @@ function BookPage() {
       const { data: t } = await supabase
         .from("profiles")
         .select(
-          "id, display_name, avatar_url, headline, hourly_rate, first_session_free, free_discovery_call, timezone, buffer_minutes, min_advance_hours",
+          "id, display_name, avatar_url, headline, hourly_rate, first_session_free, free_discovery_call, timezone, buffer_minutes, min_advance_hours, subject_specialties",
         )
         .eq("id", tutorId)
         .in("role", ["tutor", "both"])
@@ -318,6 +361,24 @@ function BookPage() {
         })),
       ]);
       setCreatedSessionId(createdIds[0]);
+      // Consent is recorded after the booking lands; a failure here never
+      // undoes the booking.
+      if (attempt) {
+        const { error: shareErr } = await supabase.from("brief_shares").upsert(
+          {
+            student_id: user.id,
+            tutor_id: tutorId,
+            subject: attempt.subject,
+            granted_at: new Date().toISOString(),
+            revoked_at: shareBrief ? null : new Date().toISOString(),
+          },
+          { onConflict: "student_id,tutor_id,subject" },
+        );
+        if (shareErr) {
+          console.error("[book] brief share", shareErr);
+          toast.error("Booked, but your sharing choice wasn't saved. Change it on the session page.");
+        }
+      }
     } catch (err) {
       // Put the original session back — the new time didn't take, so the student
       // must not be left with nothing.
@@ -517,6 +578,16 @@ function BookPage() {
                     subtitle={`${pkg.sessions} sessions × 60 min, save ${pkg.discount_percent}%`}
                     price={formatPrice(priceForType(hourlyRate, "package", pkg.discount_percent, pkg.sessions))}
                   />
+                )}
+                {attempt === null && (
+                  // Not required (owner decision): booking works without it.
+                  <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
+                    Take the 8-question level check first so {tutor?.display_name ?? "your tutor"}{" "}
+                    knows where to start.{" "}
+                    <Link to="/quiz" className="underline underline-offset-4 text-[var(--pw-ink)]">
+                      Take the level check
+                    </Link>
+                  </p>
                 )}
                 <NavBar onNext={next} disabled={false} />
               </div>
@@ -793,6 +864,43 @@ function BookPage() {
                     </span>
                   </div>
                 </div>
+                {attempt && (
+                  <div className="pw-card p-4 text-[0.875rem]">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={shareBrief}
+                        onChange={(e) => setShareBrief(e.target.checked)}
+                        className="mt-1"
+                      />
+                      <span>
+                        Share my {attempt.subject} level check with{" "}
+                        {tutor?.display_name ?? "this tutor"}
+                      </span>
+                    </label>
+                    {shareBrief && (
+                      <div className="mt-2 pl-6 text-[var(--pw-ink-2)] space-y-2">
+                        <p>
+                          They will see: <strong className="text-[var(--pw-ink)]">{attempt.level}</strong>
+                          {attempt.strong_topics.length > 0 &&
+                            `; strong in ${attempt.strong_topics.join(", ")}`}
+                          {(attempt.wrong_topics ?? []).length > 0 &&
+                            `; needs work on ${(attempt.wrong_topics ?? []).join(", ")}`}
+                          {" "}(taken{" "}
+                          {new Date(attempt.created_at).toLocaleDateString(undefined, {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                          ), plus the dates and levels of your earlier {attempt.subject} checks.
+                        </p>
+                        <p>
+                          They keep seeing new {attempt.subject} checks while you book with them.
+                          You can stop sharing any time from the session page.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {recurring && recurrenceInstances.length > 1 && (
                   <div className="pw-card p-4">
                     <div className="label-caps text-[var(--pw-ink-2)] mb-2">All instances</div>

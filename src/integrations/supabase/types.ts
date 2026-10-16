@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      brief_shares: {
+        Row: {
+          granted_at: string
+          revoked_at: string | null
+          student_id: string
+          subject: string
+          tutor_id: string
+        }
+        Insert: {
+          granted_at?: string
+          revoked_at?: string | null
+          student_id: string
+          subject: string
+          tutor_id: string
+        }
+        Update: {
+          granted_at?: string
+          revoked_at?: string | null
+          student_id?: string
+          subject?: string
+          tutor_id?: string
+        }
+        Relationships: []
+      }
       course_lessons: {
         Row: {
           course_id: string
