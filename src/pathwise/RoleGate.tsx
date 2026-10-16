@@ -77,7 +77,7 @@ export function SignInPrompt() {
       <h1 className="font-display text-[1.75rem]">Sign in to continue</h1>
       <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">This page needs an account.</p>
       <div className="mt-6 flex gap-4 justify-center">
-        <button onClick={openLogin} className="pw-btn-primary px-6 py-2">
+        <button onClick={() => openLogin()} className="pw-btn-primary px-6 py-2">
           Sign in
         </button>
         <button onClick={() => navigate({ to: "/" })} className="pw-btn-outline px-6 py-2">

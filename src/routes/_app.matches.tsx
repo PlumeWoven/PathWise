@@ -8,7 +8,8 @@ import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchCard } from "../pathwise/MatchCard";
 import { Icon } from "@/components/Icon";
-import { computeMatch, VIBE_TAGS, type MatchPrefs, type TutorRow } from "../pathwise/matching";
+import { computeMatch, teachesSubject, VIBE_TAGS, type MatchPrefs, type TutorRow } from "../pathwise/matching";
+import { canonicalSubjectFromTutorQuiz } from "../pathwise/levels";
 // ─── api.ts for lead event inserts ───────────────────────────────────────────
 import { recordProfileView } from "../pathwise/api";
 import { formatPrice } from "../pathwise/sessions";
@@ -105,21 +106,18 @@ function MatchesPage() {
           if (data && !cancelled) setSavedPrefs(data as MatchPrefs);
         } else {
           try {
-            const cached = localStorage.getItem("pathwise_find_tutor_answers");
+            const cached = localStorage.getItem("pw_find_tutor_answers"); // written by /find-tutor
             if (cached) setSavedPrefs(JSON.parse(cached));
           } catch {
             /* ignore */
           }
         }
 
-        // ── CHANGED: subject-scoped tutor query ──────────────────────────────
-        // Previously fetched all 200 tutors regardless of subject.
-        // Now filters by subject_specialties if a subject is in the URL or saved
-        // profile, which is faster and more relevant. Falls back to all tutors
-        // if no subject is known (same behaviour as before for that case).
+        // Subject filter runs client-side through the same aliases the score
+        // uses, so "math" finds tutors who list Algebra or Mathematics.
         const effectiveSubject = search.subject ?? savedPrefs.subject;
 
-        let tutorQuery = supabase
+        const tutorQuery = supabase
           .from("profiles")
           .select(
             "id, display_name, avatar_url, headline, bio, hourly_rate, " +
@@ -129,11 +127,6 @@ function MatchesPage() {
           .in("role", ["tutor", "both"])
           .eq("verification_status", "verified")
           .limit(200);
-
-        // Apply subject filter when we know the subject
-        if (effectiveSubject) {
-          tutorQuery = tutorQuery.contains("subject_specialties", [effectiveSubject]);
-        }
 
         // Tutor listings are public (verified tutors, published courses, reviews,
         // availability are all readable anonymously), so visitors can browse.
@@ -150,25 +143,17 @@ function MatchesPage() {
 
         if (cancelled) return;
 
-        // ── CHANGED: fallback when subject filter returns 0 results ──────────
-        // If the subject filter returns nothing (no tutors have that specialty yet),
-        // re-fetch without the filter so the page is never empty during early growth.
-        let tutorRows = (tutorsRes.data ?? []) as unknown as TutorRow[];
-        setFallbackSubject(null);
-        if (tutorRows.length === 0 && effectiveSubject) {
-          setFallbackSubject(effectiveSubject);
-          const { data: fallback } = await supabase
-            .from("profiles")
-            .select(
-              "id, display_name, avatar_url, headline, bio, hourly_rate, " +
-                "subject_specialties, specializations, superpowers, video_intro_url, " +
-                "verification_status, free_discovery_call, first_session_free",
-            )
-            .in("role", ["tutor", "both"])
-            .eq("verification_status", "verified")
-            .limit(200);
-          tutorRows = (fallback ?? []) as unknown as TutorRow[];
-        }
+        // No tutor teaches the subject yet: show everyone, and say so.
+        const allTutors = (tutorsRes.data ?? []) as unknown as TutorRow[];
+        const subjectTutors = effectiveSubject
+          ? allTutors.filter((t) => teachesSubject(t, effectiveSubject))
+          : allTutors;
+        const tutorRows = subjectTutors.length > 0 ? subjectTutors : allTutors;
+        setFallbackSubject(
+          effectiveSubject && subjectTutors.length === 0
+            ? (canonicalSubjectFromTutorQuiz(effectiveSubject) ?? effectiveSubject)
+            : null,
+        );
         setTutors(tutorRows);
 
         // Reviews → per-tutor avg

@@ -15,15 +15,13 @@ export async function requireAuth(roadmapId?: string): Promise<boolean> {
     // User is authenticated — proceed with the action
     if (userId) return true;
 
-    // User is not authenticated — store roadmap ID for later claim
+    // User is not authenticated — remember the roadmap so it opens again after sign-up
     if (roadmapId) {
         localStorage.setItem('pathwise_roadmap_id', roadmapId);
-        console.log('[authGuard] Stored roadmap ID for claim:', roadmapId);
     }
 
-    // Open the login modal — same as clicking "Sign Up" in the header
-    console.log('[authGuard] Opening login modal for roadmap:', roadmapId);
-    window.dispatchEvent(new CustomEvent('open-login-modal'));
+    // A guest acting on their roadmap is almost always new: open on sign-up.
+    window.dispatchEvent(new CustomEvent('open-login-modal', { detail: { mode: 'signup' } }));
 
     return false;
 }

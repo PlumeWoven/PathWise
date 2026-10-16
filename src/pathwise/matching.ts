@@ -77,6 +77,11 @@ function subjectScore(t: TutorRow, subject?: string): number {
   return 0.2;
 }
 
+/** True when the tutor lists the subject or one of its aliases (e.g. "math" → Algebra). */
+export function teachesSubject(t: TutorRow, subject: string): boolean {
+  return subjectScore(t, subject) === 1;
+}
+
 function learningStyleScore(t: TutorRow, style?: string, vibes?: string[]): number {
   const sp = (t.superpowers ?? []).map(normalize);
   let score = 0.5;

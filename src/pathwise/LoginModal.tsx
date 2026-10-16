@@ -18,7 +18,7 @@ import { Icon, type IconName } from "@/components/Icon";
 type Mode = "signin" | "signup" | "forgot";
 
 export function LoginModal() {
-  const { loginOpen, closeLogin, emailConfirmed, resendConfirmation } = useAuth();
+  const { loginOpen, loginMode, closeLogin, emailConfirmed, resendConfirmation } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("signin");
   const [role, setRole] = useState<Role | null>(null);
@@ -36,7 +36,7 @@ export function LoginModal() {
   // Reset state whenever the modal opens.
   useEffect(() => {
     if (loginOpen) {
-      setMode("signin");
+      setMode(loginMode);
       setRole(null);
       setName("");
       setEmail("");
@@ -47,7 +47,7 @@ export function LoginModal() {
       setShowConfirmation(false);
       setSignupEmail("");
     }
-  }, [loginOpen]);
+  }, [loginOpen, loginMode]);
 
   const handleClose = () => closeLogin();
 

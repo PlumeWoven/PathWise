@@ -8,7 +8,7 @@ export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () =>
 
   const signUp = () => {
     onClose();
-    openLogin();
+    openLogin("signup");
   };
 
   return (
