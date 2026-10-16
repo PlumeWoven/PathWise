@@ -11,8 +11,10 @@ import {
   earnedXP,
   finalBand,
   nextQuestion,
+  confidence,
   placementSummary,
   recordAnswer,
+  strongTopics,
   topicBands,
   weakTopics,
   type AdaptiveState,
@@ -24,6 +26,7 @@ import { toast } from "sonner";
 import { RoleGate } from "../pathwise/RoleGate";
 // ─── api.ts replaces inline supabase calls ───────────────────────────────────
 import { getCurrentUser, saveDiagnosticResult, createRoadmap } from "../pathwise/api";
+import { supabase } from "@/integrations/supabase/client";
 import { AnimatedStepper, stepSlide, useStepDirection } from "@/components/AnimatedStepper";
 import { Icon } from "@/components/Icon";
 
@@ -88,6 +91,10 @@ function QuizPageInner() {
   const [run, setRun] = useState<AdaptiveState>(() => createAdaptiveState());
   const [question, setQuestion] = useState<QuizQuestion | null>(null);
   const finalRunRef = useRef<AdaptiveState | null>(null);
+  // Every finished run is saved as an attempt straight away (the history a
+  // tutor's brief reads); building or rebuilding a roadmap is a separate choice.
+  const attemptRef = useRef<Promise<string> | null>(null);
+  const [existingRoadmapId, setExistingRoadmapId] = useState<string | null>(null);
 
   useEffect(() => {
     resetState();
@@ -117,6 +124,9 @@ function QuizPageInner() {
   const beginQuiz = () => {
     if (!pw.subject) return;
     const fresh = createAdaptiveState();
+    attemptRef.current = null;
+    savedRef.current = false;
+    setExistingRoadmapId(null);
     setRun(fresh);
     setQuestion(nextQuestion(pw.subject, fresh));
     setPhase("quiz");
@@ -173,7 +183,68 @@ function QuizPageInner() {
     // (it used to sit behind a fixed 1.6 s "Analyzing..." screen).
     setPhase("result");
     burst({ particleCount: 80, spread: 70, origin: { y: 0.4 } });
+    void ensureAttemptSaved(state).catch((err) => {
+      console.error("[quiz] save attempt", err);
+      toast.error("Couldn't save this result. Building a roadmap will try again.");
+    });
+    if (pw.subject) {
+      // RLS returns only this student's roadmaps (or this browser's, for a guest).
+      void supabase
+        .from("roadmaps")
+        .select("id")
+        .eq("subject", pw.subject)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => setExistingRoadmapId(data?.id ?? null));
+    }
   };
+
+  /** Saves the run once; later calls get the same diagnostic id. */
+  function ensureAttemptSaved(state: AdaptiveState): Promise<string> {
+    if (!attemptRef.current) {
+      attemptRef.current = (async () => {
+        if (!pw.subject) throw new Error("No subject");
+        const user = await getCurrentUser();
+        const band = finalBand(state);
+        return saveDiagnosticResult({
+          user_id: user?.id ?? null,
+          subject: pw.subject,
+          goal: (pw.goal ?? "grades") as GoalId,
+          score: correctCount(state),
+          level: BAND_TO_LEVEL[band],
+          level_band: band,
+          level_id: makeLevelId(pw.subject, band),
+          topic_bands: topicBands(state),
+          xp_earned: earnedXP(state),
+          wrong_topics: weakTopics(state),
+          strong_topics: strongTopics(state),
+          confidence: confidence(state),
+          answers: state.answers.map((a) => ({
+            question_id: a.questionId,
+            topic: a.topic,
+            tier: a.difficulty,
+            selected: a.selected,
+            correct: a.correct,
+          })),
+        });
+      })().catch((err) => {
+        attemptRef.current = null; // let the next call retry
+        throw err;
+      });
+    }
+    return attemptRef.current;
+  }
+
+  function backToRoadmap() {
+    if (!existingRoadmapId) return;
+    try {
+      localStorage.setItem("pathwise_roadmap_id", existingRoadmapId);
+    } catch {
+      /* ignore */
+    }
+    navigate({ to: "/roadmap", search: { roadmapId: existingRoadmapId } as any });
+  }
 
   // ─── FIXED: one atomic function — diagnostic + roadmap saved together ────────
   // Previously these were split across saveResults() and buildRoadmap(),
@@ -198,27 +269,9 @@ function QuizPageInner() {
       user = await getCurrentUser();
       userId = user?.id ?? null;
 
-      // 2. Compute results from the adaptive run
-      const finalRun = finalRunRef.current;
-      const score = finalRun ? correctCount(finalRun) : pw.answers.filter((a) => a.correct).length;
-      const wrongTopics = finalRun
-        ? weakTopics(finalRun)
-        : Array.from(new Set(pw.answers.filter((a) => !a.correct).map((a) => a.topic)));
-
-      // 3. Save diagnostic → get diagnostic_id.
-      //    level_id is what courses are matched against downstream.
-      const diagnosticId = await saveDiagnosticResult({
-        user_id: userId,
-        subject: pw.subject,
-        goal: (pw.goal ?? "grades") as GoalId,
-        score,
-        level: pw.level,
-        level_band: pw.band,
-        level_id: makeLevelId(pw.subject, pw.band),
-        topic_bands: pw.topicBands,
-        xp_earned: pw.totalXP,
-        wrong_topics: wrongTopics,
-      });
+      // 2. The attempt is usually saved already (on the result screen).
+      if (!finalRunRef.current) throw new Error("No finished run");
+      const diagnosticId = await ensureAttemptSaved(finalRunRef.current);
 
       // 4. Generate stages locally (same logic as before)
       const stages = generateStages(pw.subject, pw.level, pw.goal);
@@ -588,14 +641,35 @@ function QuizPageInner() {
                     </div>
                   </div>
                 )}
-                {/* Button now calls handleBuildRoadmap — does both saves in one go */}
-                <button
-                  onClick={handleBuildRoadmap}
-                  disabled={buildingRoadmap}
-                  className="pw-btn-primary mt-8 w-full px-8 py-4 disabled:opacity-60"
-                >
-                  {buildingRoadmap ? "Building..." : "Build my roadmap →"}
-                </button>
+                <p className="mt-6 text-[0.8125rem] text-[var(--pw-ink-2)]">
+                  Saved to your level-check history.
+                </p>
+                {existingRoadmapId ? (
+                  // A retake: keep the roadmap (and its progress) unless the student asks.
+                  <>
+                    <button onClick={backToRoadmap} className="pw-btn-primary mt-4 w-full px-8 py-4">
+                      Back to my roadmap →
+                    </button>
+                    <button
+                      onClick={handleBuildRoadmap}
+                      disabled={buildingRoadmap}
+                      className="pw-btn-outline mt-4 w-full px-8 py-4 disabled:opacity-60"
+                    >
+                      {buildingRoadmap ? "Building..." : "Rebuild my roadmap from this result"}
+                    </button>
+                    <p className="mt-2 text-[0.75rem] text-[var(--pw-ink-2)]">
+                      Rebuilding starts a new roadmap from stage 1.
+                    </p>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleBuildRoadmap}
+                    disabled={buildingRoadmap}
+                    className="pw-btn-primary mt-4 w-full px-8 py-4 disabled:opacity-60"
+                  >
+                    {buildingRoadmap ? "Building..." : "Build my roadmap →"}
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

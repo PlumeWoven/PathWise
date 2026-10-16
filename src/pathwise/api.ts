@@ -113,6 +113,10 @@ export interface SaveDiagnosticInput {
     level_id: string;
     /** Per-topic band estimates, e.g. { Algebra: 4, Geometry: 2 }. */
     topic_bands?: Record<string, number>;
+    /** Every question asked: id, topic, tier, choice, right or wrong. */
+    answers?: { question_id: string; topic: string; tier: number; selected: number; correct: boolean }[];
+    strong_topics?: string[];
+    confidence?: number;
 }
 
 /**
@@ -136,6 +140,9 @@ export async function saveDiagnosticResult(input: SaveDiagnosticInput): Promise<
             topic_bands: input.topic_bands ?? {},
             xp_earned: input.xp_earned,
             wrong_topics: input.wrong_topics,
+            answers: input.answers ?? [],
+            strong_topics: input.strong_topics ?? [],
+            confidence: input.confidence ?? null,
         })
         .select("id")
         .single();

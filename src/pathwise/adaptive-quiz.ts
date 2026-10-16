@@ -139,6 +139,22 @@ export function weakTopics(state: AdaptiveState): string[] {
 }
 
 /**
+ * Topics with no miss whose hardest question reached the student's overall
+ * band: what a tutor can build on. Empty when nothing clears that bar.
+ */
+export function strongTopics(state: AdaptiveState): string[] {
+  const weak = new Set(weakTopics(state));
+  const band = finalBand(state);
+  const hardest = new Map<string, number>();
+  for (const a of state.answers) {
+    hardest.set(a.topic, Math.max(hardest.get(a.topic) ?? 0, a.difficulty));
+  }
+  return Array.from(hardest)
+    .filter(([topic, tier]) => !weak.has(topic) && tier >= band)
+    .map(([topic]) => topic);
+}
+
+/**
  * How settled the estimate is, 0..1. A run that flip-flops between right and
  * wrong at the end is less certain than one that plateaus.
  */
