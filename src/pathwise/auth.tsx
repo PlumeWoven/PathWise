@@ -40,7 +40,9 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   loginOpen: boolean;
-  openLogin: () => void;
+  /** Which tab the modal opens on: guests saving their work start at sign-up. */
+  loginMode: "signin" | "signup";
+  openLogin: (mode?: "signin" | "signup") => void;
   closeLogin: () => void;
   refreshProfile: () => Promise<void>;
   emailConfirmed: boolean;
@@ -79,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loginMode, setLoginMode] = useState<"signin" | "signup">("signin");
   const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
 
@@ -99,7 +102,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Listen for open-login-modal event (dispatched by requireAuth when user needs to sign in)
-    const handleOpenLoginModal = () => {
+    const handleOpenLoginModal = (e: Event) => {
+      setLoginMode((e as CustomEvent<{ mode?: string }>).detail?.mode === "signup" ? "signup" : "signin");
       setLoginOpen(true);
     };
     window.addEventListener("open-login-modal", handleOpenLoginModal);
@@ -225,7 +229,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Stable identities: guards list openLogin in effect deps, so a fresh function
   // each render re-opened the modal the instant it was closed.
-  const openLogin = useCallback(() => setLoginOpen(true), []);
+  const openLogin = useCallback((mode: "signin" | "signup" = "signin") => {
+    setLoginMode(mode);
+    setLoginOpen(true);
+  }, []);
   const closeLogin = useCallback(() => setLoginOpen(false), []);
 
   return (
@@ -241,6 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         logout: signOut,
         loginOpen,
+        loginMode,
         openLogin,
         closeLogin,
         refreshProfile,

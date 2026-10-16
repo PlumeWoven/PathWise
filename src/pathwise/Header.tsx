@@ -250,7 +250,7 @@ export function PWHeader() {
                   {publicLinks(true)}
                 </div>
               </details>
-              <button onClick={openLogin} className={c.signIn}>
+              <button onClick={() => openLogin()} className={c.signIn}>
                 Sign in
               </button>
             </>

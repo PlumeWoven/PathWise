@@ -613,6 +613,7 @@ export type Database = {
       roadmap_stages: {
         Row: {
           completed_at: string | null
+          completed_by_session_id: string | null
           guest_token: string | null
           id: string
           required_level_band: number | null
@@ -625,6 +626,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          completed_by_session_id?: string | null
           guest_token?: string | null
           id?: string
           required_level_band?: number | null
@@ -637,6 +639,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          completed_by_session_id?: string | null
           guest_token?: string | null
           id?: string
           required_level_band?: number | null

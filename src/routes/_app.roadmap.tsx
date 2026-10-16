@@ -29,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   BAND_META,
   clampBand,
+  tutorQuizSubjectFor,
   LEVEL_TO_BAND,
   requiredBandForStage,
   type LevelBand,
@@ -273,6 +274,38 @@ function RoadmapPageInner() {
     }
   }
 
+  // ─── Trial gate: a finished trial lesson not yet used by another stage ─────
+  // The database picks the session when the stage is completed; this only
+  // decides whether "Mark stage complete" is offered.
+  const [trialCredit, setTrialCredit] = useState(false);
+  useEffect(() => {
+    if (!user?.id) {
+      setTrialCredit(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const [trials, used] = await Promise.all([
+        supabase
+          .from("sessions")
+          .select("id")
+          .eq("student_id", user.id)
+          .eq("session_type", "trial")
+          .in("status_v2", ["completed", "awaiting_review", "closed"]),
+        supabase
+          .from("roadmap_stages")
+          .select("completed_by_session_id")
+          .not("completed_by_session_id", "is", null),
+      ]);
+      if (cancelled) return;
+      const usedIds = new Set((used.data ?? []).map((u) => u.completed_by_session_id));
+      setTrialCredit((trials.data ?? []).some((t) => !usedIds.has(t.id)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, stages]);
+
   // ─── Course gate: which stages have their required course finished ────────
   // fetchRoadmap has several early-return paths, so this hangs off the resolved
   // roadmap id rather than being threaded through each of them.
@@ -328,17 +361,31 @@ function RoadmapPageInner() {
   }, [roadmap]);
 
   /**
-   * A stage is gated only when it names a required level. Roadmaps created
-   * before course matching existed have no requirement and behave as before.
+   * A stage is gated only when it names a required level. It unlocks with a
+   * finished course at that level, or a finished trial lesson (the database
+   * enforces the same rule). Roadmaps created before course matching existed
+   * have no requirement and behave as before.
    */
   function requirementFor(stage: DBStage) {
     const enrollment = enrollments.get(stage.id) ?? null;
     const gated = !!stage.required_level_id;
+    const courseDone = enrollment?.status === "completed";
     return {
       gated,
       enrollment,
-      met: !gated || enrollment?.status === "completed",
+      viaTrial: gated && !courseDone && trialCredit,
+      met: !gated || courseDone || trialCredit,
     };
+  }
+
+  async function handleChooseCourse(stage: DBStage) {
+    if (!roadmap) return;
+    if (await requireAuth(roadmap.id)) goToCourseMatch(stage);
+  }
+
+  /** Tutors for this subject; booking asks for an account at its own step. */
+  function goToTutors() {
+    navigate({ to: "/matches", search: { subject: tutorQuizSubjectFor(subject) ?? subject } as any });
   }
 
   function goToCourseMatch(stage: DBStage) {
@@ -346,38 +393,6 @@ function RoadmapPageInner() {
     navigate({
       to: "/course-match",
       search: { roadmapId: roadmap.id, stage: stage.stage_number },
-    });
-  }
-
-  /**
-   * "Start here" sends the student into the course library, scoped to the band
-   * this stage requires.
-   *
-   * It used to look up the already-active stage, write status:'active' back over
-   * itself, and open the session-log modal — so the first thing a student saw
-   * was a form asking them to log a session for a course they hadn't picked yet.
-   * Every stage names a required level band, so the useful first step is the
-   * shelf of courses that satisfy it.
-   */
-  async function handleStartHere(stage: DBStage) {
-    if (!roadmap) return;
-
-    const authenticated = await requireAuth(roadmap.id);
-    if (!authenticated) return; // Will redirect to sign-in
-
-    // The stage's own requirement, falling back to where the student placed for
-    // roadmaps created before course matching existed.
-    const band =
-      stage.required_level_band != null ? clampBand(stage.required_level_band) : baseBand;
-
-    navigate({
-      to: "/library",
-      search: {
-        subject,
-        band,
-        roadmapId: roadmap.id,
-        stage: stage.stage_number,
-      },
     });
   }
 
@@ -433,7 +448,7 @@ function RoadmapPageInner() {
       console.error("[roadmap] mark complete", err);
       // The database enforces the same gate, so a stale UI lands here.
       if (e?.message === "STAGE_COURSE_REQUIRED") {
-        toast.error("Finish a course at this stage's level first.");
+        toast.error("Finish a course at this level, or a trial lesson, first.");
         goToCourseMatch(stage);
       } else {
         toast.error(e?.message || "Couldn't mark stage complete.");
@@ -498,15 +513,16 @@ function RoadmapPageInner() {
               <div className="text-[0.8125rem] flex items-center gap-2">
                 <Icon name="save" className="h-4 w-4" />
                 <span>
-                  <strong>Sign up</strong> to save your progress permanently
+                  This roadmap is saved in this browser only. A free account keeps it and lets
+                  you choose courses.
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => openLogin()}
+                  onClick={() => openLogin("signup")}
                   className="pw-btn-outline whitespace-nowrap px-4 py-2"
                 >
-                  Sign up
+                  Create account
                 </button>
                 <button
                   onClick={() => setShowAnonToast(false)}
@@ -701,19 +717,6 @@ function RoadmapPageInner() {
                               <Icon name="check" className="h-3.5 w-3.5" /> Completed
                             </span>
                           )}
-                          {isActive && (
-                            <button
-                              onClick={(e) => {
-                                // Sits above the card's stretched button; it has its own destination.
-                                e.stopPropagation();
-                                handleStartHere(s);
-                              }}
-                              // An outlined chip: "Mark stage complete" is the card's one filled action.
-                              className="relative z-10 pw-pill px-2 py-2 whitespace-nowrap text-pw-accent border-[var(--pw-accent)]"
-                            >
-                              <Icon name="play" className="h-3.5 w-3.5 text-pw-accent" /> Start here
-                            </button>
-                          )}
                           {!isCompleted && !isActive && (
                             <span className="pw-pill px-2 py-2 text-[var(--pw-ink-2)] whitespace-nowrap">
                               <Icon name="lock" className="h-3.5 w-3.5" /> Locked
@@ -738,7 +741,9 @@ function RoadmapPageInner() {
                               className={`pw-pill px-2 py-2 ${req.met ? "text-pw-secondary border-[var(--pw-accent-2)]" : "text-[var(--pw-ink-2)]"}`}
                             >
                               <Icon name={req.met ? "check" : "book"} className="h-3.5 w-3.5" />{" "}
-                              Requires a {BAND_META[reqBand].label} course
+                              {req.viaTrial
+                                ? "Trial lesson done"
+                                : `Unlocks with a ${BAND_META[reqBand].label} course or a trial lesson`}
                             </span>
                             {req.enrollment && (
                               <span className="text-[var(--pw-ink-2)] truncate max-w-[13.75rem]">
@@ -755,51 +760,55 @@ function RoadmapPageInner() {
                           <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
                             {isCompleted && s.completed_at
                               ? `Completed ${new Date(s.completed_at).toLocaleDateString()}`
-                              : "Open for details and to log sessions"}
+                              : "Open for details"}
                           </div>
-                          {isActive && (
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              title={
-                                req.met
-                                  ? undefined
-                                  : req.enrollment
-                                    ? "Finish your course to unlock this stage"
-                                    : "Pick a course at your level to unlock this stage"
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleMarkComplete(s);
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
+                          {isActive &&
+                            (req.met ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
                                   e.stopPropagation();
                                   handleMarkComplete(s);
-                                }
-                              }}
-                              className={`relative z-10 pw-pill px-4 py-2 transition-colors cursor-pointer ${req.met ? "bg-pw-accent-fill text-pw-on-accent border-[var(--pw-accent-fill)]" : "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"}`}
-                              style={{ opacity: completing === s.stage_number ? 0.6 : 1 }}
-                            >
-                              {completing === s.stage_number ? (
-                                "Saving…"
-                              ) : req.met ? (
-                                <>
-                                  <Icon name="check" className="h-3.5 w-3.5 text-pw-on-accent" />{" "}
-                                  Mark stage complete
-                                </>
-                              ) : req.enrollment ? (
-                                <>
-                                  <Icon name="book" className="h-3.5 w-3.5" /> Finish your course
-                                </>
-                              ) : (
-                                <>
-                                  <Icon name="lock" className="h-3.5 w-3.5" /> Choose your course
-                                </>
-                              )}
-                            </span>
-                          )}
+                                }}
+                                disabled={completing === s.stage_number}
+                                className="relative z-10 pw-btn-primary px-4 py-2 inline-flex items-center gap-2 disabled:opacity-60"
+                              >
+                                {completing === s.stage_number ? (
+                                  "Saving…"
+                                ) : (
+                                  <>
+                                    <Icon name="check" className="h-3.5 w-3.5" /> Mark stage complete
+                                  </>
+                                )}
+                              </button>
+                            ) : (
+                              // One next step: a course at this level. The trial is the other way in.
+                              <div className="relative z-10 flex items-center gap-4 flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleChooseCourse(s);
+                                  }}
+                                  className="pw-btn-outline px-4 py-2 inline-flex items-center gap-2"
+                                >
+                                  <Icon name="book" className="h-3.5 w-3.5" />
+                                  {req.enrollment ? "Finish your course" : "Choose a course"}
+                                </button>
+                                {!req.enrollment && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      goToTutors();
+                                    }}
+                                    className="text-[0.875rem] underline underline-offset-4 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)]"
+                                  >
+                                    or book a trial lesson
+                                  </button>
+                                )}
+                              </div>
+                            ))}
                         </div>
                       </div>
                     </motion.div>
@@ -812,22 +821,13 @@ function RoadmapPageInner() {
 
         {/* CTA */}
         <div className="mt-12 max-w-2xl mx-auto text-center">
-          <button
-            onClick={async (e) => {
-              e.preventDefault();
-              // Require authentication — opens login modal if not signed in
-              const authenticated = await requireAuth(roadmap.id);
-              if (authenticated) {
-                // Only navigate if authenticated
-                navigate({ to: "/matches" });
-              }
-            }}
-            className="pw-btn-primary inline-flex justify-center w-full px-8 py-4"
-          >
-            See my matched tutors & courses →
+          <button type="button" onClick={goToTutors} className="pw-btn-outline inline-flex justify-center w-full px-8 py-4">
+            See {subject} tutors
           </button>
           <p className="mt-4 text-[0.75rem] text-[var(--pw-ink-2)]">
-            Free to browse · Book only when ready
+            {isLoggedIn
+              ? "Browsing is free. You pay only when you book."
+              : "Browsing is free. Choosing a course or booking needs a free account, which also saves this roadmap."}
           </p>
         </div>
       </main>
