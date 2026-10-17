@@ -3,23 +3,26 @@ import appCss from "../styles.css?url";
 import { AuthProvider } from "../pathwise/auth";
 import { DarkModeProvider } from "../pathwise/DarkMode";
 import { LoginModal } from "../pathwise/LoginModal";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
+import { Analytics } from "@vercel/analytics/react";
+import { MotionConfig } from "framer-motion";
 
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--pw-bg)] px-4">
-      <div className="pw-card max-w-md text-center py-10 px-8">
-        <div className="font-display italic text-[24px] text-[var(--pw-ink)]">PathWise</div>
-        <h1 className="font-display text-7xl font-bold text-[var(--pw-ink)] mt-4">404</h1>
+      <div className="pw-card max-w-md text-center py-12 px-8">
+        <div className="font-display font-bold uppercase tracking-[-0.025em] text-[1.5rem] text-[var(--pw-ink)]">
+          PathWise
+        </div>
+        <h1 className="font-display text-7xl font-bold uppercase tracking-[-0.025em] text-[var(--pw-ink)] mt-4">
+          404
+        </h1>
         <h2 className="mt-4 text-xl font-semibold text-[var(--pw-ink)]">Page not found</h2>
         <p className="mt-2 text-sm text-[var(--pw-ink-2)]">
           The page you're looking for doesn't exist or has been moved.
         </p>
         <div className="mt-8">
-          <Link
-            to="/"
-            className="pw-btn-primary inline-flex items-center justify-center px-8 py-3 text-[15px] font-medium"
-          >
+          <Link to="/" className="pw-btn-primary inline-flex items-center justify-center px-8 py-4">
             Go home
           </Link>
         </div>
@@ -96,7 +99,10 @@ const themeBootstrapScript = `
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: the bootstrap script below adds `class="dark"` to
+    // <html> before React hydrates, so this element legitimately differs from the
+    // server HTML. The flag covers this element's own attributes only, not children.
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
@@ -111,12 +117,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
-    <DarkModeProvider>
-      <AuthProvider>
-        <Outlet />
-        <LoginModal />
-        <Toaster position="top-center" richColors />
-      </AuthProvider>
-    </DarkModeProvider>
+    <MotionConfig reducedMotion="user">
+      <DarkModeProvider>
+        <AuthProvider>
+          <Outlet />
+          <LoginModal />
+          <Toaster position="top-center" />
+          <Analytics />
+        </AuthProvider>
+      </DarkModeProvider>
+    </MotionConfig>
   );
 }

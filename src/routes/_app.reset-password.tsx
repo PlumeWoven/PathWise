@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_app/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset password — PathWise" },
+      { title: "Reset password · PathWise" },
       { name: "description", content: "Set a new password for your PathWise account." },
       { name: "robots", content: "noindex" },
     ],
@@ -21,18 +21,38 @@ function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  // The link can fail: expired, already used, or opened in a different
+  // browser than the one that requested it (PKCE keeps the verifier there).
+  const [linkFailed, setLinkFailed] = useState(false);
+  const [email, setEmail] = useState("");
 
-  // Supabase parses the recovery token from the URL hash and emits a
-  // PASSWORD_RECOVERY event. We just wait until a session is available.
+  // Supabase exchanges the recovery code from the URL and emits a
+  // PASSWORD_RECOVERY event. getSession() resolves only after that exchange,
+  // so "no session" there means the link didn't work.
   useEffect(() => {
+    if (/[?&#]error(_code)?=/.test(window.location.href)) setLinkFailed(true);
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) setReady(true);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setReady(true);
+      else setLinkFailed(true);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  async function handleResend(e: FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    setSubmitting(true);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (err) setError(err.message);
+    else setInfo("New link sent. Open it in this browser.");
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -58,56 +78,94 @@ function ResetPasswordPage() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 py-12 max-w-md mx-auto">
-        <h1 className="font-display text-[32px] leading-tight">Set a new password</h1>
-        <p className="mt-2 text-[14px] text-[var(--pw-ink-2)]">
+      <main className="px-6 sm:px-8 py-12 max-w-md mx-auto">
+        <h1 className="font-display text-[2rem] uppercase tracking-[-0.025em] leading-none">
+          Set a new password
+        </h1>
+        <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
           Choose a new password for your PathWise account.
         </p>
 
-        {!ready ? (
-          <div className="mt-8 text-[14px] text-[var(--pw-ink-2)]">
-            Verifying your reset link...
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="mt-6 space-y-3">
+        {!ready && linkFailed ? (
+          <form onSubmit={handleResend} className="mt-6 space-y-4">
+            <p role="alert" className="text-[0.875rem]">
+              This reset link has expired, was already used, or was opened in a different
+              browser. Enter your email and we'll send a new one.
+            </p>
             <div>
-              <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-                New password
+              <label htmlFor="reset-email" className="label-caps text-[var(--pw-ink-2)]">
+                Email
               </label>
               <input
-                type="password"
+                id="reset-email"
+                type="email"
+                autoComplete="email"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
-              />
-            </div>
-            <div>
-              <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-                Confirm password
-              </label>
-              <input
-                type="password"
-                required
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pw-input mt-2 text-[0.875rem]"
               />
             </div>
             {error && (
-              <div className="text-[12px]" style={{ color: "var(--pw-danger)" }}>
+              <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
                 {error}
               </div>
             )}
             {info && (
-              <div className="text-[12px]" style={{ color: "var(--pw-accent-2)" }}>
+              <div className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
                 {info}
               </div>
             )}
             <button
               type="submit"
               disabled={submitting}
-              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 text-[15px] font-medium disabled:opacity-50"
+              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50"
+            >
+              {submitting ? "Sending..." : "Send a new link"}
+            </button>
+          </form>
+        ) : !ready ? (
+          <div className="mt-8 text-[0.875rem] text-[var(--pw-ink-2)]">
+            Verifying your reset link...
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div>
+              <label htmlFor="rp-new" className="label-caps text-[var(--pw-ink-2)]">New password</label>
+              <input id="rp-new"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pw-input mt-2 text-[0.875rem]"
+              />
+            </div>
+            <div>
+              <label htmlFor="rp-confirm" className="label-caps text-[var(--pw-ink-2)]">Confirm password</label>
+              <input id="rp-confirm"
+                type="password"
+                autoComplete="new-password"
+                required
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="pw-input mt-2 text-[0.875rem]"
+              />
+            </div>
+            {error && (
+              <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
+                {error}
+              </div>
+            )}
+            {info && (
+              <div className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
+                {info}
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50"
             >
               {submitting ? "Updating..." : "Update password"}
             </button>

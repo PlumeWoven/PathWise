@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { StarIcon } from "lucide-react";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -8,14 +9,18 @@ import {
   transitionSession,
   type SessionStatus,
   type SessionPaymentStatus,
+  formatPrice,
 } from "../pathwise/sessions";
 import { SessionStateTracker } from "../pathwise/SessionStateTracker";
+import { useStartConversation } from "../pathwise/Inbox";
+import { GOAL_LABELS } from "../pathwise/store";
+import type { GoalId } from "../pathwise/data";
 
 export const Route = createFileRoute("/_app/sessions/$id")({
-  head: () => ({ meta: [{ title: "Session — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Session · PathWise" }] }),
   component: SessionDetail,
   errorComponent: ({ error }) => (
-    <div className="p-6">Couldn't load session: {error.message}</div>
+    <div className="p-6">Couldn't load session: {(error as Error).message}</div>
   ),
   notFoundComponent: () => <div className="p-6">Session not found.</div>,
 });
@@ -41,41 +46,123 @@ interface SessionRow {
 function SessionDetail() {
   const { id } = Route.useParams();
   const { user } = useAuth();
+  const startConversation = useStartConversation();
   const navigate = useNavigate();
   const [session, setSession] = useState<SessionRow | null>(null);
-  const [tutor, setTutor] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
-  const [student, setStudent] = useState<{ display_name: string | null; avatar_url: string | null } | null>(null);
+  const [tutor, setTutor] = useState<{
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null>(null);
+  const [student, setStudent] = useState<{
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [reviewBody, setReviewBody] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
+  const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewError, setReviewError] = useState("");
+  // Set once the insert succeeds, so a retry after a failed close doesn't post twice.
+  const [reviewSaved, setReviewSaved] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [showCancel, setShowCancel] = useState(false);
+  // The cancel form doubles as "Report a problem" (→ disputed, for an admin).
+  const [reportMode, setReportMode] = useState(false);
 
   async function load() {
     setLoading(true);
     const { data, error } = await supabase
       .from("sessions")
-      .select("id, student_id, tutor_id, scheduled_start, scheduled_end, duration_minutes, timezone, session_type, amount, meeting_url, notes, rating, status_v2, payment_status, cancellation_reason")
+      .select(
+        "id, student_id, tutor_id, scheduled_start, scheduled_end, duration_minutes, timezone, session_type, amount, meeting_url, notes, rating, status_v2, payment_status, cancellation_reason",
+      )
       .eq("id", id)
       .maybeSingle();
-    if (error || !data) { setLoading(false); return; }
+    if (error || !data) {
+      setLoading(false);
+      return;
+    }
     const s = data as unknown as SessionRow;
     setSession(s);
     if (s.tutor_id) {
-      const { data: t } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", s.tutor_id).maybeSingle();
+      const { data: t } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", s.tutor_id)
+        .maybeSingle();
       setTutor(t as any);
     }
     if (s.student_id) {
-      const { data: st } = await supabase.from("profiles").select("display_name, avatar_url").eq("id", s.student_id).maybeSingle();
+      const { data: st } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", s.student_id)
+        .maybeSingle();
       setStudent(st as any);
     }
     setLoading(false);
   }
 
-  useEffect(() => { void load(); }, [id]);
+  useEffect(() => {
+    void load();
+  }, [id]);
 
-  if (loading) return <div className="bg-[var(--pw-bg)]"><div className="p-8 text-center text-sm">Loading…</div></div>;
-  if (!session) return <div className="bg-[var(--pw-bg)]"><div className="p-8 text-center">Session not found.</div></div>;
+  // Subjects whose level checks this student shares with this tutor.
+  const [sharedSubjects, setSharedSubjects] = useState<string[]>([]);
+  async function loadShares(s: SessionRow) {
+    if (!user || !s.tutor_id || user.id !== s.student_id) return setSharedSubjects([]);
+    const { data } = await supabase
+      .from("brief_shares")
+      .select("subject")
+      .eq("student_id", user.id)
+      .eq("tutor_id", s.tutor_id)
+      .is("revoked_at", null);
+    setSharedSubjects((data ?? []).map((r) => r.subject));
+  }
+  useEffect(() => {
+    if (session) void loadShares(session);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.id, user?.id]);
+
+  // Tutor side: the level checks this student shares with this tutor. The
+  // database function returns [] unless the share is live and they have a
+  // session together, so an empty list just means "nothing shared".
+  const [briefs, setBriefs] = useState<StudentBrief[] | null>(null);
+  useEffect(() => {
+    if (!session?.student_id || !user || user.id !== session.tutor_id) return;
+    void supabase.rpc("student_brief", { p_student: session.student_id }).then(({ data, error }) => {
+      if (error) console.error("[session] brief", error);
+      setBriefs((data as unknown as StudentBrief[] | null) ?? []);
+    });
+  }, [session?.student_id, session?.tutor_id, user?.id]);
+
+  async function stopSharing() {
+    if (!user || !session?.tutor_id) return;
+    const { error } = await supabase
+      .from("brief_shares")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("student_id", user.id)
+      .eq("tutor_id", session.tutor_id)
+      .is("revoked_at", null);
+    if (error) toast.error("Couldn't stop sharing. Try again.");
+    else {
+      toast.success("Your tutor can no longer see your level checks.");
+      void loadShares(session);
+    }
+  }
+
+  if (loading)
+    return (
+      <div className="bg-[var(--pw-bg)]">
+        <div className="p-8 text-center text-sm">Loading…</div>
+      </div>
+    );
+  if (!session)
+    return (
+      <div className="bg-[var(--pw-bg)]">
+        <div className="p-8 text-center">Session not found.</div>
+      </div>
+    );
 
   const isTutor = user?.id === session.tutor_id;
   const isStudent = user?.id === session.student_id;
@@ -84,14 +171,22 @@ function SessionDetail() {
   const meta = STATUS_META[session.status_v2];
   const minsToStart = start ? (start.getTime() - Date.now()) / 60000 : Infinity;
   const canJoin =
-    (session.status_v2 === "confirmed" || session.status_v2 === "reminder_sent" || session.status_v2 === "in_progress") &&
-    minsToStart <= 5 && minsToStart > -((session.duration_minutes ?? 60) + 30);
+    (session.status_v2 === "confirmed" ||
+      session.status_v2 === "reminder_sent" ||
+      session.status_v2 === "in_progress") &&
+    minsToStart <= 5 &&
+    minsToStart > -((session.duration_minutes ?? 60) + 30);
 
   const isUpcoming = ["scheduled", "confirmed", "reminder_sent"].includes(session.status_v2);
-  const canReschedule = isUpcoming && minsToStart > 24 * 60;
+  // Only the student reschedules: rebooking runs as the caller, so a tutor
+  // pressing it would have become the "student" of the new session.
+  const canReschedule = isStudent && isUpcoming && minsToStart > 24 * 60;
   const canCancel = isUpcoming;
 
-  async function doTransition(to: SessionStatus, opts: { reason?: string; patch?: any; title: string; message?: string } = { title: "" }) {
+  async function doTransition(
+    to: SessionStatus,
+    opts: { reason?: string; patch?: any; title: string; message?: string } = { title: "" },
+  ) {
     if (!user) return;
     try {
       await transitionSession({
@@ -100,9 +195,8 @@ function SessionDetail() {
         by: user.id,
         reason: opts.reason,
         patch: opts.patch,
-        notify: { title: opts.title, message: opts.message, link: `/sessions/${id}` },
       });
-      toast.success(`Session ${to.replace("_", " ")}`);
+      toast.success(STATUS_META[to].label);
       await load();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not update session");
@@ -126,14 +220,37 @@ function SessionDetail() {
       title: "Session completed",
       message: "Don't forget to leave a review",
     });
-    setTimeout(() => doTransition("awaiting_review", { title: "Review window open", message: "You have 48h to leave feedback" }), 600);
+    setTimeout(
+      () =>
+        doTransition("awaiting_review", {
+          title: "Review window open",
+          message: "You have 48h to leave feedback",
+        }),
+      600,
+    );
+  }
+
+  async function handleReport() {
+    if (!cancelReason.trim()) {
+      toast.error("Tell us what went wrong");
+      return;
+    }
+    await doTransition("disputed", { reason: cancelReason, title: "" });
+    setShowCancel(false);
+    setReportMode(false);
   }
 
   async function handleCancel() {
-    if (!cancelReason.trim()) { toast.error("Please give a reason"); return; }
+    if (!cancelReason.trim()) {
+      toast.error("Please give a reason");
+      return;
+    }
     await doTransition("cancelled", {
       reason: cancelReason,
-      patch: { cancellation_reason: cancelReason, cancelled_by: user?.id, payment_status: "refunded" },
+      patch: {
+        cancellation_reason: cancelReason,
+        cancelled_by: user?.id,
+      },
       title: "Session cancelled",
       message: cancelReason,
     });
@@ -142,127 +259,259 @@ function SessionDetail() {
 
   async function handleSubmitReview() {
     const s = session;
-    if (!user || !s?.tutor_id) return;
-    try {
-      await supabase.from("reviews").insert({
+    if (!user || !s?.tutor_id || reviewBusy) return;
+    setReviewBusy(true);
+    setReviewError("");
+    if (!reviewSaved) {
+      // supabase-js returns errors instead of throwing.
+      const { error } = await supabase.from("reviews").insert({
         student_id: user.id,
         tutor_id: s.tutor_id,
         rating: reviewRating,
         body: reviewBody || null,
       });
-      await doTransition("closed", { title: "Thanks for your review!" });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not submit review");
+      if (error) {
+        setReviewBusy(false);
+        setReviewError("Your review wasn't saved. Your text is still here, so try again.");
+        return;
+      }
+      setReviewSaved(true);
     }
+    await doTransition("closed", { title: "Thanks for your review!" });
+    setReviewBusy(false);
   }
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
-        <div className="text-[12px] text-[var(--pw-ink-2)]">
-          <Link to="/sessions" className="underline-offset-2 hover:underline">My sessions</Link>
+      <main className="px-6 sm:px-8 pb-24 max-w-3xl mx-auto pt-4">
+        <div className="label-caps text-[var(--pw-ink-2)]">
+          <Link to="/sessions" className="underline-offset-2 hover:underline">
+            My sessions
+          </Link>
           <span className="mx-2">→</span>Session details
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
-          <h1 className="font-display text-2xl">Session</h1>
-          <span
-            className="pw-pill text-[12px] px-2.5 py-0.5 font-medium"
-            style={{ background: meta.bg, color: meta.fg }}
-          >
+        {/* The page leads with what people open it for: when, and with whom. */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <h1 className="font-display text-2xl uppercase tracking-[-0.025em] tabular-nums">
+            {start
+              ? start.toLocaleString(undefined, {
+                  dateStyle: "full",
+                  timeStyle: "short",
+                  timeZone: session.timezone ?? undefined,
+                })
+              : "Session"}
+          </h1>
+          <span className="pw-pill px-2 py-0" style={{ background: meta.bg, color: meta.fg }}>
             {meta.label}
           </span>
         </div>
+        <p className="mt-2 text-[0.9375rem] text-[var(--pw-ink-2)]">
+          {isStudent
+            ? `With ${tutor?.display_name ?? "your tutor"}`
+            : isTutor
+              ? `With ${student?.display_name ?? "your student"}`
+              : `${tutor?.display_name ?? "Tutor"} and ${student?.display_name ?? "student"}`}
+        </p>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          <PersonCard label="Tutor" person={tutor} />
-          <PersonCard label="Student" person={student} />
-        </div>
-
-        <div className="mt-4 pw-card p-5 space-y-2">
-          <Row label="Date & time" value={start ? start.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short", timeZone: session.timezone ?? undefined }) : "—"} />
+        <div className="mt-8 divide-y divide-[var(--pw-border)] border-y border-[var(--pw-border)]">
           <Row label="Timezone" value={session.timezone ?? "—"} />
           <Row label="Type" value={session.session_type ?? "Standard"} />
           <Row label="Duration" value={`${session.duration_minutes ?? 60} min`} />
-          <Row label="Amount" value={Number(session.amount ?? 0) === 0 ? "Free" : `$${session.amount}`} />
+          <Row
+            label="Amount"
+            value={Number(session.amount ?? 0) === 0 ? "Free" : formatPrice(session.amount)}
+          />
           <Row label="Payment" value={session.payment_status} />
-          {session.cancellation_reason && <Row label="Reason" value={session.cancellation_reason} />}
+          {session.cancellation_reason && (
+            <Row label="Reason" value={session.cancellation_reason} />
+          )}
         </div>
 
-        <div className="mt-4">
+        <div className="mt-8">
           <SessionStateTracker status={session.status_v2} />
         </div>
 
         {/* Actions */}
         <div className="mt-4 flex flex-wrap gap-2">
+          {(isTutor || isStudent) && (
+            <button
+              onClick={() => {
+                const other = isStudent ? session.tutor_id : session.student_id;
+                if (other) startConversation(other);
+              }}
+              className="pw-btn-outline px-4 py-2 order-last"
+            >
+              Message {isStudent ? "tutor" : "student"}
+            </button>
+          )}
           <button
             onClick={handleJoin}
             disabled={!canJoin}
-            className="pw-btn-primary px-5 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            className="pw-btn-primary px-6 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
             title={!canJoin ? "Available 5 min before start" : undefined}
           >
             {session.status_v2 === "in_progress" ? "Re-join session" : "Join session"}
           </button>
           {(isTutor || isStudent) && session.status_v2 === "scheduled" && isTutor && (
-            <button onClick={() => doTransition("confirmed", { title: "Session confirmed" })} className="pw-btn-outline px-4 py-2 text-sm">
+            <button
+              onClick={() => doTransition("confirmed", { title: "Session confirmed" })}
+              className="pw-btn-outline px-4 py-2"
+            >
               Accept booking
             </button>
           )}
           {(isTutor || isStudent) && session.status_v2 === "in_progress" && (
-            <button onClick={handleComplete} className="pw-btn-outline px-4 py-2 text-sm">Mark completed</button>
+            <button onClick={handleComplete} className="pw-btn-outline px-4 py-2">
+              Mark completed
+            </button>
           )}
           {canReschedule && (
-            <button onClick={() => navigate({ to: "/book/$tutorId", params: { tutorId: session.tutor_id ?? "" } })} className="pw-btn-outline px-4 py-2 text-sm">
+            <button
+              onClick={() =>
+                navigate({
+                  to: "/book/$tutorId",
+                  params: { tutorId: session.tutor_id ?? "" },
+                  // Without this the booking page has no idea it's replacing
+                  // anything and simply creates a second session.
+                  search: { reschedule: session.id },
+                })
+              }
+              className="pw-btn-outline px-4 py-2"
+            >
               Reschedule
             </button>
           )}
           {canCancel && !showCancel && (
-            <button onClick={() => setShowCancel(true)} className="pw-btn-outline px-4 py-2 text-sm" style={{ color: "var(--pw-danger)" }}>
+            <button
+              onClick={() => setShowCancel(true)}
+              className="pw-btn-outline px-4 py-2"
+              style={{ color: "var(--pw-danger)" }}
+            >
               Cancel
             </button>
           )}
+          {(isTutor || isStudent) &&
+            !showCancel &&
+            !["cancelled", "disputed"].includes(session.status_v2) && (
+              <button
+                onClick={() => {
+                  setReportMode(true);
+                  setShowCancel(true);
+                }}
+                className="pw-btn-outline px-4 py-2"
+              >
+                Report a problem
+              </button>
+            )}
         </div>
 
         {showCancel && (
-          <div className="mt-3 pw-card p-4">
-            <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Reason</label>
+          <div className="mt-4 pw-card p-4">
+            <label className="label-caps text-[var(--pw-ink-2)]">
+              {reportMode ? "What went wrong?" : "Reason"}
+            </label>
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               rows={3}
-              className="mt-1 w-full pw-border rounded-md px-3 py-2 text-sm bg-[var(--pw-surface)]"
-              placeholder="Schedule conflict, no longer needed, etc."
+              className="mt-2 w-full pw-border px-4 py-2 text-sm bg-[var(--pw-surface)]"
+              placeholder={
+                reportMode
+                  ? "No-show, behaviour, lesson link didn't work… PathWise will contact you both."
+                  : "Schedule conflict, no longer needed, etc."
+              }
             />
             <div className="flex gap-2 mt-2">
-              <button onClick={handleCancel} className="pw-btn-primary px-4 py-2 text-sm" style={{ background: "var(--pw-danger)" }}>Confirm cancel</button>
-              <button onClick={() => setShowCancel(false)} className="pw-btn-outline px-4 py-2 text-sm">Keep session</button>
+              <button
+                onClick={reportMode ? handleReport : handleCancel}
+                className="pw-btn-primary px-4 py-2"
+                style={{ background: "var(--pw-danger)" }}
+              >
+                {reportMode ? "Send report" : "Confirm cancel"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowCancel(false);
+                  setReportMode(false);
+                }}
+                className="pw-btn-outline px-4 py-2"
+              >
+                {reportMode ? "Never mind" : "Keep session"}
+              </button>
             </div>
           </div>
         )}
 
+        {isTutor && briefs && (
+          <div className="mt-8">
+            <h2 className="label-caps text-[var(--pw-ink-2)]">Level check</h2>
+            {briefs.length === 0 ? (
+              <p className="text-sm text-[var(--pw-ink-2)] mt-2">
+                {student?.display_name ?? "This student"} hasn't shared a level check with you.
+              </p>
+            ) : (
+              briefs.map((b) => <BriefCard key={b.subject} brief={b} />)
+            )}
+          </div>
+        )}
+
+        {isStudent && sharedSubjects.length > 0 && (
+          <div className="mt-8 flex items-center justify-between gap-4 flex-wrap text-[0.875rem]">
+            <p className="text-[var(--pw-ink-2)]">
+              Your {sharedSubjects.join(" and ")} level checks are shared with{" "}
+              {tutor?.display_name ?? "your tutor"}.
+            </p>
+            <button onClick={stopSharing} className="pw-btn-outline px-4 py-2">
+              Stop sharing
+            </button>
+          </div>
+        )}
+
         {/* Notes */}
-        <div className="mt-4 pw-card p-5">
-          <div className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Notes</div>
-          <p className="text-sm text-[var(--pw-ink)] mt-1 whitespace-pre-wrap">{session.notes || "—"}</p>
+        <div className="mt-8">
+          <h2 className="label-caps text-[var(--pw-ink-2)]">Notes</h2>
+          <p className="text-sm text-[var(--pw-ink)] mt-2 whitespace-pre-wrap">
+            {session.notes || "No notes yet."}
+          </p>
         </div>
 
         {/* Review form (student, awaiting_review) */}
         {isStudent && session.status_v2 === "awaiting_review" && (
-          <div className="mt-4 pw-card p-5">
-            <h2 className="font-display text-lg">How did it go?</h2>
-            <div className="flex gap-1 mt-2">
+          <div className="mt-8 pw-card p-6">
+            <h2 className="font-display text-lg uppercase tracking-[-0.025em]">How did it go?</h2>
+            <div className="flex gap-2 mt-2">
               {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} onClick={() => setReviewRating(n)} className="text-2xl" style={{ color: n <= reviewRating ? "var(--pw-accent)" : "var(--pw-border)" }}>★</button>
+                <button
+                  key={n}
+                  onClick={() => setReviewRating(n)}
+                  className="text-2xl"
+                  style={{ color: n <= reviewRating ? "var(--pw-accent)" : "var(--pw-border)" }}
+                  aria-label={`${n} out of 5 stars`}
+                >
+                  <StarIcon className="h-6 w-6 fill-current" aria-hidden="true" />
+                </button>
               ))}
             </div>
             <textarea
               value={reviewBody}
               onChange={(e) => setReviewBody(e.target.value)}
               rows={3}
-              className="mt-3 w-full pw-border rounded-md px-3 py-2 text-sm bg-[var(--pw-surface)]"
+              className="mt-4 w-full pw-border px-4 py-2 text-sm bg-[var(--pw-surface)]"
               placeholder="Tell other students about this tutor"
             />
-            <button onClick={handleSubmitReview} className="pw-btn-primary px-4 py-2 text-sm mt-3">Submit review</button>
+            {reviewError && (
+              <p role="alert" className="mt-2 text-[0.75rem] text-[var(--pw-danger)]">
+                {reviewError}
+              </p>
+            )}
+            <button
+              onClick={handleSubmitReview}
+              disabled={reviewBusy}
+              className="pw-btn-primary px-4 py-2 mt-4 disabled:opacity-50"
+            >
+              {reviewBusy ? "Posting..." : "Submit review"}
+            </button>
           </div>
         )}
       </main>
@@ -270,29 +519,56 @@ function SessionDetail() {
   );
 }
 
-function PersonCard({ label, person }: { label: string; person: { display_name: string | null; avatar_url: string | null } | null }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="pw-card p-4 flex items-center gap-3">
-      {person?.avatar_url ? (
-        <img src={person.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover" />
-      ) : (
-        <div className="w-12 h-12 rounded-full bg-[var(--pw-surface-2)] flex items-center justify-center font-display">
-          {(person?.display_name ?? "?")[0]}
-        </div>
-      )}
-      <div>
-        <div className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">{label}</div>
-        <div className="font-display text-[15px]">{person?.display_name ?? "—"}</div>
-      </div>
+    <div className="flex justify-between py-2 text-[0.875rem]">
+      <span className="text-[var(--pw-ink-2)]">{label}</span>
+      <span className="text-right ml-4 tabular-nums">{value}</span>
     </div>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+interface StudentBrief {
+  subject: string;
+  level: string;
+  goal: string | null;
+  strong_topics: string[];
+  wrong_topics: string[];
+  taken_at: string;
+  history: { taken_at: string; level: string }[];
+}
+
+const shortDate = (iso: string) =>
+  new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+
+/** What a tutor needs to plan the trial: level, goal, strengths, gaps, trend. */
+function BriefCard({ brief }: { brief: StudentBrief }) {
+  const goal = brief.goal ? (GOAL_LABELS[brief.goal as GoalId] ?? brief.goal) : null;
+  const earlier = brief.history.slice(1).reverse();
   return (
-    <div className="flex justify-between text-[14px]">
-      <span className="text-[var(--pw-ink-2)]">{label}</span>
-      <span className="text-right ml-3">{value}</span>
+    <div className="pw-card p-4 mt-2 text-[0.875rem] space-y-2">
+      <p>
+        <strong>{brief.subject}: {brief.level}</strong>
+        <span className="text-[var(--pw-ink-2)]">
+          {" "}
+          · taken {shortDate(brief.taken_at)}
+          {goal && ` · goal: ${goal}`}
+        </span>
+      </p>
+      <p>
+        <span className="text-[var(--pw-ink-2)]">Strong in: </span>
+        {brief.strong_topics.length > 0 ? brief.strong_topics.join(", ") : "nothing clear yet"}
+      </p>
+      <p>
+        <span className="text-[var(--pw-ink-2)]">Needs work: </span>
+        {brief.wrong_topics.length > 0 ? brief.wrong_topics.join(", ") : "no misses"}
+      </p>
+      {earlier.length > 0 && (
+        <p className="text-[var(--pw-ink-2)]">
+          Earlier: {earlier.map((h) => `${h.level} (${shortDate(h.taken_at)})`).join(" → ")} →{" "}
+          {brief.level}
+        </p>
+      )}
     </div>
   );
 }

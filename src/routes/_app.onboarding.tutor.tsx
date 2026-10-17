@@ -1,37 +1,55 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useCallback } from "react";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import Cropper, { Area } from "react-easy-crop";
-import confetti from "canvas-confetti";
+import { burst } from "@/lib/celebrate";
 import {
-  Camera, Check, ChevronLeft, ChevronRight, Search, Sparkles,
-  Upload, Video as VideoIcon, X, Plus, Clock, DollarSign, Eye,
+  Camera,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  Sparkles,
+  Upload,
+  Video as VideoIcon,
+  X,
+  Plus,
+  Clock,
+  Eye,
 } from "lucide-react";
 import { AvailabilityGrid, type CellState } from "@/pathwise/AvailabilityGrid";
+import { detectTimezone } from "@/pathwise/scheduling";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { formatPrice } from "../pathwise/sessions";
 
 export const Route = createFileRoute("/_app/onboarding/tutor")({
-  head: () => ({ meta: [{ title: "Tutor onboarding — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Tutor onboarding · PathWise" }] }),
   component: TutorWizard,
 });
 
 const STORAGE_KEY = "pw_tutor_onboarding_v1";
-const STEPS = [
-  "Basic Info",
-  "Expertise",
-  "Video Intro",
-  "Availability",
-  "Pricing",
-  "Review",
-];
+// QED palette: amber, teal-ink, paper, teal. canvas-confetti needs literal colours.
+const STEPS = ["Basic Info", "Expertise", "Video Intro", "Availability", "Pricing", "Review"];
 const EDU_LEVELS = ["High School", "Bachelor's", "Master's", "PhD", "Other"];
 
-interface Subject { id: string; name: string; category: string | null }
+interface Subject {
+  id: string;
+  name: string;
+  category: string | null;
+}
 
-interface PackageRow { sessions: number; discount_percent: number; enabled: boolean }
+interface PackageRow {
+  sessions: number;
+  discount_percent: number;
+  enabled: boolean;
+}
 
-interface AvailSlot { day: number; hour: number }
+interface AvailSlot {
+  day: number;
+  hour: number;
+}
 
 interface WizardState {
   step: number;
@@ -79,7 +97,9 @@ const DEFAULT_STATE: WizardState = {
   video_intro_url: null,
   video_thumbnail_url: null,
   availability: [],
-  timezone: typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : "UTC",
+  // Stable placeholder so SSR and the first client render agree; the real zone is
+  // detected on mount in TutorWizard (see the restore effect).
+  timezone: "UTC",
   instant_bookings: false,
   buffer_minutes: 15,
   hourly_rate: "",
@@ -93,19 +113,38 @@ const DEFAULT_STATE: WizardState = {
 
 function loadLocal(): Partial<WizardState> {
   if (typeof localStorage === "undefined") return {};
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; }
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
 }
 function saveLocal(s: WizardState) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  } catch {
+    /* ignore */
+  }
 }
 
 function TutorWizard() {
   const { loading, isLoggedIn, profile, refreshProfile, openLogin } = useAuth();
   const navigate = useNavigate();
-  const [state, setState] = useState<WizardState>(() => ({ ...DEFAULT_STATE, ...loadLocal() }));
+  // Seeded from the constant only: loadLocal() reads localStorage, which is empty
+  // on the server, so restoring during render would mismatch on hydration. The
+  // saved draft and the detected timezone are both adopted on mount below.
+  const [state, setState] = useState<WizardState>(DEFAULT_STATE);
+  const [restored, setRestored] = useState(false);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+
+  // Restore the in-progress draft, and detect the real timezone. A saved timezone
+  // wins over the detected one because the tutor may have chosen it deliberately.
+  useEffect(() => {
+    setState((prev) => ({ ...prev, timezone: detectTimezone(), ...loadLocal() }));
+    setRestored(true);
+  }, []);
 
   // Hydrate from DB once
   useEffect(() => {
@@ -114,12 +153,20 @@ function TutorWizard() {
     (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("full_name, headline, bio, years_experience, education_level, institution, avatar_url, subject_specialties, specializations, superpowers, subject_proficiency, video_intro_url, video_thumbnail_url, timezone, instant_bookings, buffer_minutes, hourly_rate, first_session_free, free_discovery_call, onboarding_step")
+        .select(
+          "full_name, headline, bio, years_experience, education_level, institution, avatar_url, subject_specialties, specializations, superpowers, subject_proficiency, video_intro_url, video_thumbnail_url, timezone, instant_bookings, buffer_minutes, hourly_rate, first_session_free, free_discovery_call, onboarding_step",
+        )
         .eq("id", profile.id)
         .maybeSingle();
       const [{ data: avail }, { data: pkgs }] = await Promise.all([
-        supabase.from("tutor_availability").select("day_of_week, start_hour").eq("user_id", profile.id),
-        supabase.from("tutor_packages").select("sessions, discount_percent, enabled").eq("user_id", profile.id),
+        supabase
+          .from("tutor_availability")
+          .select("day_of_week, start_hour")
+          .eq("user_id", profile.id),
+        supabase
+          .from("tutor_packages")
+          .select("session_count, discount_percent, is_active")
+          .eq("tutor_id", profile.id),
       ]);
       setState((prev) => {
         const local = loadLocal();
@@ -133,24 +180,49 @@ function TutorWizard() {
           education_level: prev.education_level || data?.education_level || "",
           institution: prev.institution || data?.institution || "",
           avatar_url: prev.avatar_url || data?.avatar_url || null,
-          specializations: prev.specializations.length ? prev.specializations : (data?.specializations ?? []),
+          specializations: prev.specializations.length
+            ? prev.specializations
+            : (data?.specializations ?? []),
           superpowers: prev.superpowers.length ? prev.superpowers : (data?.superpowers ?? []),
-          proficiency: Object.keys(prev.proficiency).length ? prev.proficiency : ((data?.subject_proficiency ?? {}) as Record<string, number>),
+          proficiency: Object.keys(prev.proficiency).length
+            ? prev.proficiency
+            : ((data?.subject_proficiency ?? {}) as Record<string, number>),
           video_intro_url: prev.video_intro_url || data?.video_intro_url || null,
           video_thumbnail_url: prev.video_thumbnail_url || data?.video_thumbnail_url || null,
           timezone: prev.timezone || data?.timezone || prev.timezone,
-          instant_bookings: typeof local.instant_bookings === "boolean" ? prev.instant_bookings : !!data?.instant_bookings,
+          instant_bookings:
+            typeof local.instant_bookings === "boolean"
+              ? prev.instant_bookings
+              : !!data?.instant_bookings,
           buffer_minutes: prev.buffer_minutes ?? data?.buffer_minutes ?? 15,
           hourly_rate: prev.hourly_rate || (data?.hourly_rate?.toString() ?? ""),
-          first_session_free: typeof local.first_session_free === "boolean" ? prev.first_session_free : !!data?.first_session_free,
-          free_discovery_call: typeof local.free_discovery_call === "boolean" ? prev.free_discovery_call : !!data?.free_discovery_call,
+          first_session_free:
+            typeof local.first_session_free === "boolean"
+              ? prev.first_session_free
+              : !!data?.first_session_free,
+          free_discovery_call:
+            typeof local.free_discovery_call === "boolean"
+              ? prev.free_discovery_call
+              : !!data?.free_discovery_call,
           step: prev.step !== 1 ? prev.step : (data?.onboarding_step ?? 1),
         };
         if (avail?.length && !prev.availability.length) {
           merged.availability = avail.map((a) => ({ day: a.day_of_week, hour: a.start_hour }));
         }
         if (pkgs?.length) {
-          merged.packages = pkgs.map((p) => ({ sessions: p.sessions, discount_percent: Number(p.discount_percent), enabled: p.enabled }));
+          // A package with no session_count can't be priced or displayed, so drop
+          // it rather than coercing it to 0 sessions.
+          merged.packages = pkgs.flatMap((p) =>
+            p.session_count == null
+              ? []
+              : [
+                  {
+                    sessions: p.session_count,
+                    discount_percent: Number(p.discount_percent ?? 0),
+                    enabled: p.is_active ?? false,
+                  },
+                ],
+          );
         }
         return merged;
       });
@@ -160,13 +232,21 @@ function TutorWizard() {
 
   // Load subjects
   useEffect(() => {
-    supabase.from("subjects").select("id, name, category").order("name").then(({ data }) => {
-      if (data) setSubjects(data as Subject[]);
-    });
+    supabase
+      .from("subjects")
+      .select("id, name, category")
+      .order("name")
+      .then(({ data }) => {
+        if (data) setSubjects(data as Subject[]);
+      });
   }, []);
 
-  // Persist to localStorage on every change
-  useEffect(() => { saveLocal(state); }, [state]);
+  // Persist to localStorage on every change — but not before the restore above has
+  // landed, or the first pass would overwrite the saved draft with DEFAULT_STATE.
+  useEffect(() => {
+    if (!restored) return;
+    saveLocal(state);
+  }, [state, restored]);
 
   // Auth gate
   useEffect(() => {
@@ -183,7 +263,7 @@ function TutorWizard() {
         .select("subject_specialties")
         .eq("id", profile.id)
         .maybeSingle();
-      const names: string[] = ((data?.subject_specialties ?? []) as string[]);
+      const names: string[] = (data?.subject_specialties ?? []) as string[];
       if (!names.length) return;
       const ids = subjects.filter((s) => names.includes(s.name)).map((s) => s.id);
       if (ids.length) setState((p) => ({ ...p, subject_ids: ids }));
@@ -195,68 +275,76 @@ function TutorWizard() {
   }, []);
 
   // Save current step to DB
-  const saveStep = useCallback(async (nextStep: number) => {
-    if (!profile) return false;
-    setSaving(true);
-    try {
-      const subjectNames = subjects.filter((s) => state.subject_ids.includes(s.id)).map((s) => s.name);
-      const { error: pErr } = await supabase.from("profiles").update({
-        full_name: state.full_name || null,
-        headline: state.headline || null,
-        bio: state.bio || null,
-        years_experience: state.years_experience === "" ? null : Number(state.years_experience),
-        education_level: state.education_level || null,
-        institution: state.institution || null,
-        avatar_url: state.avatar_url,
-        subject_specialties: subjectNames,
-        specializations: state.specializations,
-        superpowers: state.superpowers,
-        subject_proficiency: state.proficiency,
-        video_intro_url: state.video_intro_url,
-        video_thumbnail_url: state.video_thumbnail_url,
-        timezone: state.timezone || null,
-        instant_bookings: state.instant_bookings,
-        buffer_minutes: state.buffer_minutes,
-        hourly_rate: state.hourly_rate === "" ? null : Number(state.hourly_rate),
-        first_session_free: state.first_session_free,
-        free_discovery_call: state.free_discovery_call,
-        onboarding_step: nextStep,
-      }).eq("id", profile.id);
-      if (pErr) throw pErr;
+  const saveStep = useCallback(
+    async (nextStep: number) => {
+      if (!profile) return false;
+      setSaving(true);
+      try {
+        const subjectNames = subjects
+          .filter((s) => state.subject_ids.includes(s.id))
+          .map((s) => s.name);
+        const { error: pErr } = await supabase
+          .from("profiles")
+          .update({
+            full_name: state.full_name || null,
+            headline: state.headline || null,
+            bio: state.bio || null,
+            years_experience: state.years_experience === "" ? null : Number(state.years_experience),
+            education_level: state.education_level || null,
+            institution: state.institution || null,
+            avatar_url: state.avatar_url,
+            subject_specialties: subjectNames,
+            specializations: state.specializations,
+            superpowers: state.superpowers,
+            subject_proficiency: state.proficiency,
+            video_intro_url: state.video_intro_url,
+            video_thumbnail_url: state.video_thumbnail_url,
+            timezone: state.timezone || null,
+            instant_bookings: state.instant_bookings,
+            buffer_minutes: state.buffer_minutes,
+            hourly_rate: state.hourly_rate === "" ? null : Number(state.hourly_rate),
+            first_session_free: state.first_session_free,
+            free_discovery_call: state.free_discovery_call,
+            onboarding_step: nextStep,
+          })
+          .eq("id", profile.id);
+        if (pErr) throw pErr;
 
-      // Replace availability
-      await supabase.from("tutor_availability").delete().eq("user_id", profile.id);
-      if (state.availability.length) {
-        await supabase.from("tutor_availability").insert(
-          state.availability.map((s) => ({
-            user_id: profile.id,
-            day_of_week: s.day,
-            start_hour: s.hour,
-            end_hour: s.hour + 1,
-          })),
-        );
+        // Replace availability
+        await supabase.from("tutor_availability").delete().eq("user_id", profile.id);
+        if (state.availability.length) {
+          await supabase.from("tutor_availability").insert(
+            state.availability.map((s) => ({
+              user_id: profile.id,
+              day_of_week: s.day,
+              start_hour: s.hour,
+              end_hour: s.hour + 1,
+            })),
+          );
+        }
+        // Replace packages
+        await supabase.from("tutor_packages").delete().eq("tutor_id", profile.id);
+        if (state.packages.length) {
+          await supabase.from("tutor_packages").insert(
+            state.packages.map((p) => ({
+              tutor_id: profile.id,
+              session_count: p.sessions,
+              discount_percent: p.discount_percent,
+              is_active: p.enabled,
+            })),
+          );
+        }
+        return true;
+      } catch (e) {
+        console.error("[onboarding] save error", e);
+        toast.error("Couldn't save progress. Please try again.");
+        return false;
+      } finally {
+        setSaving(false);
       }
-      // Replace packages
-      await supabase.from("tutor_packages").delete().eq("user_id", profile.id);
-      if (state.packages.length) {
-        await supabase.from("tutor_packages").insert(
-          state.packages.map((p) => ({
-            user_id: profile.id,
-            sessions: p.sessions,
-            discount_percent: p.discount_percent,
-            enabled: p.enabled,
-          })),
-        );
-      }
-      return true;
-    } catch (e) {
-      console.error("[onboarding] save error", e);
-      toast.error("Couldn't save progress. Please try again.");
-      return false;
-    } finally {
-      setSaving(false);
-    }
-  }, [profile, state, subjects]);
+    },
+    [profile, state, subjects],
+  );
 
   const goNext = async () => {
     const nxt = Math.min(state.step + 1, STEPS.length);
@@ -264,25 +352,46 @@ function TutorWizard() {
     if (ok) setState((p) => ({ ...p, step: nxt }));
   };
   const goPrev = () => setState((p) => ({ ...p, step: Math.max(1, p.step - 1) }));
-  const goSkip = async () => { await goNext(); };
+  const goSkip = async () => {
+    await goNext();
+  };
 
   const publish = async () => {
     if (!profile) return;
+    // With no subjects a tutor never matches; with no rate every session books at 0.
+    if (state.subject_ids.length === 0) {
+      toast.error("Pick at least one subject you teach.");
+      setState((p) => ({ ...p, step: 2 }));
+      return;
+    }
+    if (!(Number(state.hourly_rate) > 0)) {
+      toast.error("Set your hourly rate before publishing.");
+      setState((p) => ({ ...p, step: 5 }));
+      return;
+    }
     const ok = await saveStep(STEPS.length);
     if (!ok) return;
-    const { error } = await supabase.from("profiles").update({
-      onboarding_completed: true,
-      verification_status: "pending",
-    }).eq("id", profile.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        onboarding_completed: true,
+        verification_status: "pending",
+      })
+      .eq("id", profile.id);
     if (error) {
       toast.error("Couldn't publish profile.");
       return;
     }
-    confetti({ particleCount: 140, spread: 80, origin: { y: 0.65 } });
-    setTimeout(() => confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 } }), 250);
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    burst({ particleCount: 140, spread: 80, origin: { y: 0.65 } });
+    setTimeout(() => burst({ particleCount: 80, spread: 100, origin: { y: 0.6 } }), 250);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
     await refreshProfile();
-    toast.success("Profile published! 🎉");
+    // Publishing sets verification_status "pending"; only verified tutors are listed.
+    toast.success("Profile saved. Students can find you once you're verified.");
     setTimeout(() => navigate({ to: "/dashboard" }), 1200);
   };
 
@@ -290,7 +399,7 @@ function TutorWizard() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="max-w-[760px] mx-auto px-5 sm:px-8 py-10">
+      <main className="max-w-[47.5rem] mx-auto px-6 sm:px-8 py-12">
         <ProgressBar step={state.step} />
 
         <div className="mt-8 pw-card p-6 sm:p-8">
@@ -301,12 +410,12 @@ function TutorWizard() {
           {state.step === 5 && <Step5 state={state} update={update} subjects={subjects} />}
           {state.step === 6 && <Step6 state={state} subjects={subjects} />}
 
-          <div className="mt-8 flex items-center justify-between border-t pw-border pt-5">
+          <div className="mt-8 flex items-center justify-between border-t pw-border pt-6">
             <button
               type="button"
               onClick={goPrev}
               disabled={state.step === 1 || saving}
-              className="inline-flex items-center gap-1 text-[14px] text-[var(--pw-ink-2)] disabled:opacity-40 hover:text-[var(--pw-ink)]"
+              className="text-[0.8125rem] font-semibold inline-flex items-center gap-2 text-[var(--pw-ink-2)] disabled:opacity-40 hover:text-[var(--pw-ink)] transition-colors"
             >
               <ChevronLeft className="size-4" /> Back
             </button>
@@ -316,7 +425,7 @@ function TutorWizard() {
                   type="button"
                   onClick={goSkip}
                   disabled={saving}
-                  className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] px-3 py-2"
+                  className="text-[0.8125rem] font-semibold text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors px-4 py-2"
                 >
                   Skip for now
                 </button>
@@ -326,7 +435,7 @@ function TutorWizard() {
                   type="button"
                   onClick={goNext}
                   disabled={saving}
-                  className="pw-btn-primary inline-flex items-center gap-1 px-5 py-2.5 text-[14px] font-medium disabled:opacity-50"
+                  className="pw-btn-primary inline-flex items-center gap-2 px-6 py-2 disabled:opacity-50"
                 >
                   {saving ? "Saving…" : "Continue"} <ChevronRight className="size-4" />
                 </button>
@@ -335,7 +444,7 @@ function TutorWizard() {
                   type="button"
                   onClick={publish}
                   disabled={saving}
-                  className="pw-btn-primary inline-flex items-center gap-1 px-6 py-2.5 text-[14px] font-medium disabled:opacity-50"
+                  className="pw-btn-primary inline-flex items-center gap-2 px-6 py-2 disabled:opacity-50"
                 >
                   <Sparkles className="size-4" /> Publish profile
                 </button>
@@ -353,13 +462,13 @@ function TutorWizard() {
 function ProgressBar({ step }: { step: number }) {
   return (
     <div>
-      <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+      <div className="label-caps text-[var(--pw-ink-2)]">
         Tutor onboarding · Step {step} of {STEPS.length}
       </div>
-      <h1 className="font-display text-[30px] sm:text-[36px] leading-tight mt-2">
+      <h1 className="font-display text-[1.875rem] sm:text-[2.25rem] uppercase tracking-[-0.025em] leading-none mt-4">
         {STEPS[step - 1]}
       </h1>
-      <div className="mt-5 flex gap-2">
+      <div className="mt-6 flex gap-2">
         {STEPS.map((label, i) => {
           const idx = i + 1;
           const done = idx < step;
@@ -367,13 +476,13 @@ function ProgressBar({ step }: { step: number }) {
           return (
             <div key={label} className="flex-1">
               <div
-                className="h-1.5 rounded-full transition-colors"
+                className="h-0.5 transition-colors"
                 style={{
-                  background: done || active ? "var(--pw-accent)" : "var(--pw-border)",
+                  background: done || active ? "var(--pw-accent-fill)" : "var(--pw-border)",
                 }}
               />
               <div
-                className="mt-1.5 text-[10.5px] font-mono-pw uppercase pw-tracking-wide hidden sm:block"
+                className="mt-2 label-caps hidden sm:block"
                 style={{ color: active ? "var(--pw-ink)" : "var(--pw-ink-2)" }}
               >
                 {label}
@@ -389,8 +498,14 @@ function ProgressBar({ step }: { step: number }) {
 /* ─────────────── Step 1: Basic Info ─────────────── */
 
 function Step1({
-  state, update, userId,
-}: { state: WizardState; update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void; userId: string }) {
+  state,
+  update,
+  userId,
+}: {
+  state: WizardState;
+  update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void;
+  userId: string;
+}) {
   const [cropFile, setCropFile] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -409,10 +524,13 @@ function Step1({
     if (!cropFile || !pixels) return null;
     const img = new Image();
     img.src = cropFile;
-    await new Promise((r) => { img.onload = r; });
+    await new Promise((r) => {
+      img.onload = r;
+    });
     const size = Math.max(400, Math.min(pixels.width, pixels.height));
     const canvas = document.createElement("canvas");
-    canvas.width = size; canvas.height = size;
+    canvas.width = size;
+    canvas.height = size;
     const ctx = canvas.getContext("2d")!;
     ctx.drawImage(img, pixels.x, pixels.y, pixels.width, pixels.height, 0, 0, size, size);
     return new Promise((res) => canvas.toBlob((b) => res(b), "image/jpeg", 0.9));
@@ -429,7 +547,9 @@ function Step1({
       const blob = await getCroppedBlob();
       if (!blob) throw new Error("No blob");
       const path = `${userId}/avatar-${Date.now()}.jpg`;
-      const { error } = await supabase.storage.from("profile-photos").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+      const { error } = await supabase.storage
+        .from("profile-photos")
+        .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (error) throw error;
       const { data } = supabase.storage.from("profile-photos").getPublicUrl(path);
       update("avatar_url", data.publicUrl);
@@ -446,10 +566,10 @@ function Step1({
   const headlineLeft = 140 - state.headline.length;
 
   return (
-    <div className="space-y-5">
-      <p className="text-[14px] text-[var(--pw-ink-2)]">Tell students who you are.</p>
+    <div className="space-y-6">
+      <p className="text-[0.875rem] text-[var(--pw-ink-2)]">Tell students who you are.</p>
 
-      <div className="flex items-start gap-5">
+      <div className="flex items-start gap-6">
         <div className="shrink-0">
           <div className="size-24 rounded-full overflow-hidden bg-[var(--pw-surface-2)] flex items-center justify-center pw-border border">
             {state.avatar_url ? (
@@ -461,19 +581,25 @@ function Step1({
         </div>
         <div className="flex-1">
           <Label>Profile photo</Label>
-          <p className="text-[12.5px] text-[var(--pw-ink-2)] mt-0.5">Square 1:1, min 400×400px.</p>
-          <label className="mt-2 inline-flex items-center gap-1.5 pw-pill pw-border border px-3 py-1.5 text-[13px] cursor-pointer bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)]">
+          <p className="text-[0.7812rem] text-[var(--pw-ink-2)] mt-0">Square 1:1, min 400×400px.</p>
+          <label className="mt-2 inline-flex items-center gap-2 pw-pill px-4 py-2 cursor-pointer has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
             <Upload className="size-3.5" /> Choose photo
-            <input type="file" accept="image/*" className="hidden" onChange={onPick} />
+            <input type="file" accept="image/*" className="sr-only" onChange={onPick} />
           </label>
         </div>
       </div>
 
-      {cropFile && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4" onClick={() => !uploading && setCropFile(null)}>
-          <div className="bg-[var(--pw-surface)] rounded-xl p-4 max-w-[480px] w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-display text-[20px]">Crop your photo</h3>
-            <div className="relative mt-3 h-[320px] bg-black rounded-md overflow-hidden">
+      <Dialog open={!!cropFile} onOpenChange={(open) => !open && !uploading && setCropFile(null)}>
+        <DialogContent
+          aria-describedby={undefined}
+          className="block w-[calc(100%-2rem)] max-w-[30rem] p-4 border-[var(--pw-border)] shadow-pw-float sm:rounded-none"
+        >
+          {cropFile && (
+            <>
+            <DialogTitle className="font-display font-normal text-[1.25rem] uppercase tracking-[-0.025em] leading-none">
+              Crop your photo
+            </DialogTitle>
+            <div className="relative mt-4 h-[20rem] bg-qed-ground overflow-hidden">
               <Cropper
                 image={cropFile}
                 crop={crop}
@@ -485,76 +611,110 @@ function Step1({
               />
             </div>
             <input
-              type="range" min={1} max={3} step={0.01} value={zoom}
+              type="range"
+              aria-label="Zoom"
+              min={1}
+              max={3}
+              step={0.01}
+              value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full mt-3"
+              className="w-full mt-4"
             />
-            <div className="mt-3 flex justify-end gap-2">
-              <button onClick={() => setCropFile(null)} disabled={uploading} className="px-3 py-2 text-[13px]">Cancel</button>
-              <button onClick={confirmCrop} disabled={uploading} className="pw-btn-primary px-4 py-2 text-[13px] disabled:opacity-50">
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setCropFile(null)}
+                disabled={uploading}
+                className="text-[0.8125rem] font-semibold px-4 py-2 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmCrop}
+                disabled={uploading}
+                className="pw-btn-primary px-4 py-2 disabled:opacity-50"
+              >
                 {uploading ? "Uploading…" : "Save photo"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <div>
-        <Label>Full name</Label>
-        <Input value={state.full_name} onChange={(e) => update("full_name", e.target.value)} placeholder="Jane Doe" />
+        <Label htmlFor="tob-name">Full name</Label>
+        <Input id="tob-name"
+          value={state.full_name}
+          onChange={(e) => update("full_name", e.target.value)}
+          placeholder="Ana Rusu"
+        />
       </div>
 
       <div>
         <div className="flex items-baseline justify-between">
-          <Label>Headline</Label>
-          <span className="font-mono-pw text-[11px]" style={{ color: headlineLeft < 0 ? "var(--pw-danger)" : "var(--pw-ink-2)" }}>
+          <Label htmlFor="tob-headline">Headline</Label>
+          <span
+            className="font-mono-pw text-[0.6875rem]"
+            style={{ color: headlineLeft < 0 ? "var(--pw-danger)" : "var(--pw-ink-2)" }}
+          >
             {headlineLeft} chars left
           </span>
         </div>
         <Input
+          id="tob-headline"
           value={state.headline}
           maxLength={140}
           onChange={(e) => update("headline", e.target.value)}
-          placeholder="MIT-trained math tutor specializing in SAT prep"
+          placeholder="Math tutor, 8 years preparing students for the BAC"
         />
       </div>
 
       <div>
-        <Label>Bio (markdown supported)</Label>
-        <textarea
+        <Label htmlFor="tob-bio">Bio (markdown supported)</Label>
+        <textarea id="tob-bio"
           rows={5}
           value={state.bio}
           onChange={(e) => update("bio", e.target.value)}
           placeholder="**About me…** Share your teaching style, experience, what you love."
-          className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)] font-mono-pw"
+          className="pw-input mt-2 text-[0.875rem]"
         />
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <Label>Years of experience</Label>
-          <Input
-            type="number" min={0} max={70}
+          <Label htmlFor="tob-years">Years of experience</Label>
+          <Input id="tob-years"
+            type="number"
+            min={0}
+            max={70}
             value={state.years_experience}
             onChange={(e) => update("years_experience", e.target.value)}
             placeholder="5"
           />
         </div>
         <div>
-          <Label>Education level</Label>
-          <select
+          <Label htmlFor="tob-education">Education level</Label>
+          <select id="tob-education"
             value={state.education_level}
             onChange={(e) => update("education_level", e.target.value)}
-            className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+            className="pw-input mt-2 text-[0.875rem]"
           >
             <option value="">Select…</option>
-            {EDU_LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+            {EDU_LEVELS.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
           </select>
         </div>
       </div>
       <div>
-        <Label>Institution</Label>
-        <Input value={state.institution} onChange={(e) => update("institution", e.target.value)} placeholder="Stanford University" />
+        <Label htmlFor="tob-institution">Institution</Label>
+        <Input id="tob-institution"
+          value={state.institution}
+          onChange={(e) => update("institution", e.target.value)}
+          placeholder="Moldova State University"
+        />
       </div>
     </div>
   );
@@ -563,8 +723,14 @@ function Step1({
 /* ─────────────── Step 2: Expertise & Subjects ─────────────── */
 
 function Step2({
-  state, update, subjects,
-}: { state: WizardState; update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void; subjects: Subject[] }) {
+  state,
+  update,
+  subjects,
+}: {
+  state: WizardState;
+  update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void;
+  subjects: Subject[];
+}) {
   const [q, setQ] = useState("");
   const [specInput, setSpecInput] = useState("");
   const [superInput, setSuperInput] = useState("");
@@ -586,44 +752,55 @@ function Step2({
     update("proficiency", { ...state.proficiency, [id]: v });
   }
 
-  function addTag(kind: "specializations" | "superpowers", val: string, setter: (v: string) => void) {
+  function addTag(
+    kind: "specializations" | "superpowers",
+    val: string,
+    setter: (v: string) => void,
+  ) {
     const t = val.trim();
     if (!t) return;
-    if (state[kind].includes(t)) { setter(""); return; }
+    if (state[kind].includes(t)) {
+      setter("");
+      return;
+    }
     update(kind, [...state[kind], t]);
     setter("");
   }
 
   return (
     <div className="space-y-6">
-      <p className="text-[14px] text-[var(--pw-ink-2)]">What do you teach, and what makes you stand out?</p>
+      <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
+        What do you teach, and what makes you stand out?
+      </p>
 
       <div>
-        <Label>Subjects</Label>
-        <div className="mt-1 relative">
+        <Label htmlFor="tob-subjects">Subjects</Label>
+        <div className="mt-2 relative">
           <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--pw-ink-2)]" />
-          <input
+          <input id="tob-subjects"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search subjects…"
-            className="w-full pw-border border rounded-md pl-9 pr-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+            className="w-full pw-border pl-8 pr-4 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
           />
         </div>
-        <div className="mt-3 flex flex-wrap gap-2 max-h-[180px] overflow-y-auto">
+        <div className="mt-4 flex flex-wrap gap-2 max-h-[11.25rem] overflow-y-auto">
           {filtered.map((s) => {
             const on = state.subject_ids.includes(s.id);
             return (
               <button
-                type="button" key={s.id}
+                type="button"
+                key={s.id}
                 onClick={() => toggleSubject(s.id)}
-                className="pw-pill border px-3 py-1.5 text-[13px] transition-colors"
+                className="pw-pill px-4 py-2 transition-colors"
                 style={{
                   borderColor: on ? "var(--pw-accent)" : "var(--pw-border)",
-                  background: on ? "var(--pw-accent-soft)" : "var(--pw-surface)",
+                  background: on ? "var(--pw-accent-soft)" : "transparent",
                   color: on ? "var(--pw-accent)" : "var(--pw-ink)",
                 }}
               >
-                {on && <Check className="inline size-3 mr-1" />}{s.name}
+                {on && <Check className="inline size-3 mr-2" />}
+                {s.name}
               </button>
             );
           })}
@@ -633,20 +810,24 @@ function Step2({
       {state.subject_ids.length > 0 && (
         <div>
           <Label>Proficiency per subject</Label>
-          <div className="mt-2 space-y-3">
+          <div className="mt-2 space-y-4">
             {state.subject_ids.map((id) => {
               const subj = subjects.find((s) => s.id === id);
               if (!subj) return null;
               const v = state.proficiency[id] ?? 3;
               const labels = ["Beginner", "Novice", "Intermediate", "Advanced", "Expert"];
               return (
-                <div key={id} className="pw-border border rounded-md p-3">
-                  <div className="flex items-center justify-between text-[13px]">
+                <div key={id} className="pw-border p-4">
+                  <div className="flex items-center justify-between text-[0.8125rem]">
                     <span className="font-medium">{subj.name}</span>
-                    <span className="font-mono-pw text-[11px] text-[var(--pw-ink-2)]">{labels[v - 1]}</span>
+                    <span className="label-caps text-[var(--pw-ink-2)]">{labels[v - 1]}</span>
                   </div>
                   <input
-                    type="range" min={1} max={5} step={1} value={v}
+                    type="range"
+                    min={1}
+                    max={5}
+                    step={1}
+                    value={v}
                     onChange={(e) => setProf(id, Number(e.target.value))}
                     className="w-full mt-2 accent-[var(--pw-accent)]"
                   />
@@ -659,21 +840,31 @@ function Step2({
 
       <TagField
         label="Specializations"
-        helper="e.g., AP Calculus, SAT Prep, Dyslexia Specialist"
+        helper="e.g., BAC preparation, gymnasium exam, English grammar"
         tags={state.specializations}
         input={specInput}
         setInput={setSpecInput}
         onAdd={() => addTag("specializations", specInput, setSpecInput)}
-        onRemove={(t) => update("specializations", state.specializations.filter((x) => x !== t))}
+        onRemove={(t) =>
+          update(
+            "specializations",
+            state.specializations.filter((x) => x !== t),
+          )
+        }
       />
       <TagField
-        label="Superpowers ✨"
-        helper="Highlighted on your profile — what you're truly best at"
+        label="Strengths"
+        helper="Shown on your profile: what you teach best."
         tags={state.superpowers}
         input={superInput}
         setInput={setSuperInput}
         onAdd={() => addTag("superpowers", superInput, setSuperInput)}
-        onRemove={(t) => update("superpowers", state.superpowers.filter((x) => x !== t))}
+        onRemove={(t) =>
+          update(
+            "superpowers",
+            state.superpowers.filter((x) => x !== t),
+          )
+        }
         accent
       />
     </div>
@@ -681,24 +872,44 @@ function Step2({
 }
 
 function TagField({
-  label, helper, tags, input, setInput, onAdd, onRemove, accent,
+  label,
+  helper,
+  tags,
+  input,
+  setInput,
+  onAdd,
+  onRemove,
+  accent,
 }: {
-  label: string; helper?: string; tags: string[]; input: string;
-  setInput: (v: string) => void; onAdd: () => void; onRemove: (t: string) => void; accent?: boolean;
+  label: string;
+  helper?: string;
+  tags: string[];
+  input: string;
+  setInput: (v: string) => void;
+  onAdd: () => void;
+  onRemove: (t: string) => void;
+  accent?: boolean;
 }) {
+  const id = useId();
   return (
     <div>
-      <Label>{label}</Label>
-      {helper && <p className="text-[12px] text-[var(--pw-ink-2)] mt-0.5">{helper}</p>}
+      <Label htmlFor={id}>{label}</Label>
+      {helper && <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{helper}</p>}
       <div className="mt-2 flex gap-2">
         <input
+          id={id}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAdd(); } }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              onAdd();
+            }
+          }}
           placeholder="Type and press Enter"
-          className="flex-1 pw-border border rounded-md px-3 py-2 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+          className="flex-1 pw-border px-4 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
         />
-        <button type="button" onClick={onAdd} className="pw-pill border pw-border px-3 text-[13px] bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)]">
+        <button type="button" onClick={onAdd} aria-label={`Add to ${label}`} className="pw-pill px-4">
           <Plus className="size-3.5" />
         </button>
       </div>
@@ -707,15 +918,21 @@ function TagField({
           {tags.map((t) => (
             <span
               key={t}
-              className="pw-pill border px-3 py-1 text-[12.5px] inline-flex items-center gap-1.5"
+              className="pw-pill px-4 py-2 inline-flex items-center gap-2"
               style={{
                 borderColor: accent ? "var(--pw-accent-3)" : "var(--pw-border)",
-                background: accent ? "rgba(244,196,48,0.15)" : "var(--pw-surface)",
-                color: accent ? "#8a6d00" : "var(--pw-ink)",
+                background: accent ? "var(--pw-accent-soft)" : "transparent",
+                color: accent ? "var(--pw-accent-3)" : "var(--pw-ink)",
               }}
             >
-              {accent && <Sparkles className="size-3" />}{t}
-              <button type="button" onClick={() => onRemove(t)} className="opacity-60 hover:opacity-100">
+              {accent && <Sparkles className="size-3" />}
+              {t}
+              <button
+                type="button"
+                onClick={() => onRemove(t)}
+                aria-label={`Remove ${t}`}
+                className="opacity-60 hover:opacity-100"
+              >
                 <X className="size-3" />
               </button>
             </span>
@@ -729,8 +946,14 @@ function TagField({
 /* ─────────────── Step 3: Video Intro ─────────────── */
 
 function Step3({
-  state, update, userId,
-}: { state: WizardState; update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void; userId: string }) {
+  state,
+  update,
+  userId,
+}: {
+  state: WizardState;
+  update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void;
+  userId: string;
+}) {
   const [recording, setRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(state.video_intro_url);
   const [uploading, setUploading] = useState(false);
@@ -740,10 +963,13 @@ function Step3({
   const streamRef = useRef<MediaStream | null>(null);
   const stopTimerRef = useRef<number | null>(null);
 
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
-    if (stopTimerRef.current) window.clearTimeout(stopTimerRef.current);
-  }, []);
+  useEffect(
+    () => () => {
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      if (stopTimerRef.current) window.clearTimeout(stopTimerRef.current);
+    },
+    [],
+  );
 
   async function startRecord() {
     try {
@@ -756,7 +982,9 @@ function Step3({
       }
       const rec = new MediaRecorder(stream, { mimeType: "video/webm" });
       chunksRef.current = [];
-      rec.ondataavailable = (e) => { if (e.data.size) chunksRef.current.push(e.data); };
+      rec.ondataavailable = (e) => {
+        if (e.data.size) chunksRef.current.push(e.data);
+      };
       rec.onstop = async () => {
         const blob = new Blob(chunksRef.current, { type: "video/webm" });
         await uploadVideo(blob);
@@ -773,7 +1001,10 @@ function Step3({
     }
   }
   function stopRecord() {
-    if (stopTimerRef.current) { window.clearTimeout(stopTimerRef.current); stopTimerRef.current = null; }
+    if (stopTimerRef.current) {
+      window.clearTimeout(stopTimerRef.current);
+      stopTimerRef.current = null;
+    }
     mediaRecorderRef.current?.stop();
     setRecording(false);
   }
@@ -793,7 +1024,9 @@ function Step3({
     try {
       const ext = blob.type.includes("mp4") ? "mp4" : "webm";
       const path = `${userId}/intro-${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from("tutor-videos").upload(path, blob, { upsert: true, contentType: blob.type });
+      const { error } = await supabase.storage
+        .from("tutor-videos")
+        .upload(path, blob, { upsert: true, contentType: blob.type });
       if (error) throw error;
       const { data } = supabase.storage.from("tutor-videos").getPublicUrl(path);
       update("video_intro_url", data.publicUrl);
@@ -817,7 +1050,9 @@ function Step3({
       v.src = url;
       v.muted = true;
       v.playsInline = true;
-      v.onloadedmetadata = () => { v.currentTime = Math.min(5, (v.duration || 5) - 0.1); };
+      v.onloadedmetadata = () => {
+        v.currentTime = Math.min(5, (v.duration || 5) - 0.1);
+      };
       v.onseeked = async () => {
         const canvas = document.createElement("canvas");
         canvas.width = v.videoWidth || 640;
@@ -825,58 +1060,97 @@ function Step3({
         const ctx = canvas.getContext("2d");
         if (!ctx) return resolve(null);
         ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(async (b) => {
-          if (!b) return resolve(null);
-          const path = `${uid}/thumb-${Date.now()}.jpg`;
-          const { error } = await supabase.storage.from("tutor-videos").upload(path, b, { upsert: true, contentType: "image/jpeg" });
-          if (error) { console.warn("thumb upload", error); return resolve(null); }
-          const { data } = supabase.storage.from("tutor-videos").getPublicUrl(path);
-          resolve(data.publicUrl);
-        }, "image/jpeg", 0.85);
+        canvas.toBlob(
+          async (b) => {
+            if (!b) return resolve(null);
+            const path = `${uid}/thumb-${Date.now()}.jpg`;
+            const { error } = await supabase.storage
+              .from("tutor-videos")
+              .upload(path, b, { upsert: true, contentType: "image/jpeg" });
+            if (error) {
+              console.warn("thumb upload", error);
+              return resolve(null);
+            }
+            const { data } = supabase.storage.from("tutor-videos").getPublicUrl(path);
+            resolve(data.publicUrl);
+          },
+          "image/jpeg",
+          0.85,
+        );
       };
       v.onerror = () => resolve(null);
     });
   }
 
   return (
-    <div className="space-y-5">
-      <p className="text-[14px] text-[var(--pw-ink-2)]">A 60-90s intro video doubles your booking rate.</p>
+    <div className="space-y-6">
+      <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
+        Students see this on your profile. Keep it to 60 to 90 seconds.
+      </p>
 
-      <div className="rounded-md p-4" style={{ background: "var(--pw-accent-soft)", border: "1px solid var(--pw-accent)" }}>
-        <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide" style={{ color: "var(--pw-accent)" }}>Tips</div>
-        <p className="text-[13px] mt-1">Introduce yourself, share your teaching philosophy, and what makes you unique.</p>
+      <div
+        className="p-4"
+        style={{ background: "var(--pw-accent-soft)", border: "1px solid var(--pw-accent)" }}
+      >
+        <div className="label-caps text-pw-accent">Tips</div>
+        <p className="text-[0.8125rem] mt-2">
+          Say who you are, what you teach and what a lesson with you looks like.
+        </p>
       </div>
 
       {previewUrl ? (
         <div>
-          <video src={previewUrl} controls poster={state.video_thumbnail_url ?? undefined} className="w-full rounded-md bg-black aspect-video" />
-          <div className="mt-3 flex gap-2">
-            <button onClick={() => { setPreviewUrl(null); update("video_intro_url", null); update("video_thumbnail_url", null); }}
-              className="pw-pill border pw-border px-3 py-1.5 text-[13px] bg-[var(--pw-surface)]">Re-record / Replace</button>
+          <video
+            src={previewUrl}
+            controls
+            poster={state.video_thumbnail_url ?? undefined}
+            className="w-full bg-qed-ground aspect-video"
+          />
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => {
+                setPreviewUrl(null);
+                update("video_intro_url", null);
+                update("video_thumbnail_url", null);
+              }}
+              className="pw-pill px-4 py-2"
+            >
+              Re-record / Replace
+            </button>
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          <video ref={videoRef} className="w-full rounded-md bg-black aspect-video" />
+        <div className="space-y-4">
+          <video ref={videoRef} className="w-full bg-qed-ground aspect-video" />
           <div className="flex flex-wrap gap-2">
             {!recording ? (
-              <button onClick={startRecord} disabled={uploading}
-                className="pw-btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-[13px] disabled:opacity-50">
+              <button
+                onClick={startRecord}
+                disabled={uploading}
+                className="pw-btn-primary inline-flex items-center gap-2 px-4 py-2 disabled:opacity-50"
+              >
                 <VideoIcon className="size-4" /> Record now
               </button>
             ) : (
-              <button onClick={stopRecord} className="pw-btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-[13px]"
-                style={{ background: "var(--pw-danger)" }}>
+              <button
+                onClick={stopRecord}
+                className="pw-btn-primary inline-flex items-center gap-2 px-4 py-2"
+                style={{ background: "var(--pw-danger)" }}
+              >
                 Stop recording
               </button>
             )}
-            <label className="pw-pill border pw-border px-3 py-2 text-[13px] cursor-pointer bg-[var(--pw-surface)] inline-flex items-center gap-1.5 hover:bg-[var(--pw-surface-2)]">
+            <label className="pw-pill px-4 py-2 cursor-pointer inline-flex items-center gap-2 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--pw-accent)]">
               <Upload className="size-3.5" /> Upload file
-              <input type="file" accept="video/*" className="hidden" onChange={onUploadFile} />
+              <input type="file" accept="video/*" className="sr-only" onChange={onUploadFile} />
             </label>
-            {uploading && <span className="text-[12px] text-[var(--pw-ink-2)] self-center">Uploading…</span>}
+            {uploading && (
+              <span className="text-[0.75rem] text-[var(--pw-ink-2)] self-center">Uploading…</span>
+            )}
           </div>
-          <p className="text-[11.5px] text-[var(--pw-ink-2)]">Max 2 minutes. Thumbnail auto-generated at 5s.</p>
+          <p className="text-[0.7188rem] text-[var(--pw-ink-2)]">
+            Max 2 minutes. Thumbnail auto-generated at 5s.
+          </p>
         </div>
       )}
     </div>
@@ -886,8 +1160,12 @@ function Step3({
 /* ─────────────── Step 4: Availability (drag-to-paint) ─────────────── */
 
 function Step4({
-  state, update,
-}: { state: WizardState; update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void }) {
+  state,
+  update,
+}: {
+  state: WizardState;
+  update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void;
+}) {
   // Build grid from availability array
   const buildGrid = (availability: AvailSlot[]): Record<string, CellState> => {
     const grid: Record<string, CellState> = {};
@@ -919,49 +1197,32 @@ function Step4({
   };
 
   return (
-    <div className="space-y-5">
-      <p className="text-[14px] text-[var(--pw-ink-2)]">When are you available each week? Drag to paint multiple cells.</p>
+    <div className="space-y-6">
+      <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
+        When are you available each week? Drag to paint multiple cells.
+      </p>
 
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <Label>Timezone</Label>
-          <Input value={state.timezone} onChange={(e) => update("timezone", e.target.value)} />
-          <p className="text-[11.5px] text-[var(--pw-ink-2)] mt-1">Auto-detected — you can change it.</p>
+          <Label htmlFor="tob-timezone">Timezone</Label>
+          <Input id="tob-timezone" value={state.timezone} onChange={(e) => update("timezone", e.target.value)} />
+          <p className="text-[0.7188rem] text-[var(--pw-ink-2)] mt-2">
+            Detected from your browser. You can change it.
+          </p>
         </div>
         <div>
-          <Label>Buffer time between sessions</Label>
-          <select
+          <Label htmlFor="tob-buffer">Buffer time between sessions</Label>
+          <select id="tob-buffer"
             value={state.buffer_minutes}
             onChange={(e) => update("buffer_minutes", Number(e.target.value))}
-            className="mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+            className="pw-input mt-2 text-[0.875rem]"
           >
-            {[0, 15, 30, 60].map((v) => <option key={v} value={v}>{v} min</option>)}
+            {[0, 15, 30, 60].map((v) => (
+              <option key={v} value={v}>
+                {v} min
+              </option>
+            ))}
           </select>
-        </div>
-      </div>
-
-      <div>
-        <Label>Booking mode</Label>
-        <div className="mt-2 flex gap-2">
-          {[
-            { v: false, label: "Manual approval" },
-            { v: true, label: "Instant bookings" },
-          ].map((o) => {
-            const on = state.instant_bookings === o.v;
-            return (
-              <button
-                key={String(o.v)}
-                type="button"
-                onClick={() => update("instant_bookings", o.v)}
-                className="pw-pill border px-4 py-2 text-[13px]"
-                style={{
-                  borderColor: on ? "var(--pw-accent)" : "var(--pw-border)",
-                  background: on ? "var(--pw-accent-soft)" : "var(--pw-surface)",
-                  color: on ? "var(--pw-accent)" : "var(--pw-ink)",
-                }}
-              >{o.label}</button>
-            );
-          })}
         </div>
       </div>
 
@@ -978,63 +1239,82 @@ function Step4({
 /* ─────────────── Step 5: Pricing ─────────────── */
 
 function Step5({
-  state, update, subjects,
-}: { state: WizardState; update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void; subjects: Subject[] }) {
+  state,
+  update,
+  subjects,
+}: {
+  state: WizardState;
+  update: <K extends keyof WizardState>(k: K, v: WizardState[K]) => void;
+  subjects: Subject[];
+}) {
   const rate = Number(state.hourly_rate) || 0;
   const selectedSubjects = subjects.filter((s) => state.subject_ids.includes(s.id));
   const marketRates: Record<string, [number, number]> = {
-    "STEM": [40, 90], "Test Prep": [60, 120], "Languages": [30, 70],
-    "Humanities": [35, 75],
+    STEM: [250, 500],
+    "Test Prep": [300, 600],
+    Languages: [200, 400],
+    Humanities: [200, 400],
   };
   const suggestion = selectedSubjects[0]?.category
-    ? marketRates[selectedSubjects[0].category!] : [40, 80];
+    ? marketRates[selectedSubjects[0].category!]
+    : [250, 450];
 
   function updPkg(i: number, patch: Partial<PackageRow>) {
-    const next = state.packages.map((p, idx) => idx === i ? { ...p, ...patch } : p);
+    const next = state.packages.map((p, idx) => (idx === i ? { ...p, ...patch } : p));
     update("packages", next);
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <Label>Default hourly rate (USD)</Label>
-        <div className="mt-1 relative">
-          <DollarSign className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--pw-ink-2)]" />
-          <input
-            type="number" min={0} value={state.hourly_rate}
+        <Label htmlFor="tob-rate">Default hourly rate (MDL)</Label>
+        <div className="mt-2 relative">
+          <input id="tob-rate"
+            type="number"
+            min={0}
+            value={state.hourly_rate}
             onChange={(e) => update("hourly_rate", e.target.value)}
-            className="w-full pw-border border rounded-md pl-9 pr-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
-            placeholder="50"
+            className="w-full pw-border px-4 py-2 text-[0.875rem] bg-[var(--pw-input-bg)] outline-none focus:border-[var(--pw-accent)]"
+            placeholder="300"
           />
         </div>
-        <p className="text-[12px] text-[var(--pw-ink-2)] mt-1">
-          Suggested for your subjects: ${suggestion?.[0]}–${suggestion?.[1]}/hr
+        <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
+          Suggested for your subjects: {suggestion?.[0]}–{suggestion?.[1]} MDL/hr
         </p>
       </div>
 
       <div>
         <Label>Package deals</Label>
-        <p className="text-[12px] text-[var(--pw-ink-2)]">Encourage longer commitments with bundle discounts.</p>
+        <p className="text-[0.75rem] text-[var(--pw-ink-2)]">
+          Encourage longer commitments with bundle discounts.
+        </p>
         <div className="mt-2 space-y-2">
           {state.packages.map((p, i) => (
-            <div key={i} className="pw-border border rounded-md p-3 flex items-center gap-3">
+            <div key={i} className="pw-border p-4 flex items-center gap-4">
               <input
-                type="checkbox" checked={p.enabled}
+                type="checkbox"
+                checked={p.enabled}
                 onChange={(e) => updPkg(i, { enabled: e.target.checked })}
                 className="accent-[var(--pw-accent)]"
               />
-              <span className="text-[13px] flex-1">
+              <span className="text-[0.8125rem] flex-1">
                 {p.sessions}-session pack · {p.discount_percent}% off
                 {rate > 0 && (
-                  <span className="text-[var(--pw-ink-2)]"> → ${(rate * p.sessions * (1 - p.discount_percent / 100)).toFixed(0)} total</span>
+                  <span className="text-[var(--pw-ink-2)]">
+                    {" "}
+                    → ${(rate * p.sessions * (1 - p.discount_percent / 100)).toFixed(0)} total
+                  </span>
                 )}
               </span>
               <input
-                type="number" min={0} max={50} value={p.discount_percent}
+                type="number"
+                min={0}
+                max={50}
+                value={p.discount_percent}
                 onChange={(e) => updPkg(i, { discount_percent: Number(e.target.value) })}
-                className="w-16 pw-border border rounded px-2 py-1 text-[13px]"
+                className="w-16 pw-border px-2 py-2 text-[0.8125rem]"
               />
-              <span className="text-[12px] text-[var(--pw-ink-2)]">%</span>
+              <span className="text-[0.75rem] text-[var(--pw-ink-2)]">%</span>
             </div>
           ))}
         </div>
@@ -1045,40 +1325,59 @@ function Step5({
           checked={state.first_session_free}
           onChange={(v) => update("first_session_free", v)}
           label="First session free"
-          helper="A risk-free way for students to try you out"
+          helper="Students can try one lesson before paying."
         />
         <ToggleRow
           checked={state.free_discovery_call}
           onChange={(v) => update("free_discovery_call", v)}
-          label="Free 15-min discovery call"
+          label="Free 30-min trial call"
           helper="Quick chat before booking a full session"
         />
       </div>
 
-      <div className="pw-border border rounded-md p-4 bg-[var(--pw-surface-2)]">
-        <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Search preview</div>
+      <div className="pw-border p-4 bg-[var(--pw-surface-2)]">
+        <div className="label-caps text-[var(--pw-ink-2)]">Search preview</div>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="font-display text-[24px]">${rate || "—"}</span>
-          <span className="text-[12px] text-[var(--pw-ink-2)]">/ hour</span>
+          <span className="font-display text-[1.5rem] tabular-nums">{rate ? formatPrice(rate) : "—"}</span>
+          <span className="text-[0.75rem] text-[var(--pw-ink-2)]">/ hour</span>
           {state.first_session_free && (
-            <span className="ml-auto pw-pill border pw-border px-2 py-0.5 text-[11px] bg-[var(--pw-surface)]">First free</span>
+            <span className="ml-auto pw-pill px-2 py-0">First free</span>
           )}
         </div>
         {state.packages.some((p) => p.enabled) && (
-          <div className="mt-1 text-[12px] text-[var(--pw-accent)]">Save up to {Math.max(...state.packages.filter((p) => p.enabled).map((p) => p.discount_percent))}% with packages</div>
+          <div className="mt-2 text-[0.75rem] text-[var(--pw-accent)]">
+            Save up to{" "}
+            {Math.max(...state.packages.filter((p) => p.enabled).map((p) => p.discount_percent))}%
+            with packages
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-function ToggleRow({ checked, onChange, label, helper }: { checked: boolean; onChange: (v: boolean) => void; label: string; helper: string }) {
+function ToggleRow({
+  checked,
+  onChange,
+  label,
+  helper,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  helper: string;
+}) {
   return (
-    <label className="pw-border border rounded-md p-3 flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="accent-[var(--pw-accent)]" />
+    <label className="pw-border p-4 flex items-center gap-4 cursor-pointer transition-colors hover:border-[var(--pw-ink)]">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="accent-[var(--pw-accent)]"
+      />
       <span className="flex-1">
-        <span className="text-[13.5px] font-medium block">{label}</span>
-        <span className="text-[12px] text-[var(--pw-ink-2)]">{helper}</span>
+        <span className="text-[0.8438rem] font-medium block">{label}</span>
+        <span className="text-[0.75rem] text-[var(--pw-ink-2)]">{helper}</span>
       </span>
     </label>
   );
@@ -1100,72 +1399,118 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
   const subjectNames = subjects.filter((s) => state.subject_ids.includes(s.id)).map((s) => s.name);
 
   return (
-    <div className="space-y-5">
-      <p className="text-[14px] text-[var(--pw-ink-2)]">Here's how students will see your profile.</p>
+    <div className="space-y-6">
+      <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
+        Here's how students will see your profile.
+      </p>
 
-      <div className="pw-border border rounded-lg overflow-hidden">
+      <div className="pw-border overflow-hidden">
         {state.video_thumbnail_url || state.video_intro_url ? (
-          <div className="relative aspect-video bg-black">
-            <img src={state.video_thumbnail_url || ""} alt="" className="w-full h-full object-cover opacity-80" />
+          <div className="relative aspect-video bg-qed-ground">
+            <img
+              src={state.video_thumbnail_url || ""}
+              alt=""
+              className="w-full h-full object-cover opacity-80"
+            />
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="size-12 rounded-full bg-white/90 flex items-center justify-center">
+              <div className="size-12 rounded-full bg-[var(--pw-ink)] text-[var(--pw-bg)] flex items-center justify-center">
                 <VideoIcon className="size-5" />
               </div>
             </div>
           </div>
         ) : null}
-        <div className="p-5">
+        <div className="p-6">
           <div className="flex items-start gap-4">
             <div className="size-16 rounded-full overflow-hidden bg-[var(--pw-surface-2)] shrink-0">
-              {state.avatar_url && <img src={state.avatar_url} alt="" className="size-full object-cover" />}
+              {state.avatar_url && (
+                <img src={state.avatar_url} alt="" className="size-full object-cover" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-display text-[22px] leading-tight">{state.full_name || "Your name"}</div>
-              <div className="text-[13px] text-[var(--pw-ink-2)] mt-0.5 line-clamp-2">{state.headline || "Your headline"}</div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
+              <div className="font-display text-[1.375rem] uppercase tracking-[-0.025em] leading-none">
+                {state.full_name || "Your name"}
+              </div>
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-2 line-clamp-2">
+                {state.headline || "Your headline"}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
                 {subjectNames.slice(0, 4).map((n) => (
-                  <span key={n} className="pw-pill border pw-border px-2 py-0.5 text-[11px] bg-[var(--pw-surface-2)]">{n}</span>
+                  <span key={n} className="pw-pill px-2 py-0">
+                    {n}
+                  </span>
                 ))}
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="font-display text-[22px]">${state.hourly_rate || "—"}</div>
-              <div className="text-[11px] text-[var(--pw-ink-2)]">/hr</div>
+              <div className="font-display text-[1.375rem] tabular-nums">
+                {state.hourly_rate ? formatPrice(Number(state.hourly_rate)) : "—"}
+              </div>
+              <div className="text-[0.6875rem] text-[var(--pw-ink-2)]">/hr</div>
             </div>
           </div>
           {state.superpowers.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
+            <div className="mt-4 flex flex-wrap gap-2">
               {state.superpowers.map((t) => (
-                <span key={t} className="pw-pill border px-2 py-0.5 text-[11px] inline-flex items-center gap-1"
-                  style={{ borderColor: "var(--pw-accent-3)", background: "rgba(244,196,48,0.18)", color: "#8a6d00" }}>
-                  <Sparkles className="size-3" />{t}
+                <span
+                  key={t}
+                  className="pw-pill px-2 py-0 inline-flex items-center gap-2"
+                  style={{
+                    borderColor: "var(--pw-accent-3)",
+                    background: "var(--pw-accent-soft)",
+                    color: "var(--pw-accent-3)",
+                  }}
+                >
+                  <Sparkles className="size-3" />
+                  {t}
                 </span>
               ))}
             </div>
           )}
-          <div className="mt-3 text-[13px] text-[var(--pw-ink)] whitespace-pre-wrap line-clamp-4">{state.bio}</div>
-          <div className="mt-3 flex flex-wrap gap-3 text-[11.5px] text-[var(--pw-ink-2)] font-mono-pw uppercase pw-tracking-wide">
+          <div className="mt-4 text-[0.8125rem] text-[var(--pw-ink)] whitespace-pre-wrap line-clamp-4">
+            {state.bio}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-4 label-caps text-[var(--pw-ink-2)]">
             {state.years_experience && <span>{state.years_experience} yrs exp</span>}
-            {state.education_level && <span>· {state.education_level}{state.institution ? `, ${state.institution}` : ""}</span>}
-            {state.availability.length > 0 && <span><Clock className="inline size-3 mr-1" />{state.availability.length} slots/wk</span>}
-            {state.first_session_free && <span style={{ color: "var(--pw-accent)" }}>· First session free</span>}
+            {state.education_level && (
+              <span>
+                · {state.education_level}
+                {state.institution ? `, ${state.institution}` : ""}
+              </span>
+            )}
+            {state.availability.length > 0 && (
+              <span>
+                <Clock className="inline size-3 mr-2" />
+                {state.availability.length} slots/wk
+              </span>
+            )}
+            {state.first_session_free && (
+              <span style={{ color: "var(--pw-accent)" }}>· First session free</span>
+            )}
           </div>
         </div>
       </div>
 
       {missing.length > 0 && (
-        <div className="pw-border border rounded-md p-4" style={{ background: "rgba(224,90,90,0.06)", borderColor: "var(--pw-danger)" }}>
-          <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide" style={{ color: "var(--pw-danger)" }}>
-            Still missing ({missing.length})
-          </div>
-          <ul className="mt-1 text-[13px] list-disc list-inside text-[var(--pw-ink)]">
-            {missing.map((m) => <li key={m}>{m}</li>)}
+        <div
+          className="pw-border p-4"
+          style={{
+            background: "color-mix(in srgb, var(--pw-danger) 8%, transparent)",
+            borderColor: "var(--pw-danger)",
+          }}
+        >
+          <div className="label-caps text-[var(--pw-danger)]">Still missing ({missing.length})</div>
+          <ul className="mt-2 text-[0.8125rem] list-disc list-inside text-[var(--pw-ink)]">
+            {missing.map((m) => (
+              <li key={m}>{m}</li>
+            ))}
           </ul>
-          <p className="text-[12px] text-[var(--pw-ink-2)] mt-1">You can still publish, but a complete profile gets 3× more bookings.</p>
+          <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-2">
+            You can publish now and fill these in later.
+          </p>
         </div>
       )}
 
-      <div className="text-[12px] text-[var(--pw-ink-2)] inline-flex items-center gap-1">
+      <div className="text-[0.75rem] text-[var(--pw-ink-2)] inline-flex items-center gap-2">
         <Eye className="size-3.5" /> Your profile will enter verification review after publishing.
       </div>
     </div>
@@ -1174,9 +1519,13 @@ function Step6({ state, subjects }: { state: WizardState; subjects: Subject[] })
 
 /* ─────────────── tiny field primitives ─────────────── */
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] block">{children}</label>;
+function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
+  return (
+    <label htmlFor={htmlFor} className="label-caps text-[var(--pw-ink-2)] block">
+      {children}
+    </label>
+  );
 }
 function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={"mt-1 w-full pw-border border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)] " + (props.className ?? "")} />;
+  return <input {...props} className={"pw-input mt-2 text-[0.875rem] " + (props.className ?? "")} />;
 }

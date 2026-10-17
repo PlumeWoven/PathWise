@@ -8,22 +8,30 @@ export function UnverifiedBanner() {
   const isTutor = role === "tutor" || role === "both";
   if (!isTutor) return null;
   if (profile.verification_status === "verified") return null;
+  // Says what really happens: a 10-minute video call, no document upload, and that
+  // verification gates being listed at all (it used to promise an ID+selfie upload,
+  // "1–2 minutes" and "3× more bookings").
+  const requested = profile.verification_status === "pending";
 
   return (
     <div
-      className="unverified-banner mt-4 pw-card p-4 flex flex-wrap items-center gap-3 border-l-4"
+      className="unverified-banner mt-4 pw-card p-4 flex flex-wrap items-center gap-4 border-l-4"
       style={{ borderLeftColor: "var(--pw-accent)" }}
     >
-      <div className="flex-1 min-w-[200px]">
-        <div className="font-medium text-[14px]">
-          Get verified to appear higher in search results and earn 3× more bookings
+      <div className="flex-1 min-w-[12.5rem]">
+        <div className="font-medium text-[0.875rem]">
+          {requested
+            ? "Verification requested"
+            : "Get verified so students can find and book you"}
         </div>
-        <div className="text-[12px] text-[var(--pw-ink-2)]">
-          Verification takes 1–2 minutes. Upload a government ID and a quick selfie.
+        <div className="text-[0.75rem] text-[var(--pw-ink-2)]">
+          {requested
+            ? "We'll email you to book a 10-minute video call. Until then, students can't see or book you."
+            : "Request a 10-minute video call. The PathWise team checks your ID and teaching background."}
         </div>
       </div>
-      <Link to="/settings/verification" className="pw-btn-primary text-[13px] px-4 py-2">
-        Get verified →
+      <Link to="/dashboard/settings/verification" className="pw-btn-primary px-4 py-2">
+        {requested ? "View status →" : "Request verification →"}
       </Link>
     </div>
   );

@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { normalizeRole, postAuthDestination, type Role } from "./roles";
+import { claimGuestResults } from "./api";
 
 // Re-exported so existing `import { type Role } from "./auth"` sites keep working.
 export type { Role };
@@ -39,7 +40,9 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
   logout: () => Promise<void>;
   loginOpen: boolean;
-  openLogin: () => void;
+  /** Which tab the modal opens on: guests saving their work start at sign-up. */
+  loginMode: "signin" | "signup";
+  openLogin: (mode?: "signin" | "signup") => void;
   closeLogin: () => void;
   refreshProfile: () => Promise<void>;
   emailConfirmed: boolean;
@@ -78,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [loginMode, setLoginMode] = useState<"signin" | "signup">("signin");
   const [emailConfirmed, setEmailConfirmed] = useState(false);
   const [confirmationSent, setConfirmationSent] = useState(false);
 
@@ -98,10 +102,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Listen for open-login-modal event (dispatched by requireAuth when user needs to sign in)
-    const handleOpenLoginModal = () => {
+    const handleOpenLoginModal = (e: Event) => {
+      setLoginMode((e as CustomEvent<{ mode?: string }>).detail?.mode === "signup" ? "signup" : "signin");
       setLoginOpen(true);
     };
-    window.addEventListener('open-login-modal', handleOpenLoginModal);
+    window.addEventListener("open-login-modal", handleOpenLoginModal);
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
@@ -111,10 +116,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fetchProfile(newSession.user.id).then((p) => {
             setProfile(p);
             if (event === "SIGNED_IN" && typeof window !== "undefined") {
+              const claimed = claimGuestResults();
               const path = window.location.pathname;
               const onPublicEntry = path === "/" || path === "/login";
               if (onPublicEntry) {
-                claimAnonymousRecords(newSession.user.id).finally(() => {
+                claimed.finally(() => {
                   if (!p) return;
                   if (!newSession.user.confirmed_at) {
                     return;
@@ -137,7 +143,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Check for existing session with error handling
-    supabase.auth.getSession()
+    supabase.auth
+      .getSession()
       .then(({ data: { session: existing } }) => {
         setSession(existing);
         if (existing?.user) {
@@ -158,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
     return () => {
-      window.removeEventListener('open-login-modal', handleOpenLoginModal);
+      window.removeEventListener("open-login-modal", handleOpenLoginModal);
       sub.subscription.unsubscribe();
     };
   }, []);
@@ -179,7 +186,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     updateConfirmationState(null);
 
-    // 🧹 Clear all impersonation state on sign‑out
+    // Clear all impersonation state on sign‑out
     localStorage.removeItem("impersonating");
     localStorage.removeItem("impersonating_user_name");
     localStorage.removeItem("admin_user_id");
@@ -212,13 +219,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const user: AuthUser | null =
     supabaseUser && profile
       ? {
-        id: supabaseUser.id,
-        email: supabaseUser.email ?? "",
-        name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
-        role: profile.role,
-        app_metadata: supabaseUser.app_metadata,
-      }
+          id: supabaseUser.id,
+          email: supabaseUser.email ?? "",
+          name: profile.display_name || supabaseUser.email?.split("@")[0] || "Learner",
+          role: profile.role,
+          app_metadata: supabaseUser.app_metadata,
+        }
       : null;
+
+  // Stable identities: guards list openLogin in effect deps, so a fresh function
+  // each render re-opened the modal the instant it was closed.
+  const openLogin = useCallback((mode: "signin" | "signup" = "signin") => {
+    setLoginMode(mode);
+    setLoginOpen(true);
+  }, []);
+  const closeLogin = useCallback(() => setLoginOpen(false), []);
 
   return (
     <AuthContext.Provider
@@ -233,8 +248,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signOut,
         logout: signOut,
         loginOpen,
-        openLogin: () => setLoginOpen(true),
-        closeLogin: () => setLoginOpen(false),
+        loginMode,
+        openLogin,
+        closeLogin,
         refreshProfile,
         emailConfirmed,
         confirmationSent,
@@ -252,27 +268,3 @@ export function useAuth() {
   return ctx;
 }
 
-async function claimAnonymousRecords(userId: string) {
-  try {
-    const diagId = localStorage.getItem("pathwise_diagnostic_id");
-    const roadmapId = localStorage.getItem("pathwise_roadmap_id");
-    if (diagId) {
-      await supabase
-        .from("diagnostic_results")
-        .update({ user_id: userId })
-        .eq("id", diagId)
-        .is("user_id", null);
-      localStorage.removeItem("pathwise_diagnostic_id");
-    }
-    if (roadmapId) {
-      await supabase
-        .from("roadmaps")
-        .update({ user_id: userId })
-        .eq("id", roadmapId)
-        .is("user_id", null);
-      localStorage.removeItem("pathwise_roadmap_id");
-    }
-  } catch (err) {
-    console.error("[auth] claimAnonymousRecords", err);
-  }
-}

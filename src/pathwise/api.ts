@@ -22,6 +22,7 @@ import type { TablesUpdate, Enums } from "@/integrations/supabase/types";
 import type { Subject, Level, GoalId } from "./data";
 import type { GeneratedStage } from "./roadmap-gen";
 import { makeLevelId, requiredBandForStage, type LevelBand } from "./levels";
+import { getGuestToken } from "@/lib/guestToken";
 
 type SessionStatus = Enums<"session_status">;
 export type EnrollmentStatus = Enums<"enrollment_status">;
@@ -35,7 +36,8 @@ export type EnrollmentStatus = Enums<"enrollment_status">;
  *
  * getUser() treats a missing session as an error (AuthSessionMissingError),
  * but anonymous visitors are a supported state here — the quiz writes
- * diagnostics and roadmaps with user_id = null and claims them at sign-in. So
+ * diagnostics and roadmaps with user_id = null (plus a guest token) and claims
+ * them at sign-in. So
  * "no session" is reported as null rather than thrown; genuine failures
  * (network, invalid JWT) still throw.
  */
@@ -49,6 +51,14 @@ export async function getCurrentUser() {
         throw error;
     }
     return user;
+}
+
+/** Moves this browser's guest level checks and roadmaps onto the signed-in account. Safe to call repeatedly. */
+export async function claimGuestResults(): Promise<void> {
+    const token = getGuestToken();
+    if (!token) return;
+    const { error } = await supabase.rpc("claim_guest_roadmaps", { p_guest_token: token });
+    if (error) console.error("[claim] guest results", error.message);
 }
 
 export async function signOut() {
@@ -103,6 +113,10 @@ export interface SaveDiagnosticInput {
     level_id: string;
     /** Per-topic band estimates, e.g. { Algebra: 4, Geometry: 2 }. */
     topic_bands?: Record<string, number>;
+    /** Every question asked: id, topic, tier, choice, right or wrong. */
+    answers?: { question_id: string; topic: string; tier: number; selected: number; correct: boolean }[];
+    strong_topics?: string[];
+    confidence?: number;
 }
 
 /**
@@ -115,6 +129,8 @@ export async function saveDiagnosticResult(input: SaveDiagnosticInput): Promise<
         .from("diagnostic_results")
         .insert({
             user_id: input.user_id ?? null,
+            // Guests can read their rows back only with this token (RLS).
+            guest_token: input.user_id ? null : getGuestToken(),
             subject: input.subject,
             goal: input.goal,
             score: input.score,
@@ -124,6 +140,9 @@ export async function saveDiagnosticResult(input: SaveDiagnosticInput): Promise<
             topic_bands: input.topic_bands ?? {},
             xp_earned: input.xp_earned,
             wrong_topics: input.wrong_topics,
+            answers: input.answers ?? [],
+            strong_topics: input.strong_topics ?? [],
+            confidence: input.confidence ?? null,
         })
         .select("id")
         .single();
@@ -170,6 +189,7 @@ export async function createRoadmap(params: {
         .from("roadmaps")
         .insert({
             user_id: params.user_id,
+            guest_token: params.user_id ? null : getGuestToken(),
             diagnostic_id: params.diagnostic_id,
             subject: params.subject,
             goal: params.goal,
@@ -402,7 +422,7 @@ export async function dropEnrollment(enrollmentId: string) {
  * Fetches real tutors from the database matching a subject and level.
  *
  * Matching logic:
- *  - Tutor role = 'tutor'
+ *  - Tutor role = 'tutor' or 'both'
  *  - verification_status = 'verified' (only show verified tutors)
  *  - subject_specialties contains the requested subject
  *  - Falls back to subject_proficiency JSON if specialties is empty
@@ -410,16 +430,14 @@ export async function dropEnrollment(enrollmentId: string) {
  * Returns up to 6 tutors ordered by hourly_rate ASC (cheapest first).
  * The UI can re-sort however it wants.
  */
-export async function fetchMatchedTutors(subject: Subject, _level: Level) {
+export async function fetchMatchedTutors(subject: Subject) {
     const { data, error } = await supabase
         .from("profiles")
+        // One string literal so supabase-js can type the rows.
         .select(
-            "id, display_name, full_name, avatar_url, headline, bio, hourly_rate, " +
-            "subject_specialties, years_experience, rating, verification_status, " +
-            "instant_bookings, first_session_free, free_discovery_call, timezone, " +
-            "superpowers"
+            "id, display_name, full_name, avatar_url, headline, bio, hourly_rate, subject_specialties, years_experience, verification_status, instant_bookings, first_session_free, free_discovery_call, timezone, superpowers"
         )
-        .eq("role", "tutor")
+        .in("role", ["tutor", "both"])
         .eq("verification_status", "verified")
         .contains("subject_specialties", [subject])
         .order("hourly_rate", { ascending: true })
@@ -427,25 +445,7 @@ export async function fetchMatchedTutors(subject: Subject, _level: Level) {
 
     if (error) throw error;
 
-    // If no verified tutors yet (early stage), fall back to all tutors
-    // Remove this fallback once real tutors are onboarded
-    if (!data || data.length === 0) {
-        const { data: fallback, error: fallbackErr } = await supabase
-            .from("profiles")
-            .select(
-                "id, display_name, full_name, avatar_url, headline, bio, hourly_rate, " +
-                "subject_specialties, years_experience, verification_status, " +
-                "instant_bookings, first_session_free, free_discovery_call, timezone"
-            )
-            .eq("role", "tutor")
-            .order("created_at", { ascending: false })
-            .limit(6);
-
-        if (fallbackErr) throw fallbackErr;
-        return fallback ?? [];
-    }
-
-    return data;
+    return data ?? [];
 }
 
 /**

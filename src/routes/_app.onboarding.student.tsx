@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "../pathwise/auth";
+import { pendingBookingTutorId } from "../pathwise/roles";
 import { updateProfile } from "@/pathwise/api";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/onboarding/student")({
-  head: () => ({ meta: [{ title: "Welcome — PathWise" }] }),
+  head: () => ({ meta: [{ title: "Welcome · PathWise" }] }),
   component: StudentOnboarding,
 });
 
@@ -41,34 +42,32 @@ function StudentOnboarding() {
     }
     setSubmitting(false);
     await refreshProfile();
-    navigate({ to: "/roadmap" });
+    const pendingTutor = pendingBookingTutorId();
+    if (pendingTutor) navigate({ to: "/book/$tutorId", params: { tutorId: pendingTutor } });
+    else navigate({ to: "/roadmap" });
   }
 
   if (loading || !profile) return null;
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="max-w-[560px] mx-auto px-5 sm:px-8 py-12">
-        <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-          Step 1 of 1
-        </div>
-        <h1 className="font-display text-[36px] leading-tight mt-2">
-          Welcome, {profile.full_name || profile.display_name} 🎓
+      <main className="max-w-[35rem] mx-auto px-6 sm:px-8 py-12">
+        <div className="label-caps text-[var(--pw-ink-2)]">Step 1 of 1</div>
+        <h1 className="font-display text-[2.25rem] uppercase tracking-[-0.025em] leading-none mt-4">
+          Welcome, {profile.full_name || profile.display_name}
         </h1>
-        <p className="mt-2 text-[15px] text-[var(--pw-ink-2)]">
+        <p className="mt-2 text-[0.9375rem] text-[var(--pw-ink-2)]">
           A couple of details so we can tailor your roadmap.
         </p>
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-5 pw-card p-6">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6 pw-card p-6">
           <div>
-            <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-              Grade level
-            </label>
-            <select
+            <label htmlFor="sob-grade" className="label-caps text-[var(--pw-ink-2)]">Grade level</label>
+            <select id="sob-grade"
               required
               value={grade}
               onChange={(e) => setGrade(e.target.value === "" ? "" : Number(e.target.value))}
-              className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+              className="pw-input mt-2 text-[0.875rem]"
             >
               <option value="">Select grade…</option>
               {[6, 7, 8, 9, 10, 11, 12].map((g) => (
@@ -80,22 +79,20 @@ function StudentOnboarding() {
             </select>
           </div>
           <div>
-            <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
-              What's your goal?
-            </label>
-            <textarea
+            <label htmlFor="sob-goal" className="label-caps text-[var(--pw-ink-2)]">What's your goal?</label>
+            <textarea id="sob-goal"
               required
               rows={3}
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               placeholder="e.g. Pass my algebra final, prep for SAT…"
-              className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+              className="pw-input mt-2 text-[0.875rem]"
             />
           </div>
           <button
             type="submit"
             disabled={submitting}
-            className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 text-[15px] font-medium disabled:opacity-50"
+            className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50"
           >
             {submitting ? "Saving…" : "Continue to my roadmap →"}
           </button>

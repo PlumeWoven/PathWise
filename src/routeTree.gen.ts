@@ -9,62 +9,59 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as StyleGuideRouteImport } from './routes/style-guide'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
-import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as StyleGuideRouteImport } from './routes/style-guide'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
-import { Route as PathwiseDemoRouteImport } from './routes/pathwise.demo'
-import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
-import { Route as DashboardMessagesRouteImport } from './routes/dashboard.messages'
-import { Route as DashboardEarningsRouteImport } from './routes/dashboard.earnings'
-import { Route as DashboardCoursesRouteImport } from './routes/dashboard.courses'
-import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
-import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
-import { Route as AuthChooseRoleRouteImport } from './routes/auth.choose-role'
-import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
-import { Route as AdminUsersRouteImport } from './routes/admin.users'
-import { Route as AdminReviewRouteImport } from './routes/admin.review'
-import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
-import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
-import { Route as AppResetPasswordRouteImport } from './routes/_app.reset-password'
-import { Route as AppQuizRouteImport } from './routes/_app.quiz'
-import { Route as AppMatchesRouteImport } from './routes/_app.matches'
-import { Route as AppFindTutorRouteImport } from './routes/_app.find-tutor'
-import { Route as AppDemoRouteImport } from './routes/_app.demo'
-import { Route as AppCourseMatchRouteImport } from './routes/_app.course-match'
 import { Route as AppConfirmEmailRouteImport } from './routes/_app.confirm-email'
-import { Route as TutorCoursesIndexRouteImport } from './routes/tutor.courses.index'
-import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard.settings.index'
-import { Route as AppSessionsIndexRouteImport } from './routes/_app.sessions.index'
-import { Route as DashboardSettingsVerificationRouteImport } from './routes/dashboard.settings.verification'
-import { Route as AppTutorTutorIdRouteImport } from './routes/_app.tutor.$tutorId'
-import { Route as AppSettingsVerificationRouteImport } from './routes/_app.settings.verification'
-import { Route as AppSessionsIdRouteImport } from './routes/_app.sessions.$id'
-import { Route as AppOnboardingTutorRouteImport } from './routes/_app.onboarding.tutor'
-import { Route as AppOnboardingStudentRouteImport } from './routes/_app.onboarding.student'
-import { Route as AppCoursesSlugRouteImport } from './routes/_app.courses.$slug'
+import { Route as AppContactRouteImport } from './routes/_app.contact'
+import { Route as AppCourseMatchRouteImport } from './routes/_app.course-match'
+import { Route as AppDemoRouteImport } from './routes/_app.demo'
+import { Route as AppFindTutorRouteImport } from './routes/_app.find-tutor'
+import { Route as AppLibraryRouteImport } from './routes/_app.library'
+import { Route as AppMatchesRouteImport } from './routes/_app.matches'
+import { Route as AppMessagesRouteImport } from './routes/_app.messages'
+import { Route as AppPrivacyRouteImport } from './routes/_app.privacy'
+import { Route as AppQuizRouteImport } from './routes/_app.quiz'
+import { Route as AppResetPasswordRouteImport } from './routes/_app.reset-password'
+import { Route as AppRoadmapRouteImport } from './routes/_app.roadmap'
+import { Route as AppTermsRouteImport } from './routes/_app.terms'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCoursesRouteImport } from './routes/admin.courses'
+import { Route as AdminSessionsRouteImport } from './routes/admin.sessions'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as AuthChooseRoleRouteImport } from './routes/auth.choose-role'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as DashboardAnalyticsRouteImport } from './routes/dashboard.analytics'
+import { Route as DashboardCalendarRouteImport } from './routes/dashboard.calendar'
+import { Route as DashboardCoursesRouteImport } from './routes/dashboard.courses'
+import { Route as DashboardEarningsRouteImport } from './routes/dashboard.earnings'
+import { Route as DashboardMessagesRouteImport } from './routes/dashboard.messages'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as PathwiseDemoRouteImport } from './routes/pathwise.demo'
 import { Route as AppBookTutorIdRouteImport } from './routes/_app.book.$tutorId'
-import { Route as AppTutorSettingsAvailabilityRouteImport } from './routes/_app.tutor.settings.availability'
+import { Route as AppCoursesSlugRouteImport } from './routes/_app.courses.$slug'
+import { Route as AppOnboardingStudentRouteImport } from './routes/_app.onboarding.student'
+import { Route as AppOnboardingTutorRouteImport } from './routes/_app.onboarding.tutor'
+import { Route as AppSessionsIndexRouteImport } from './routes/_app.sessions.index'
+import { Route as AppSessionsIdRouteImport } from './routes/_app.sessions.$id'
+import { Route as AppSettingsVerificationRouteImport } from './routes/_app.settings.verification'
+import { Route as AppTutorTutorIdRouteImport } from './routes/_app.tutor.$tutorId'
+import { Route as DashboardCoursesIndexRouteImport } from './routes/dashboard.courses.index'
+import { Route as DashboardCoursesNewRouteImport } from './routes/dashboard.courses.new'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard.settings.index'
+import { Route as DashboardSettingsVerificationRouteImport } from './routes/dashboard.settings.verification'
+import { Route as TutorCoursesIndexRouteImport } from './routes/tutor.courses.index'
 import { Route as AppTutorCoursesNewRouteImport } from './routes/_app.tutor.courses.new'
+import { Route as AppTutorSettingsAvailabilityRouteImport } from './routes/_app.tutor.settings.availability'
+import { Route as DashboardCoursesCourseIdEditRouteImport } from './routes/dashboard.courses.$courseId.edit'
 import { Route as AppTutorCoursesCourseIdEditRouteImport } from './routes/_app.tutor.courses.$courseId.edit'
 
-const StyleGuideRoute = StyleGuideRouteImport.update({
-  id: '/style-guide',
-  path: '/style-guide',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -72,118 +69,24 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppRoute = AppRouteImport.update({
-  id: '/_app',
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardIndexRoute = DashboardIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DashboardRoute,
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRoute,
+const StyleGuideRoute = StyleGuideRouteImport.update({
+  id: '/style-guide',
+  path: '/style-guide',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppRoute,
-} as any)
-const PathwiseDemoRoute = PathwiseDemoRouteImport.update({
-  id: '/pathwise/demo',
-  path: '/pathwise/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardEarningsRoute = DashboardEarningsRouteImport.update({
-  id: '/earnings',
-  path: '/earnings',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const AuthChooseRoleRoute = AuthChooseRoleRouteImport.update({
-  id: '/auth/choose-role',
-  path: '/auth/choose-role',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthCallbackRoute = AuthCallbackRouteImport.update({
-  id: '/auth/callback',
-  path: '/auth/callback',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminReviewRoute = AdminReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminCoursesRoute = AdminCoursesRouteImport.update({
-  id: '/courses',
-  path: '/courses',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AppRoadmapRoute = AppRoadmapRouteImport.update({
-  id: '/roadmap',
-  path: '/roadmap',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppResetPasswordRoute = AppResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppQuizRoute = AppQuizRouteImport.update({
-  id: '/quiz',
-  path: '/quiz',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppMatchesRoute = AppMatchesRouteImport.update({
-  id: '/matches',
-  path: '/matches',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppFindTutorRoute = AppFindTutorRouteImport.update({
-  id: '/find-tutor',
-  path: '/find-tutor',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppDemoRoute = AppDemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppCourseMatchRoute = AppCourseMatchRouteImport.update({
-  id: '/course-match',
-  path: '/course-match',
   getParentRoute: () => AppRoute,
 } as any)
 const AppConfirmEmailRoute = AppConfirmEmailRouteImport.update({
@@ -191,50 +94,139 @@ const AppConfirmEmailRoute = AppConfirmEmailRouteImport.update({
   path: '/confirm-email',
   getParentRoute: () => AppRoute,
 } as any)
-const TutorCoursesIndexRoute = TutorCoursesIndexRouteImport.update({
-  id: '/tutor/courses/',
-  path: '/tutor/courses/',
-  getParentRoute: () => rootRouteImport,
+const AppContactRoute = AppContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => AppRoute,
 } as any)
-const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+const AppCourseMatchRoute = AppCourseMatchRouteImport.update({
+  id: '/course-match',
+  path: '/course-match',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDemoRoute = AppDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFindTutorRoute = AppFindTutorRouteImport.update({
+  id: '/find-tutor',
+  path: '/find-tutor',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLibraryRoute = AppLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMatchesRoute = AppMatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMessagesRoute = AppMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPrivacyRoute = AppPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQuizRoute = AppQuizRouteImport.update({
+  id: '/quiz',
+  path: '/quiz',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppResetPasswordRoute = AppResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoadmapRoute = AppRoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTermsRoute = AppTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => AppRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => DashboardSettingsRoute,
+  getParentRoute: () => AdminRoute,
 } as any)
-const AppSessionsIndexRoute = AppSessionsIndexRouteImport.update({
-  id: '/sessions/',
-  path: '/sessions/',
-  getParentRoute: () => AppRoute,
+const AdminCoursesRoute = AdminCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => AdminRoute,
 } as any)
-const DashboardSettingsVerificationRoute =
-  DashboardSettingsVerificationRouteImport.update({
-    id: '/verification',
-    path: '/verification',
-    getParentRoute: () => DashboardSettingsRoute,
-  } as any)
-const AppTutorTutorIdRoute = AppTutorTutorIdRouteImport.update({
-  id: '/tutor/$tutorId',
-  path: '/tutor/$tutorId',
-  getParentRoute: () => AppRoute,
+const AdminSessionsRoute = AdminSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => AdminRoute,
 } as any)
-const AppSettingsVerificationRoute = AppSettingsVerificationRouteImport.update({
-  id: '/settings/verification',
-  path: '/settings/verification',
-  getParentRoute: () => AppRoute,
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
 } as any)
-const AppSessionsIdRoute = AppSessionsIdRouteImport.update({
-  id: '/sessions/$id',
-  path: '/sessions/$id',
-  getParentRoute: () => AppRoute,
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppOnboardingTutorRoute = AppOnboardingTutorRouteImport.update({
-  id: '/onboarding/tutor',
-  path: '/onboarding/tutor',
-  getParentRoute: () => AppRoute,
+const AuthChooseRoleRoute = AuthChooseRoleRouteImport.update({
+  id: '/auth/choose-role',
+  path: '/auth/choose-role',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AppOnboardingStudentRoute = AppOnboardingStudentRouteImport.update({
-  id: '/onboarding/student',
-  path: '/onboarding/student',
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAnalyticsRoute = DashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCalendarRoute = DashboardCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardCoursesRoute = DashboardCoursesRouteImport.update({
+  id: '/courses',
+  path: '/courses',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardEarningsRoute = DashboardEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardMessagesRoute = DashboardMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const PathwiseDemoRoute = PathwiseDemoRouteImport.update({
+  id: '/pathwise/demo',
+  path: '/pathwise/demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppBookTutorIdRoute = AppBookTutorIdRouteImport.update({
+  id: '/book/$tutorId',
+  path: '/book/$tutorId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCoursesSlugRoute = AppCoursesSlugRouteImport.update({
@@ -242,9 +234,65 @@ const AppCoursesSlugRoute = AppCoursesSlugRouteImport.update({
   path: '/courses/$slug',
   getParentRoute: () => AppRoute,
 } as any)
-const AppBookTutorIdRoute = AppBookTutorIdRouteImport.update({
-  id: '/book/$tutorId',
-  path: '/book/$tutorId',
+const AppOnboardingStudentRoute = AppOnboardingStudentRouteImport.update({
+  id: '/onboarding/student',
+  path: '/onboarding/student',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppOnboardingTutorRoute = AppOnboardingTutorRouteImport.update({
+  id: '/onboarding/tutor',
+  path: '/onboarding/tutor',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSessionsIndexRoute = AppSessionsIndexRouteImport.update({
+  id: '/sessions/',
+  path: '/sessions/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSessionsIdRoute = AppSessionsIdRouteImport.update({
+  id: '/sessions/$id',
+  path: '/sessions/$id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsVerificationRoute = AppSettingsVerificationRouteImport.update({
+  id: '/settings/verification',
+  path: '/settings/verification',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTutorTutorIdRoute = AppTutorTutorIdRouteImport.update({
+  id: '/tutor/$tutorId',
+  path: '/tutor/$tutorId',
+  getParentRoute: () => AppRoute,
+} as any)
+const DashboardCoursesIndexRoute = DashboardCoursesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardCoursesRoute,
+} as any)
+const DashboardCoursesNewRoute = DashboardCoursesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => DashboardCoursesRoute,
+} as any)
+const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardSettingsRoute,
+} as any)
+const DashboardSettingsVerificationRoute =
+  DashboardSettingsVerificationRouteImport.update({
+    id: '/verification',
+    path: '/verification',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const TutorCoursesIndexRoute = TutorCoursesIndexRouteImport.update({
+  id: '/tutor/courses/',
+  path: '/tutor/courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppTutorCoursesNewRoute = AppTutorCoursesNewRouteImport.update({
+  id: '/tutor/courses/new',
+  path: '/tutor/courses/new',
   getParentRoute: () => AppRoute,
 } as any)
 const AppTutorSettingsAvailabilityRoute =
@@ -253,11 +301,12 @@ const AppTutorSettingsAvailabilityRoute =
     path: '/tutor/settings/availability',
     getParentRoute: () => AppRoute,
   } as any)
-const AppTutorCoursesNewRoute = AppTutorCoursesNewRouteImport.update({
-  id: '/tutor/courses/new',
-  path: '/tutor/courses/new',
-  getParentRoute: () => AppRoute,
-} as any)
+const DashboardCoursesCourseIdEditRoute =
+  DashboardCoursesCourseIdEditRouteImport.update({
+    id: '/$courseId/edit',
+    path: '/$courseId/edit',
+    getParentRoute: () => DashboardCoursesRoute,
+  } as any)
 const AppTutorCoursesCourseIdEditRoute =
   AppTutorCoursesCourseIdEditRouteImport.update({
     id: '/tutor/courses/$courseId/edit',
@@ -272,21 +321,26 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/confirm-email': typeof AppConfirmEmailRoute
+  '/contact': typeof AppContactRoute
   '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
+  '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
+  '/messages': typeof AppMessagesRoute
+  '/privacy': typeof AppPrivacyRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
-  '/admin/review': typeof AdminReviewRoute
+  '/admin/sessions': typeof AdminSessionsRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/courses': typeof DashboardCoursesRouteWithChildren
   '/dashboard/earnings': typeof DashboardEarningsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
@@ -300,33 +354,40 @@ export interface FileRoutesByFullPath {
   '/sessions/$id': typeof AppSessionsIdRoute
   '/settings/verification': typeof AppSettingsVerificationRoute
   '/tutor/$tutorId': typeof AppTutorTutorIdRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/sessions/': typeof AppSessionsIndexRoute
+  '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/tutor/courses/': typeof TutorCoursesIndexRoute
   '/tutor/courses/new': typeof AppTutorCoursesNewRoute
   '/tutor/settings/availability': typeof AppTutorSettingsAvailabilityRoute
+  '/dashboard/courses/$courseId/edit': typeof DashboardCoursesCourseIdEditRoute
   '/tutor/courses/$courseId/edit': typeof AppTutorCoursesCourseIdEditRoute
 }
 export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/confirm-email': typeof AppConfirmEmailRoute
+  '/contact': typeof AppContactRoute
   '/course-match': typeof AppCourseMatchRoute
   '/demo': typeof AppDemoRoute
   '/find-tutor': typeof AppFindTutorRoute
+  '/library': typeof AppLibraryRoute
   '/matches': typeof AppMatchesRoute
+  '/messages': typeof AppMessagesRoute
+  '/privacy': typeof AppPrivacyRoute
   '/quiz': typeof AppQuizRoute
   '/reset-password': typeof AppResetPasswordRoute
   '/roadmap': typeof AppRoadmapRoute
+  '/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
-  '/admin/review': typeof AdminReviewRoute
+  '/admin/sessions': typeof AdminSessionsRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/courses': typeof DashboardCoursesRoute
   '/dashboard/earnings': typeof DashboardEarningsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/pathwise/demo': typeof PathwiseDemoRoute
@@ -340,12 +401,15 @@ export interface FileRoutesByTo {
   '/sessions/$id': typeof AppSessionsIdRoute
   '/settings/verification': typeof AppSettingsVerificationRoute
   '/tutor/$tutorId': typeof AppTutorTutorIdRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/sessions': typeof AppSessionsIndexRoute
+  '/dashboard/courses': typeof DashboardCoursesIndexRoute
   '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/tutor/courses': typeof TutorCoursesIndexRoute
   '/tutor/courses/new': typeof AppTutorCoursesNewRoute
   '/tutor/settings/availability': typeof AppTutorSettingsAvailabilityRoute
+  '/dashboard/courses/$courseId/edit': typeof DashboardCoursesCourseIdEditRoute
   '/tutor/courses/$courseId/edit': typeof AppTutorCoursesCourseIdEditRoute
 }
 export interface FileRoutesById {
@@ -356,21 +420,26 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/style-guide': typeof StyleGuideRoute
   '/_app/confirm-email': typeof AppConfirmEmailRoute
+  '/_app/contact': typeof AppContactRoute
   '/_app/course-match': typeof AppCourseMatchRoute
   '/_app/demo': typeof AppDemoRoute
   '/_app/find-tutor': typeof AppFindTutorRoute
+  '/_app/library': typeof AppLibraryRoute
   '/_app/matches': typeof AppMatchesRoute
+  '/_app/messages': typeof AppMessagesRoute
+  '/_app/privacy': typeof AppPrivacyRoute
   '/_app/quiz': typeof AppQuizRoute
   '/_app/reset-password': typeof AppResetPasswordRoute
   '/_app/roadmap': typeof AppRoadmapRoute
+  '/_app/terms': typeof AppTermsRoute
   '/admin/courses': typeof AdminCoursesRoute
-  '/admin/review': typeof AdminReviewRoute
+  '/admin/sessions': typeof AdminSessionsRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/choose-role': typeof AuthChooseRoleRoute
   '/dashboard/analytics': typeof DashboardAnalyticsRoute
   '/dashboard/calendar': typeof DashboardCalendarRoute
-  '/dashboard/courses': typeof DashboardCoursesRoute
+  '/dashboard/courses': typeof DashboardCoursesRouteWithChildren
   '/dashboard/earnings': typeof DashboardEarningsRoute
   '/dashboard/messages': typeof DashboardMessagesRoute
   '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
@@ -385,12 +454,15 @@ export interface FileRoutesById {
   '/_app/sessions/$id': typeof AppSessionsIdRoute
   '/_app/settings/verification': typeof AppSettingsVerificationRoute
   '/_app/tutor/$tutorId': typeof AppTutorTutorIdRoute
+  '/dashboard/courses/new': typeof DashboardCoursesNewRoute
   '/dashboard/settings/verification': typeof DashboardSettingsVerificationRoute
   '/_app/sessions/': typeof AppSessionsIndexRoute
+  '/dashboard/courses/': typeof DashboardCoursesIndexRoute
   '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/tutor/courses/': typeof TutorCoursesIndexRoute
   '/_app/tutor/courses/new': typeof AppTutorCoursesNewRoute
   '/_app/tutor/settings/availability': typeof AppTutorSettingsAvailabilityRoute
+  '/dashboard/courses/$courseId/edit': typeof DashboardCoursesCourseIdEditRoute
   '/_app/tutor/courses/$courseId/edit': typeof AppTutorCoursesCourseIdEditRoute
 }
 export interface FileRouteTypes {
@@ -402,15 +474,20 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/confirm-email'
+    | '/contact'
     | '/course-match'
     | '/demo'
     | '/find-tutor'
+    | '/library'
     | '/matches'
+    | '/messages'
+    | '/privacy'
     | '/quiz'
     | '/reset-password'
     | '/roadmap'
+    | '/terms'
     | '/admin/courses'
-    | '/admin/review'
+    | '/admin/sessions'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/choose-role'
@@ -430,33 +507,40 @@ export interface FileRouteTypes {
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/dashboard/courses/new'
     | '/dashboard/settings/verification'
     | '/sessions/'
+    | '/dashboard/courses/'
     | '/dashboard/settings/'
     | '/tutor/courses/'
     | '/tutor/courses/new'
     | '/tutor/settings/availability'
+    | '/dashboard/courses/$courseId/edit'
     | '/tutor/courses/$courseId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/sitemap.xml'
     | '/style-guide'
     | '/confirm-email'
+    | '/contact'
     | '/course-match'
     | '/demo'
     | '/find-tutor'
+    | '/library'
     | '/matches'
+    | '/messages'
+    | '/privacy'
     | '/quiz'
     | '/reset-password'
     | '/roadmap'
+    | '/terms'
     | '/admin/courses'
-    | '/admin/review'
+    | '/admin/sessions'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/choose-role'
     | '/dashboard/analytics'
     | '/dashboard/calendar'
-    | '/dashboard/courses'
     | '/dashboard/earnings'
     | '/dashboard/messages'
     | '/pathwise/demo'
@@ -470,12 +554,15 @@ export interface FileRouteTypes {
     | '/sessions/$id'
     | '/settings/verification'
     | '/tutor/$tutorId'
+    | '/dashboard/courses/new'
     | '/dashboard/settings/verification'
     | '/sessions'
+    | '/dashboard/courses'
     | '/dashboard/settings'
     | '/tutor/courses'
     | '/tutor/courses/new'
     | '/tutor/settings/availability'
+    | '/dashboard/courses/$courseId/edit'
     | '/tutor/courses/$courseId/edit'
   id:
     | '__root__'
@@ -485,15 +572,20 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/style-guide'
     | '/_app/confirm-email'
+    | '/_app/contact'
     | '/_app/course-match'
     | '/_app/demo'
     | '/_app/find-tutor'
+    | '/_app/library'
     | '/_app/matches'
+    | '/_app/messages'
+    | '/_app/privacy'
     | '/_app/quiz'
     | '/_app/reset-password'
     | '/_app/roadmap'
+    | '/_app/terms'
     | '/admin/courses'
-    | '/admin/review'
+    | '/admin/sessions'
     | '/admin/users'
     | '/auth/callback'
     | '/auth/choose-role'
@@ -514,12 +606,15 @@ export interface FileRouteTypes {
     | '/_app/sessions/$id'
     | '/_app/settings/verification'
     | '/_app/tutor/$tutorId'
+    | '/dashboard/courses/new'
     | '/dashboard/settings/verification'
     | '/_app/sessions/'
+    | '/dashboard/courses/'
     | '/dashboard/settings/'
     | '/tutor/courses/'
     | '/_app/tutor/courses/new'
     | '/_app/tutor/settings/availability'
+    | '/dashboard/courses/$courseId/edit'
     | '/_app/tutor/courses/$courseId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -537,25 +632,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/style-guide': {
-      id: '/style-guide'
-      path: '/style-guide'
-      fullPath: '/style-guide'
-      preLoaderRoute: typeof StyleGuideRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -565,165 +646,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app': {
-      id: '/_app'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AppRouteImport
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/': {
-      id: '/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof DashboardIndexRouteImport
-      parentRoute: typeof DashboardRoute
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
+    '/style-guide': {
+      id: '/style-guide'
+      path: '/style-guide'
+      fullPath: '/style-guide'
+      preLoaderRoute: typeof StyleGuideRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/': {
       id: '/_app/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/pathwise/demo': {
-      id: '/pathwise/demo'
-      path: '/pathwise/demo'
-      fullPath: '/pathwise/demo'
-      preLoaderRoute: typeof PathwiseDemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard/settings': {
-      id: '/dashboard/settings'
-      path: '/settings'
-      fullPath: '/dashboard/settings'
-      preLoaderRoute: typeof DashboardSettingsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/messages': {
-      id: '/dashboard/messages'
-      path: '/messages'
-      fullPath: '/dashboard/messages'
-      preLoaderRoute: typeof DashboardMessagesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/earnings': {
-      id: '/dashboard/earnings'
-      path: '/earnings'
-      fullPath: '/dashboard/earnings'
-      preLoaderRoute: typeof DashboardEarningsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/courses': {
-      id: '/dashboard/courses'
-      path: '/courses'
-      fullPath: '/dashboard/courses'
-      preLoaderRoute: typeof DashboardCoursesRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/calendar': {
-      id: '/dashboard/calendar'
-      path: '/calendar'
-      fullPath: '/dashboard/calendar'
-      preLoaderRoute: typeof DashboardCalendarRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/analytics': {
-      id: '/dashboard/analytics'
-      path: '/analytics'
-      fullPath: '/dashboard/analytics'
-      preLoaderRoute: typeof DashboardAnalyticsRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/auth/choose-role': {
-      id: '/auth/choose-role'
-      path: '/auth/choose-role'
-      fullPath: '/auth/choose-role'
-      preLoaderRoute: typeof AuthChooseRoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/callback': {
-      id: '/auth/callback'
-      path: '/auth/callback'
-      fullPath: '/auth/callback'
-      preLoaderRoute: typeof AuthCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/users': {
-      id: '/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/review': {
-      id: '/admin/review'
-      path: '/review'
-      fullPath: '/admin/review'
-      preLoaderRoute: typeof AdminReviewRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/admin/courses': {
-      id: '/admin/courses'
-      path: '/courses'
-      fullPath: '/admin/courses'
-      preLoaderRoute: typeof AdminCoursesRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_app/roadmap': {
-      id: '/_app/roadmap'
-      path: '/roadmap'
-      fullPath: '/roadmap'
-      preLoaderRoute: typeof AppRoadmapRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/reset-password': {
-      id: '/_app/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof AppResetPasswordRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/quiz': {
-      id: '/_app/quiz'
-      path: '/quiz'
-      fullPath: '/quiz'
-      preLoaderRoute: typeof AppQuizRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/matches': {
-      id: '/_app/matches'
-      path: '/matches'
-      fullPath: '/matches'
-      preLoaderRoute: typeof AppMatchesRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/find-tutor': {
-      id: '/_app/find-tutor'
-      path: '/find-tutor'
-      fullPath: '/find-tutor'
-      preLoaderRoute: typeof AppFindTutorRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/demo': {
-      id: '/_app/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof AppDemoRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/course-match': {
-      id: '/_app/course-match'
-      path: '/course-match'
-      fullPath: '/course-match'
-      preLoaderRoute: typeof AppCourseMatchRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/confirm-email': {
@@ -733,67 +681,193 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppConfirmEmailRouteImport
       parentRoute: typeof AppRoute
     }
-    '/tutor/courses/': {
-      id: '/tutor/courses/'
-      path: '/tutor/courses'
-      fullPath: '/tutor/courses/'
-      preLoaderRoute: typeof TutorCoursesIndexRouteImport
+    '/_app/contact': {
+      id: '/_app/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof AppContactRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/course-match': {
+      id: '/_app/course-match'
+      path: '/course-match'
+      fullPath: '/course-match'
+      preLoaderRoute: typeof AppCourseMatchRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/demo': {
+      id: '/_app/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof AppDemoRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/find-tutor': {
+      id: '/_app/find-tutor'
+      path: '/find-tutor'
+      fullPath: '/find-tutor'
+      preLoaderRoute: typeof AppFindTutorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/library': {
+      id: '/_app/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AppLibraryRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/matches': {
+      id: '/_app/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof AppMatchesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/messages': {
+      id: '/_app/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof AppMessagesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/privacy': {
+      id: '/_app/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof AppPrivacyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/quiz': {
+      id: '/_app/quiz'
+      path: '/quiz'
+      fullPath: '/quiz'
+      preLoaderRoute: typeof AppQuizRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/reset-password': {
+      id: '/_app/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof AppResetPasswordRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/roadmap': {
+      id: '/_app/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof AppRoadmapRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/terms': {
+      id: '/_app/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof AppTermsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/courses': {
+      id: '/admin/courses'
+      path: '/courses'
+      fullPath: '/admin/courses'
+      preLoaderRoute: typeof AdminCoursesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/sessions': {
+      id: '/admin/sessions'
+      path: '/sessions'
+      fullPath: '/admin/sessions'
+      preLoaderRoute: typeof AdminSessionsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard/settings/': {
-      id: '/dashboard/settings/'
+    '/auth/choose-role': {
+      id: '/auth/choose-role'
+      path: '/auth/choose-role'
+      fullPath: '/auth/choose-role'
+      preLoaderRoute: typeof AuthChooseRoleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
       path: '/'
-      fullPath: '/dashboard/settings/'
-      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
-      parentRoute: typeof DashboardSettingsRoute
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/_app/sessions/': {
-      id: '/_app/sessions/'
-      path: '/sessions'
-      fullPath: '/sessions/'
-      preLoaderRoute: typeof AppSessionsIndexRouteImport
-      parentRoute: typeof AppRoute
+    '/dashboard/analytics': {
+      id: '/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof DashboardAnalyticsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/dashboard/settings/verification': {
-      id: '/dashboard/settings/verification'
-      path: '/verification'
-      fullPath: '/dashboard/settings/verification'
-      preLoaderRoute: typeof DashboardSettingsVerificationRouteImport
-      parentRoute: typeof DashboardSettingsRoute
+    '/dashboard/calendar': {
+      id: '/dashboard/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/calendar'
+      preLoaderRoute: typeof DashboardCalendarRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/_app/tutor/$tutorId': {
-      id: '/_app/tutor/$tutorId'
-      path: '/tutor/$tutorId'
-      fullPath: '/tutor/$tutorId'
-      preLoaderRoute: typeof AppTutorTutorIdRouteImport
-      parentRoute: typeof AppRoute
+    '/dashboard/courses': {
+      id: '/dashboard/courses'
+      path: '/courses'
+      fullPath: '/dashboard/courses'
+      preLoaderRoute: typeof DashboardCoursesRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/_app/settings/verification': {
-      id: '/_app/settings/verification'
-      path: '/settings/verification'
-      fullPath: '/settings/verification'
-      preLoaderRoute: typeof AppSettingsVerificationRouteImport
-      parentRoute: typeof AppRoute
+    '/dashboard/earnings': {
+      id: '/dashboard/earnings'
+      path: '/earnings'
+      fullPath: '/dashboard/earnings'
+      preLoaderRoute: typeof DashboardEarningsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/_app/sessions/$id': {
-      id: '/_app/sessions/$id'
-      path: '/sessions/$id'
-      fullPath: '/sessions/$id'
-      preLoaderRoute: typeof AppSessionsIdRouteImport
-      parentRoute: typeof AppRoute
+    '/dashboard/messages': {
+      id: '/dashboard/messages'
+      path: '/messages'
+      fullPath: '/dashboard/messages'
+      preLoaderRoute: typeof DashboardMessagesRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/_app/onboarding/tutor': {
-      id: '/_app/onboarding/tutor'
-      path: '/onboarding/tutor'
-      fullPath: '/onboarding/tutor'
-      preLoaderRoute: typeof AppOnboardingTutorRouteImport
-      parentRoute: typeof AppRoute
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
     }
-    '/_app/onboarding/student': {
-      id: '/_app/onboarding/student'
-      path: '/onboarding/student'
-      fullPath: '/onboarding/student'
-      preLoaderRoute: typeof AppOnboardingStudentRouteImport
+    '/pathwise/demo': {
+      id: '/pathwise/demo'
+      path: '/pathwise/demo'
+      fullPath: '/pathwise/demo'
+      preLoaderRoute: typeof PathwiseDemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/book/$tutorId': {
+      id: '/_app/book/$tutorId'
+      path: '/book/$tutorId'
+      fullPath: '/book/$tutorId'
+      preLoaderRoute: typeof AppBookTutorIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/courses/$slug': {
@@ -803,11 +877,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCoursesSlugRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/book/$tutorId': {
-      id: '/_app/book/$tutorId'
-      path: '/book/$tutorId'
-      fullPath: '/book/$tutorId'
-      preLoaderRoute: typeof AppBookTutorIdRouteImport
+    '/_app/onboarding/student': {
+      id: '/_app/onboarding/student'
+      path: '/onboarding/student'
+      fullPath: '/onboarding/student'
+      preLoaderRoute: typeof AppOnboardingStudentRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/onboarding/tutor': {
+      id: '/_app/onboarding/tutor'
+      path: '/onboarding/tutor'
+      fullPath: '/onboarding/tutor'
+      preLoaderRoute: typeof AppOnboardingTutorRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/sessions/': {
+      id: '/_app/sessions/'
+      path: '/sessions'
+      fullPath: '/sessions/'
+      preLoaderRoute: typeof AppSessionsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/sessions/$id': {
+      id: '/_app/sessions/$id'
+      path: '/sessions/$id'
+      fullPath: '/sessions/$id'
+      preLoaderRoute: typeof AppSessionsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/verification': {
+      id: '/_app/settings/verification'
+      path: '/settings/verification'
+      fullPath: '/settings/verification'
+      preLoaderRoute: typeof AppSettingsVerificationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/tutor/$tutorId': {
+      id: '/_app/tutor/$tutorId'
+      path: '/tutor/$tutorId'
+      fullPath: '/tutor/$tutorId'
+      preLoaderRoute: typeof AppTutorTutorIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/dashboard/courses/': {
+      id: '/dashboard/courses/'
+      path: '/'
+      fullPath: '/dashboard/courses/'
+      preLoaderRoute: typeof DashboardCoursesIndexRouteImport
+      parentRoute: typeof DashboardCoursesRoute
+    }
+    '/dashboard/courses/new': {
+      id: '/dashboard/courses/new'
+      path: '/new'
+      fullPath: '/dashboard/courses/new'
+      preLoaderRoute: typeof DashboardCoursesNewRouteImport
+      parentRoute: typeof DashboardCoursesRoute
+    }
+    '/dashboard/settings/': {
+      id: '/dashboard/settings/'
+      path: '/'
+      fullPath: '/dashboard/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/dashboard/settings/verification': {
+      id: '/dashboard/settings/verification'
+      path: '/verification'
+      fullPath: '/dashboard/settings/verification'
+      preLoaderRoute: typeof DashboardSettingsVerificationRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/tutor/courses/': {
+      id: '/tutor/courses/'
+      path: '/tutor/courses'
+      fullPath: '/tutor/courses/'
+      preLoaderRoute: typeof TutorCoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/tutor/courses/new': {
+      id: '/_app/tutor/courses/new'
+      path: '/tutor/courses/new'
+      fullPath: '/tutor/courses/new'
+      preLoaderRoute: typeof AppTutorCoursesNewRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/tutor/settings/availability': {
@@ -817,12 +968,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTutorSettingsAvailabilityRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/tutor/courses/new': {
-      id: '/_app/tutor/courses/new'
-      path: '/tutor/courses/new'
-      fullPath: '/tutor/courses/new'
-      preLoaderRoute: typeof AppTutorCoursesNewRouteImport
-      parentRoute: typeof AppRoute
+    '/dashboard/courses/$courseId/edit': {
+      id: '/dashboard/courses/$courseId/edit'
+      path: '/$courseId/edit'
+      fullPath: '/dashboard/courses/$courseId/edit'
+      preLoaderRoute: typeof DashboardCoursesCourseIdEditRouteImport
+      parentRoute: typeof DashboardCoursesRoute
     }
     '/_app/tutor/courses/$courseId/edit': {
       id: '/_app/tutor/courses/$courseId/edit'
@@ -836,13 +987,18 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppConfirmEmailRoute: typeof AppConfirmEmailRoute
+  AppContactRoute: typeof AppContactRoute
   AppCourseMatchRoute: typeof AppCourseMatchRoute
   AppDemoRoute: typeof AppDemoRoute
   AppFindTutorRoute: typeof AppFindTutorRoute
+  AppLibraryRoute: typeof AppLibraryRoute
   AppMatchesRoute: typeof AppMatchesRoute
+  AppMessagesRoute: typeof AppMessagesRoute
+  AppPrivacyRoute: typeof AppPrivacyRoute
   AppQuizRoute: typeof AppQuizRoute
   AppResetPasswordRoute: typeof AppResetPasswordRoute
   AppRoadmapRoute: typeof AppRoadmapRoute
+  AppTermsRoute: typeof AppTermsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppBookTutorIdRoute: typeof AppBookTutorIdRoute
   AppCoursesSlugRoute: typeof AppCoursesSlugRoute
@@ -859,13 +1015,18 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppConfirmEmailRoute: AppConfirmEmailRoute,
+  AppContactRoute: AppContactRoute,
   AppCourseMatchRoute: AppCourseMatchRoute,
   AppDemoRoute: AppDemoRoute,
   AppFindTutorRoute: AppFindTutorRoute,
+  AppLibraryRoute: AppLibraryRoute,
   AppMatchesRoute: AppMatchesRoute,
+  AppMessagesRoute: AppMessagesRoute,
+  AppPrivacyRoute: AppPrivacyRoute,
   AppQuizRoute: AppQuizRoute,
   AppResetPasswordRoute: AppResetPasswordRoute,
   AppRoadmapRoute: AppRoadmapRoute,
+  AppTermsRoute: AppTermsRoute,
   AppIndexRoute: AppIndexRoute,
   AppBookTutorIdRoute: AppBookTutorIdRoute,
   AppCoursesSlugRoute: AppCoursesSlugRoute,
@@ -884,19 +1045,34 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface AdminRouteChildren {
   AdminCoursesRoute: typeof AdminCoursesRoute
-  AdminReviewRoute: typeof AdminReviewRoute
+  AdminSessionsRoute: typeof AdminSessionsRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCoursesRoute: AdminCoursesRoute,
-  AdminReviewRoute: AdminReviewRoute,
+  AdminSessionsRoute: AdminSessionsRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface DashboardCoursesRouteChildren {
+  DashboardCoursesNewRoute: typeof DashboardCoursesNewRoute
+  DashboardCoursesIndexRoute: typeof DashboardCoursesIndexRoute
+  DashboardCoursesCourseIdEditRoute: typeof DashboardCoursesCourseIdEditRoute
+}
+
+const DashboardCoursesRouteChildren: DashboardCoursesRouteChildren = {
+  DashboardCoursesNewRoute: DashboardCoursesNewRoute,
+  DashboardCoursesIndexRoute: DashboardCoursesIndexRoute,
+  DashboardCoursesCourseIdEditRoute: DashboardCoursesCourseIdEditRoute,
+}
+
+const DashboardCoursesRouteWithChildren =
+  DashboardCoursesRoute._addFileChildren(DashboardCoursesRouteChildren)
 
 interface DashboardSettingsRouteChildren {
   DashboardSettingsVerificationRoute: typeof DashboardSettingsVerificationRoute
@@ -914,7 +1090,7 @@ const DashboardSettingsRouteWithChildren =
 interface DashboardRouteChildren {
   DashboardAnalyticsRoute: typeof DashboardAnalyticsRoute
   DashboardCalendarRoute: typeof DashboardCalendarRoute
-  DashboardCoursesRoute: typeof DashboardCoursesRoute
+  DashboardCoursesRoute: typeof DashboardCoursesRouteWithChildren
   DashboardEarningsRoute: typeof DashboardEarningsRoute
   DashboardMessagesRoute: typeof DashboardMessagesRoute
   DashboardSettingsRoute: typeof DashboardSettingsRouteWithChildren
@@ -924,7 +1100,7 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAnalyticsRoute: DashboardAnalyticsRoute,
   DashboardCalendarRoute: DashboardCalendarRoute,
-  DashboardCoursesRoute: DashboardCoursesRoute,
+  DashboardCoursesRoute: DashboardCoursesRouteWithChildren,
   DashboardEarningsRoute: DashboardEarningsRoute,
   DashboardMessagesRoute: DashboardMessagesRoute,
   DashboardSettingsRoute: DashboardSettingsRouteWithChildren,

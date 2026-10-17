@@ -97,3 +97,13 @@ export function canAccess(role: Role | null | undefined, allow: Role[]): boolean
   }
   return allow.includes(role);
 }
+
+/** Tutor id of a booking a student started while signed out, so sign-in can return them to it. */
+export function pendingBookingTutorId(): string | null {
+  try {
+    const raw = localStorage.getItem("pathwise_pending_booking");
+    return raw ? ((JSON.parse(raw) as { tutorId?: string }).tutorId ?? null) : null;
+  } catch {
+    return null;
+  }
+}

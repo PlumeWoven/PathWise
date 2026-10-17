@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      brief_shares: {
+        Row: {
+          granted_at: string
+          revoked_at: string | null
+          student_id: string
+          subject: string
+          tutor_id: string
+        }
+        Insert: {
+          granted_at?: string
+          revoked_at?: string | null
+          student_id: string
+          subject: string
+          tutor_id: string
+        }
+        Update: {
+          granted_at?: string
+          revoked_at?: string | null
+          student_id?: string
+          subject?: string
+          tutor_id?: string
+        }
+        Relationships: []
+      }
       course_lessons: {
         Row: {
           course_id: string
@@ -301,13 +325,17 @@ export type Database = {
       }
       diagnostic_results: {
         Row: {
+          answers: Json
           created_at: string
+          confidence: number | null
           goal: string
+          guest_token: string | null
           id: string
           level: string
           level_band: number | null
           level_id: string | null
           score: number
+          strong_topics: string[]
           subject: string
           topic_bands: Json
           user_id: string | null
@@ -315,13 +343,17 @@ export type Database = {
           xp_earned: number
         }
         Insert: {
+          answers?: Json
           created_at?: string
+          confidence?: number | null
           goal: string
+          guest_token?: string | null
           id?: string
           level: string
           level_band?: number | null
           level_id?: string | null
           score: number
+          strong_topics?: string[]
           subject: string
           topic_bands?: Json
           user_id?: string | null
@@ -329,13 +361,17 @@ export type Database = {
           xp_earned: number
         }
         Update: {
+          answers?: Json
           created_at?: string
+          confidence?: number | null
           goal?: string
+          guest_token?: string | null
           id?: string
           level?: string
           level_band?: number | null
           level_id?: string | null
           score?: number
+          strong_topics?: string[]
           subject?: string
           topic_bands?: Json
           user_id?: string | null
@@ -610,6 +646,8 @@ export type Database = {
       roadmap_stages: {
         Row: {
           completed_at: string | null
+          completed_by_session_id: string | null
+          guest_token: string | null
           id: string
           required_level_band: number | null
           required_level_id: string | null
@@ -621,6 +659,8 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          completed_by_session_id?: string | null
+          guest_token?: string | null
           id?: string
           required_level_band?: number | null
           required_level_id?: string | null
@@ -632,6 +672,8 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          completed_by_session_id?: string | null
+          guest_token?: string | null
           id?: string
           required_level_band?: number | null
           required_level_id?: string | null
@@ -657,6 +699,7 @@ export type Database = {
           current_stage: number
           diagnostic_id: string | null
           goal: string | null
+          guest_token: string | null
           id: string
           level_band: number | null
           level_id: string | null
@@ -669,6 +712,7 @@ export type Database = {
           current_stage?: number
           diagnostic_id?: string | null
           goal?: string | null
+          guest_token?: string | null
           id?: string
           level_band?: number | null
           level_id?: string | null
@@ -681,6 +725,7 @@ export type Database = {
           current_stage?: number
           diagnostic_id?: string | null
           goal?: string | null
+          guest_token?: string | null
           id?: string
           level_band?: number | null
           level_id?: string | null
@@ -937,30 +982,48 @@ export type Database = {
         }
         Relationships: []
       }
+      // Hand-corrected against the live database (project tarnqywokrildahzhmjv)
+      // on 2026-08-01. The generated shape declared user_id/sessions/enabled,
+      // but the live table has tutor_id/session_count/is_active — so every query
+      // against it returned HTTP 400 while TypeScript reported no problem.
+      // The whole file needs regenerating against the live project; this table
+      // is corrected now because code depends on it today.
       tutor_packages: {
         Row: {
-          created_at: string
-          discount_percent: number
-          enabled: boolean
+          created_at: string | null
+          description: string | null
+          discount_percent: number | null
           id: string
-          sessions: number
-          user_id: string
+          is_active: boolean | null
+          name: string | null
+          price: number | null
+          session_count: number | null
+          tutor_id: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
-          discount_percent?: number
-          enabled?: boolean
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
           id?: string
-          sessions: number
-          user_id: string
+          is_active?: boolean | null
+          name?: string | null
+          price?: number | null
+          session_count?: number | null
+          tutor_id?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
-          discount_percent?: number
-          enabled?: boolean
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number | null
           id?: string
-          sessions?: number
-          user_id?: string
+          is_active?: boolean | null
+          name?: string | null
+          price?: number | null
+          session_count?: number | null
+          tutor_id?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1092,6 +1155,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      student_brief: {
+        Args: { p_student: string }
+        Returns: Json
+      }
+      claim_guest_roadmaps: {
+        Args: { p_guest_token: string }
+        Returns: undefined
+      }
       book_session: {
         Args: {
           p_amount: number

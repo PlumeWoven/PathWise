@@ -2,6 +2,7 @@ import { useEffect, ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "./auth";
 import { roleOnboarding } from "./roles";
+import { SignInPrompt } from "./RoleGate";
 
 /**
  * Wraps protected routes. While auth is loading, shows nothing.
@@ -24,7 +25,7 @@ export function RequireOnboarding({ children }: { children: ReactNode }) {
   }, [loading, isLoggedIn, profile, openLogin, navigate]);
 
   if (loading) return null;
-  if (!isLoggedIn) return null;
+  if (!isLoggedIn) return <SignInPrompt />;
   if (profile && !profile.onboarding_completed) return null;
   return <>{children}</>;
 }

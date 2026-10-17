@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { draftSlug } from "./slug";
 
 export type CourseStatus = "draft" | "published" | "under_review" | "archived";
 
@@ -78,6 +79,10 @@ export async function createDraft(tutorId: string): Promise<string> {
     .insert({
       tutor_id: tutorId,
       title: "Untitled course",
+      // Supplied client-side on purpose: every draft shares the same title, and the
+      // DB trigger derives the slug from the title without de-duplicating, so letting
+      // it generate one makes each insert collide on the UNIQUE slug (see slug.ts).
+      slug: draftSlug(),
       status: "draft",
       currency: "MDL",
     })
@@ -111,8 +116,11 @@ export async function getCourseBySlug(slug: string) {
 }
 
 export async function updateCourse(id: string, patch: Partial<CourseRow>) {
-  const { error } = await c.from("courses").update(patch).eq("id", id);
+  // RLS turns a disallowed update into "0 rows, no error" — surface that instead
+  // of reporting success for a change that never happened.
+  const { data, error } = await c.from("courses").update(patch).eq("id", id).select("id");
   if (error) throw error;
+  if (!data?.length) throw new Error("Course wasn't updated — you may not have permission.");
 }
 
 export async function deleteCourse(id: string) {
@@ -187,7 +195,7 @@ export function statusColor(s: CourseStatus): string {
     case "published":
       return "bg-[var(--pw-accent-2)]/10 text-[var(--pw-accent-2)] border-[var(--pw-accent-2)]/30";
     case "under_review":
-      return "bg-[var(--pw-accent-3)]/15 text-[#7a5800] border-[var(--pw-accent-3)]/40";
+      return "bg-[var(--pw-accent-3)]/15 text-[var(--pw-accent-3)] border-[var(--pw-accent-3)]/40";
     case "archived":
       return "bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)] border-[var(--pw-border)]";
     default:

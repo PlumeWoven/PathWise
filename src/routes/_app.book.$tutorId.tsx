@@ -2,14 +2,17 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { AnimatedStepper } from "@/components/AnimatedStepper";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  formatPrice,
   priceForType,
   durationForType,
   googleCalendarUrl,
   makeICS,
   type SessionType,
+  type SessionStatus,
 } from "../pathwise/sessions";
 import {
   buildAvailableSlots,
@@ -24,14 +27,27 @@ import {
   COMMON_TIMEZONES,
   type Frequency,
 } from "../pathwise/scheduling";
+import { teachesSubject, type TutorRow as MatchTutorRow } from "../pathwise/matching";
+import { tutorQuizSubjectFor } from "../pathwise/levels";
+import type { Subject } from "../pathwise/data";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { z } from "zod";
 import { Calendar as CalendarIcon, AlertTriangle, Repeat } from "lucide-react";
+import { Icon, type IconName } from "@/components/Icon";
 import { Calendar } from "@/components/ui/calendar";
 import { addDays } from "date-fns";
 
+const searchSchema = z.object({
+  // Set when this booking replaces an existing session. The original is cancelled
+  // only after the replacement is created — see handleConfirmAndPay.
+  reschedule: fallback(z.string().optional(), undefined),
+});
+
 export const Route = createFileRoute("/_app/book/$tutorId")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Book a session — PathWise" },
+      { title: "Book a session · PathWise" },
       { name: "description", content: "Pick a session type, time, and confirm your booking." },
     ],
   }),
@@ -39,15 +55,22 @@ export const Route = createFileRoute("/_app/book/$tutorId")({
   errorComponent: ({ error }) => (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="pw-card p-6 max-w-md text-center">
-        <h1 className="font-display text-xl">Booking unavailable</h1>
-        <p className="text-sm text-[var(--pw-ink-2)] mt-2">{error.message}</p>
-        <Link to="/matches" className="pw-btn-outline mt-4 inline-block px-4 py-2 text-sm">Back to matches</Link>
+        <h1 className="font-display text-xl uppercase tracking-[-0.025em]">Booking unavailable</h1>
+        <p className="text-sm text-[var(--pw-ink-2)] mt-2">{(error as Error).message}</p>
+        <Link to="/matches" className="pw-btn-outline mt-4 inline-block px-4 py-2">
+          Back to matches
+        </Link>
       </div>
     </div>
   ),
   notFoundComponent: () => (
     <div className="min-h-screen flex items-center justify-center">
-      <div>Tutor not found. <Link to="/matches" className="underline">Back</Link></div>
+      <div>
+        Tutor not found.{" "}
+        <Link to="/matches" className="underline">
+          Back
+        </Link>
+      </div>
     </div>
   ),
 });
@@ -63,46 +86,104 @@ interface TutorRow {
   timezone: string | null;
   buffer_minutes: number | null;
   min_advance_hours: number | null;
+  subject_specialties: string[] | null;
+}
+
+/** The level check offered for sharing with this tutor. */
+interface SharedAttempt {
+  subject: string;
+  level: string;
+  strong_topics: string[];
+  wrong_topics: string[] | null;
+  created_at: string;
 }
 
 const STEPS = ["Type", "Time", "Timezone", "Summary", "Pay"] as const;
 
 function BookPage() {
   const { tutorId } = Route.useParams();
+  const { reschedule: rescheduleId } = Route.useSearch();
   const navigate = useNavigate();
   const { user, openLogin } = useAuth();
 
   const [step, setStep] = useState(0);
   const [tutor, setTutor] = useState<TutorRow | null>(null);
-  const [availability, setAvailability] = useState<{ day_of_week: number; start_hour: number; end_hour: number; is_blocked: boolean | null }[]>([]);
+  const [availability, setAvailability] = useState<
+    { day_of_week: number; start_hour: number; end_hour: number; is_blocked: boolean | null }[]
+  >([]);
   const [bookedRanges, setBookedRanges] = useState<Array<{ start: Date; end: Date }>>([]);
   const [pkg, setPkg] = useState<{ sessions: number; discount_percent: number } | null>(null);
   const [type, setType] = useState<SessionType>("trial");
   const [slot, setSlot] = useState<Date | null>(null);
   const [pickedDay, setPickedDay] = useState<Date | undefined>(undefined);
-  const [tz, setTz] = useState<string>(detectTimezone());
+  // "UTC" until mounted: detectTimezone() resolves to the deploy region on the
+  // server (UTC on Vercel) and the visitor's zone on the client, and it renders
+  // into a <select> — so seeding it directly mismatches on hydration.
+  const [tz, setTz] = useState<string>("UTC");
+  useEffect(() => setTz(detectTimezone()), []);
   const [submitting, setSubmitting] = useState(false);
   const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
   const [recurring, setRecurring] = useState(false);
+  // Level check to share: the latest in a subject this tutor teaches, else the
+  // latest overall. Sharing is ticked by default (owner decision) and previewed.
+  const [attempt, setAttempt] = useState<SharedAttempt | null | undefined>(undefined);
+  const [shareBrief, setShareBrief] = useState(true);
+  useEffect(() => {
+    if (!tutor) return;
+    let cancelled = false;
+    void supabase
+      .from("diagnostic_results")
+      .select("subject, level, strong_topics, wrong_topics, created_at")
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const rows = (data ?? []) as SharedAttempt[];
+        const asTutor = {
+          subject_specialties: tutor.subject_specialties,
+          specializations: [],
+          headline: tutor.headline,
+          bio: null,
+        } as unknown as MatchTutorRow;
+        const taught = rows.find((r) =>
+          teachesSubject(asTutor, tutorQuizSubjectFor(r.subject as Subject) ?? r.subject),
+        );
+        setAttempt(taught ?? rows[0] ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [tutor, user?.id]);
+
+  // A reschedule moves one existing session. Leaving recurrence on would create a
+  // whole series while cancelling only the single original.
+  useEffect(() => {
+    if (rescheduleId) setRecurring(false);
+  }, [rescheduleId]);
   const [frequency, setFrequency] = useState<Frequency>("weekly");
   const [endMode, setEndMode] = useState<"count" | "date" | "ongoing">("count");
   const [recCount, setRecCount] = useState(4);
   const [recEndDate, setRecEndDate] = useState<Date | undefined>(undefined);
 
-  // Persist intent so we resume after login.
+  // Persist intent so a signed-out student resumes here after signing up.
   useEffect(() => {
+    if (user) return;
     try {
       localStorage.setItem("pathwise_pending_booking", JSON.stringify({ tutorId }));
-    } catch { /* ignore */ }
-  }, [tutorId]);
+    } catch {
+      /* ignore */
+    }
+  }, [tutorId, user]);
 
   useEffect(() => {
     void (async () => {
       const { data: t } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url, headline, hourly_rate, first_session_free, free_discovery_call, timezone, buffer_minutes, min_advance_hours")
+        .select(
+          "id, display_name, avatar_url, headline, hourly_rate, first_session_free, free_discovery_call, timezone, buffer_minutes, min_advance_hours, subject_specialties",
+        )
         .eq("id", tutorId)
-        .eq("role", "tutor")
+        .in("role", ["tutor", "both"])
         .maybeSingle();
       setTutor(t as TutorRow | null);
       const { data: a } = await supabase
@@ -115,15 +196,17 @@ function BookPage() {
         .select("scheduled_start, scheduled_end")
         .eq("tutor_id", tutorId)
         .in("status_v2", ["scheduled", "confirmed", "reminder_sent", "in_progress"]);
-      setBookedRanges(((booked ?? []) as any[])
-        .filter((s) => s.scheduled_start && s.scheduled_end)
-        .map((s) => ({ start: new Date(s.scheduled_start), end: new Date(s.scheduled_end) })));
+      setBookedRanges(
+        ((booked ?? []) as any[])
+          .filter((s) => s.scheduled_start && s.scheduled_end)
+          .map((s) => ({ start: new Date(s.scheduled_start), end: new Date(s.scheduled_end) })),
+      );
       const { data: p } = await supabase
         .from("tutor_packages")
-        .select("sessions, discount_percent")
-        .eq("user_id", tutorId)
-        .eq("enabled", true)
-        .order("sessions", { ascending: true })
+        .select("sessions:session_count, discount_percent")
+        .eq("tutor_id", tutorId)
+        .eq("is_active", true)
+        .order("session_count", { ascending: true })
         .limit(1)
         .maybeSingle();
       if (p) setPkg(p as any);
@@ -132,14 +215,15 @@ function BookPage() {
 
   const duration = durationForType(type);
   const slots = useMemo(
-    () => buildAvailableSlots({
-      availability,
-      durationMin: duration,
-      bufferMin: tutor?.buffer_minutes ?? 0,
-      daysAhead: 60,
-      booked: bookedRanges,
-      minAdvanceHours: tutor?.min_advance_hours ?? 24,
-    }),
+    () =>
+      buildAvailableSlots({
+        availability,
+        durationMin: duration,
+        bufferMin: tutor?.buffer_minutes ?? 0,
+        daysAhead: 60,
+        booked: bookedRanges,
+        minAdvanceHours: tutor?.min_advance_hours ?? 24,
+      }),
     [availability, duration, tutor?.buffer_minutes, tutor?.min_advance_hours, bookedRanges],
   );
   const slotsByDay = useMemo(() => groupSlotsByDay(slots), [slots]);
@@ -165,26 +249,63 @@ function BookPage() {
 
   const hourlyRate = Number(tutor?.hourly_rate ?? 0);
   const isTrialFree = type === "trial" && (tutor?.free_discovery_call || tutor?.first_session_free);
-  const price = isTrialFree ? 0 : priceForType(hourlyRate, type, pkg?.discount_percent ?? 0, pkg?.sessions ?? 5);
+  const price = isTrialFree
+    ? 0
+    : priceForType(hourlyRate, type, pkg?.discount_percent ?? 0, pkg?.sessions ?? 5);
 
-  function next() { setStep((s) => Math.min(STEPS.length - 1, s + 1)); }
-  function back() { setStep((s) => Math.max(0, s - 1)); }
+  function next() {
+    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+  }
+  function back() {
+    setStep((s) => Math.max(0, s - 1));
+  }
 
   async function handleConfirmAndPay() {
     if (!user) {
-      toast.info("Sign in to complete your booking — we'll bring you back here.");
+      toast.info("Sign in to finish booking. We'll bring you back here.");
       openLogin();
       return;
     }
     if (!slot) return;
     setSubmitting(true);
     const groupId = recurring && recurrenceInstances.length > 1 ? crypto.randomUUID() : null;
+
+    // ── Rescheduling: release the old slot before claiming the new one ──
+    // book_session raises SLOT_TAKEN for any overlapping non-cancelled session,
+    // and the session being moved is itself one of those. Booking first would
+    // therefore reject the most ordinary reschedule of all — nudging a session
+    // half an hour — with "someone else just booked this". So the original is
+    // cancelled first and restored below if the new booking doesn't land.
+    let restoreStatus: SessionStatus | null = null;
+    if (rescheduleId) {
+      const { data: original } = await supabase
+        .from("sessions")
+        .select("status_v2")
+        .eq("id", rescheduleId)
+        .maybeSingle();
+      restoreStatus = (original as { status_v2?: SessionStatus } | null)?.status_v2 ?? "scheduled";
+
+      const { error: releaseErr } = await supabase
+        .from("sessions")
+        .update({
+          status_v2: "cancelled",
+          cancellation_reason: "Rescheduled",
+          cancelled_by: user.id,
+        })
+        .eq("id", rescheduleId);
+      if (releaseErr) {
+        setSubmitting(false);
+        toast.error("Couldn't release your original session. Nothing was changed.");
+        return;
+      }
+    }
+
+    // Outside the try so the catch can undo a series that failed part-way.
+    const createdIds: string[] = [];
     try {
-      const createdIds: string[] = [];
       for (let i = 0; i < recurrenceInstances.length; i++) {
         const start = recurrenceInstances[i];
         const end = new Date(start.getTime() + duration * 60 * 1000);
-        const meetingUrl = `https://meet.pathwise.app/${crypto.randomUUID().slice(0, 8)}`;
         const { data, error } = await supabase.rpc("book_session", {
           p_tutor_id: tutorId,
           p_scheduled_start: start.toISOString(),
@@ -193,13 +314,15 @@ function BookPage() {
           p_timezone: tz,
           p_session_type: type,
           p_amount: price,
-          p_meeting_url: meetingUrl,
+          p_meeting_url: null, // book_session uses the tutor's lesson link, or a Jitsi room
           p_recurrence_group_id: groupId,
           p_recurrence_index: groupId ? i : null,
         } as any);
         if (error) {
           if (String(error.message).includes("SLOT_TAKEN")) {
-            throw new Error("This slot was just booked by someone else — please refresh and pick another time.");
+            throw new Error(
+              "Someone just booked that time. Pick another slot.",
+            );
           }
           throw error;
         }
@@ -212,25 +335,96 @@ function BookPage() {
           changed_by: user.id,
         });
       }
-      await supabase.from("notifications").insert([
-        { user_id: user.id, title: recurring && createdIds.length > 1 ? `${createdIds.length} sessions booked` : "Booking confirmed", message: `Your ${type} session${createdIds.length > 1 ? "s" : ""} with ${tutor?.display_name ?? "your tutor"} ${createdIds.length > 1 ? "are" : "is"} set.`, link: `/sessions/${createdIds[0]}`, type: "confirmed" },
-        { user_id: tutorId, title: recurring && createdIds.length > 1 ? `${createdIds.length} new bookings` : "New booking", message: `You have ${createdIds.length > 1 ? `${createdIds.length} new ${type} sessions` : `a new ${type} session`} booked.`, link: `/sessions/${createdIds[0]}`, type: "scheduled" },
-      ]);
-      try { localStorage.removeItem("pathwise_pending_booking"); } catch { /* ignore */ }
+
+      // The replacement landed, so the release above is now permanent.
+      if (rescheduleId) {
+        restoreStatus = null;
+        await supabase.from("session_state_history").insert({
+          session_id: rescheduleId,
+          from_status: null,
+          to_status: "cancelled",
+          changed_by: user.id,
+        });
+      }
+      // Both parties are notified by a trigger on sessions (M2).
+      try {
+        localStorage.removeItem("pathwise_pending_booking");
+      } catch {
+        /* ignore */
+      }
       // Refresh the booked ranges so the UI reflects newly taken slots if user goes back.
-      setBookedRanges((prev) => [...prev, ...recurrenceInstances.map((s) => ({ start: s, end: new Date(s.getTime() + duration * 60 * 1000) }))]);
+      setBookedRanges((prev) => [
+        ...prev,
+        ...recurrenceInstances.map((s) => ({
+          start: s,
+          end: new Date(s.getTime() + duration * 60 * 1000),
+        })),
+      ]);
       setCreatedSessionId(createdIds[0]);
+      // Consent is recorded after the booking lands; a failure here never
+      // undoes the booking.
+      if (attempt) {
+        const { error: shareErr } = await supabase.from("brief_shares").upsert(
+          {
+            student_id: user.id,
+            tutor_id: tutorId,
+            subject: attempt.subject,
+            granted_at: new Date().toISOString(),
+            revoked_at: shareBrief ? null : new Date().toISOString(),
+          },
+          { onConflict: "student_id,tutor_id,subject" },
+        );
+        if (shareErr) {
+          console.error("[book] brief share", shareErr);
+          toast.error("Booked, but your sharing choice wasn't saved. Change it on the session page.");
+        }
+      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not complete booking");
+      // Put the original session back — the new time didn't take, so the student
+      // must not be left with nothing.
+      if (rescheduleId && restoreStatus) {
+        const { error: restoreErr } = await supabase
+          .from("sessions")
+          .update({ status_v2: restoreStatus, cancellation_reason: null, cancelled_by: null })
+          .eq("id", rescheduleId);
+        if (restoreErr) {
+          toast.error(
+            "Your new time failed and we couldn't restore the original booking. Please check My sessions.",
+          );
+        } else {
+          toast.info("Your original session is unchanged.");
+        }
+      }
+      if (createdIds.length) {
+        // A series is all-or-nothing: cancel the sessions already created, so a
+        // retry doesn't leave duplicates the student never saw confirmed.
+        const { error: undoErr } = await supabase
+          .from("sessions")
+          .update({
+            status_v2: "cancelled",
+            cancellation_reason: "Series booking failed",
+            cancelled_by: user.id,
+          })
+          .in("id", createdIds);
+        toast.error(
+          undoErr
+            ? `Session ${createdIds.length + 1} of ${recurrenceInstances.length} couldn't be booked, and ${createdIds.length} earlier one${createdIds.length === 1 ? " is" : "s are"} still booked. Please check My sessions.`
+            : `Session ${createdIds.length + 1} of ${recurrenceInstances.length} couldn't be booked, so none of the series was booked. Pick another start time.`,
+        );
+      } else {
+        toast.error(err instanceof Error ? err.message : "Could not complete booking");
+      }
       // Refresh availability after a slot collision
       const { data: booked } = await supabase
         .from("sessions")
         .select("scheduled_start, scheduled_end")
         .eq("tutor_id", tutorId)
         .in("status_v2", ["scheduled", "confirmed", "reminder_sent", "in_progress"]);
-      setBookedRanges(((booked ?? []) as any[])
-        .filter((s) => s.scheduled_start && s.scheduled_end)
-        .map((s) => ({ start: new Date(s.scheduled_start), end: new Date(s.scheduled_end) })));
+      setBookedRanges(
+        ((booked ?? []) as any[])
+          .filter((s) => s.scheduled_start && s.scheduled_end)
+          .map((s) => ({ start: new Date(s.scheduled_start), end: new Date(s.scheduled_end) })),
+      );
       setSlot(null);
     } finally {
       setSubmitting(false);
@@ -242,32 +436,70 @@ function BookPage() {
     const end = new Date(start.getTime() + duration * 60 * 1000);
     const ics = makeICS({
       title: `PathWise session with ${tutor?.display_name ?? "your tutor"}`,
-      description: `Join: https://meet.pathwise.app`,
-      start, end,
+      description: `Lesson link: ${window.location.origin}/sessions/${createdSessionId}`,
+      start,
+      end,
     });
     const blobUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
     const gcal = googleCalendarUrl({
       title: `PathWise session with ${tutor?.display_name ?? "your tutor"}`,
       details: "Booked via PathWise",
-      start, end,
+      start,
+      end,
     });
     return (
       <div className="bg-[var(--pw-bg)]">
-        <main className="px-5 sm:px-8 py-12 max-w-xl mx-auto">
+        <main className="px-6 sm:px-8 py-12 max-w-xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="pw-card p-7 text-center"
+            className="pw-card p-8 text-center"
           >
-            <div className="text-5xl mb-3">🎉</div>
-            <h1 className="font-display text-2xl">You're booked!</h1>
-            <p className="text-sm text-[var(--pw-ink-2)] mt-1">
-              {start.toLocaleString(undefined, { dateStyle: "full", timeStyle: "short", timeZone: tz })} ({tz})
+            <div className="mb-4 flex justify-center">
+              <Icon name="celebrate" className="h-12 w-12" />
+            </div>
+            {/* Paid sessions are saved as "scheduled" and wait for the tutor to confirm;
+                only free trials are saved as "confirmed". */}
+            <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
+              {rescheduleId ? "Session moved" : price === 0 ? "You're booked" : "Booking sent"}
+            </h1>
+            {price !== 0 && (
+              <p className="text-sm text-[var(--pw-ink-2)] mt-2">
+                {tutor?.display_name ?? "Your tutor"} will confirm{" "}
+                {rescheduleId ? "the new time" : "it"}. You'll see the status in your sessions.
+              </p>
+            )}
+            {rescheduleId && (
+              <p className="text-sm text-[var(--pw-ink-2)] mt-2">
+                Your previous session has been cancelled.
+              </p>
+            )}
+            <p className="text-sm text-[var(--pw-ink-2)] mt-2">
+              {start.toLocaleString(undefined, {
+                dateStyle: "full",
+                timeStyle: "short",
+                timeZone: tz,
+              })}{" "}
+              ({tz})
             </p>
-            <div className="mt-5 flex flex-col gap-2">
-              <a href={gcal} target="_blank" rel="noreferrer" className="pw-btn-outline px-4 py-2 text-sm">Add to Google Calendar</a>
-              <a href={blobUrl} download="pathwise-session.ics" className="pw-btn-outline px-4 py-2 text-sm">Download .ics (Apple / Outlook)</a>
-              <Link to="/sessions/$id" params={{ id: createdSessionId }} className="pw-btn-primary px-4 py-2 text-sm">View session details</Link>
+            <div className="mt-6 flex flex-col gap-2">
+              <a href={gcal} target="_blank" rel="noreferrer" className="pw-btn-outline px-4 py-2">
+                Add to Google Calendar
+              </a>
+              <a
+                href={blobUrl}
+                download="pathwise-session.ics"
+                className="pw-btn-outline px-4 py-2"
+              >
+                Download .ics (Apple / Outlook)
+              </a>
+              <Link
+                to="/sessions/$id"
+                params={{ id: createdSessionId }}
+                className="pw-btn-primary px-4 py-2"
+              >
+                View session details
+              </Link>
             </div>
           </motion.div>
         </main>
@@ -277,39 +509,31 @@ function BookPage() {
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-3xl mx-auto">
-        {/* Progress */}
-        <div className="mt-4 flex items-center gap-2 text-[12px] text-[var(--pw-ink-2)]">
-          {STEPS.map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <span
-                className="rounded-full w-6 h-6 flex items-center justify-center font-mono-pw text-[11px]"
-                style={{
-                  background: i <= step ? "var(--pw-accent)" : "var(--pw-surface-2)",
-                  color: i <= step ? "white" : "var(--pw-ink-2)",
-                }}
-              >
-                {i + 1}
-              </span>
-              <span className={i === step ? "text-[var(--pw-ink)] font-medium" : ""}>{s}</span>
-              {i < STEPS.length - 1 && <span className="w-4 h-px bg-[var(--pw-border)]" />}
-            </div>
-          ))}
-        </div>
+      <main className="px-6 sm:px-8 pb-24 max-w-3xl mx-auto">
+        {/* Progress — the shared stepper shows only the current label on phones, so it fits 375px. */}
+        <AnimatedStepper steps={[...STEPS]} currentStep={step + 1} className="mt-4" />
 
         {/* Tutor header */}
         {tutor && (
-          <div className="pw-card mt-5 p-4 flex items-center gap-3">
+          <div className="pw-card mt-6 p-4 flex items-center gap-4">
             {tutor.avatar_url ? (
-              <img src={tutor.avatar_url} alt={tutor.display_name ?? ""} className="w-12 h-12 rounded-full object-cover" />
+              <img
+                src={tutor.avatar_url}
+                alt={tutor.display_name ?? ""}
+                className="w-12 h-12 rounded-full object-cover"
+              />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-[var(--pw-accent)] text-white flex items-center justify-center font-display">
+              <div className="w-12 h-12 rounded-full bg-pw-accent-fill text-pw-on-accent flex items-center justify-center font-display">
                 {(tutor.display_name ?? "T")[0]}
               </div>
             )}
             <div className="min-w-0">
-              <div className="font-display text-[16px] truncate">{tutor.display_name ?? "Tutor"}</div>
-              <div className="text-[12px] text-[var(--pw-ink-2)] truncate">{tutor.headline ?? `$${hourlyRate}/hr`}</div>
+              <div className="font-display text-[1rem] truncate">
+                {tutor.display_name ?? "Tutor"}
+              </div>
+              <div className="text-[0.75rem] text-[var(--pw-ink-2)] truncate">
+                {tutor.headline ?? `${formatPrice(hourlyRate)}/hr`}
+              </div>
             </div>
           </div>
         )}
@@ -321,37 +545,49 @@ function BookPage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}
             transition={{ duration: 0.2 }}
-            className="mt-5"
+            className="mt-6"
           >
             {/* Step 1: Type */}
             {step === 0 && (
-              <div className="space-y-3">
-                <h1 className="font-display text-2xl">Pick a session type</h1>
+              <div className="space-y-4">
+                <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
+                  Pick a session type
+                </h1>
                 <TypeOption
                   active={type === "trial"}
                   onClick={() => setType("trial")}
-                  emoji="👋"
+                  icon="wave"
                   title="Trial / discovery call"
                   subtitle="30 min · meet your tutor, set goals"
-                  price={isTrialFree ? "Free" : `$${priceForType(hourlyRate, "trial")}`}
+                  price={isTrialFree ? "Free" : formatPrice(priceForType(hourlyRate, "trial"))}
                 />
                 <TypeOption
                   active={type === "standard"}
                   onClick={() => setType("standard")}
-                  emoji="📚"
+                  icon="books"
                   title="Standard session"
                   subtitle="60 min · 1-on-1 lesson"
-                  price={`$${priceForType(hourlyRate, "standard")}`}
+                  price={formatPrice(priceForType(hourlyRate, "standard"))}
                 />
                 {pkg && (
                   <TypeOption
                     active={type === "package"}
                     onClick={() => setType("package")}
-                    emoji="📦"
+                    icon="package"
                     title={`${pkg.sessions}-session package`}
-                    subtitle={`Save ${pkg.discount_percent}% — ${pkg.sessions} × 60 min`}
-                    price={`$${priceForType(hourlyRate, "package", pkg.discount_percent, pkg.sessions)}`}
+                    subtitle={`${pkg.sessions} sessions × 60 min, save ${pkg.discount_percent}%`}
+                    price={formatPrice(priceForType(hourlyRate, "package", pkg.discount_percent, pkg.sessions))}
                   />
+                )}
+                {attempt === null && (
+                  // Not required (owner decision): booking works without it.
+                  <p className="text-[0.875rem] text-[var(--pw-ink-2)]">
+                    Take the 8-question level check first so {tutor?.display_name ?? "your tutor"}{" "}
+                    knows where to start.{" "}
+                    <Link to="/quiz" className="underline underline-offset-4 text-[var(--pw-ink)]">
+                      Take the level check
+                    </Link>
+                  </p>
                 )}
                 <NavBar onNext={next} disabled={false} />
               </div>
@@ -359,22 +595,29 @@ function BookPage() {
 
             {/* Step 2: Time */}
             {step === 1 && (
-              <div className="space-y-3">
-                <h1 className="font-display text-2xl">Pick a time</h1>
-                <p className="text-[13px] text-[var(--pw-ink-2)]">Slots shown in <strong>{tz}</strong> ({slot ? tzAbbreviation(slot, tz) : tzAbbreviation(new Date(), tz)})</p>
+              <div className="space-y-4">
+                <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">Pick a time</h1>
+                <p className="text-[0.8125rem] text-[var(--pw-ink-2)]">
+                  Slots shown in <strong>{tz}</strong> (
+                  {slot ? tzAbbreviation(slot, tz) : tzAbbreviation(new Date(), tz)})
+                </p>
                 {slots.length === 0 ? (
-                  <div className="pw-card p-5 text-sm text-[var(--pw-ink-2)]">
+                  <div className="pw-card p-6 text-sm text-[var(--pw-ink-2)]">
                     This tutor hasn't published availability yet. Try messaging them first.
                   </div>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="pw-card p-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="pw-card p-4">
                       <Calendar
                         mode="single"
                         selected={pickedDay}
-                        onSelect={(d) => { setPickedDay(d); setSlot(null); }}
+                        onSelect={(d) => {
+                          setPickedDay(d);
+                          setSlot(null);
+                        }}
                         disabled={(date) => {
-                          const today = new Date(); today.setHours(0, 0, 0, 0);
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
                           if (date < today) return true;
                           if (date > addDays(today, 60)) return true;
                           return !hasSlotsOn(date, slots);
@@ -382,16 +625,25 @@ function BookPage() {
                         modifiers={{ hasSlots: (d) => hasSlotsOn(d, slots) }}
                         modifiersStyles={{ hasSlots: { fontWeight: 700 } }}
                       />
-                      <p className="text-[11px] text-[var(--pw-ink-2)] mt-2 px-2 flex items-center gap-1.5">
-                        <CalendarIcon className="w-3 h-3" /> Bold dates have open slots. Past dates and dates within {tutor?.min_advance_hours ?? 24}h are disabled.
+                      <p className="text-[0.6875rem] text-[var(--pw-ink-2)] mt-2 px-2 flex items-center gap-2">
+                        <CalendarIcon className="w-3 h-3" /> Bold dates have open slots. Past dates
+                        and dates within {tutor?.min_advance_hours ?? 24}h are disabled.
                       </p>
                     </div>
-                    <div className="pw-card p-3">
-                      <div className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mb-2">
-                        {pickedDay ? pickedDay.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }) : "Pick a day to see times"}
+                    <div className="pw-card p-4">
+                      <div className="label-caps text-[var(--pw-ink-2)] mb-2">
+                        {pickedDay
+                          ? pickedDay.toLocaleDateString(undefined, {
+                              weekday: "long",
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "Pick a day to see times"}
                       </div>
                       {pickedDay && slotsForPickedDay.length === 0 && (
-                        <p className="text-[13px] text-[var(--pw-ink-2)]">No open slots on this day.</p>
+                        <p className="text-[0.8125rem] text-[var(--pw-ink-2)]">
+                          No open slots on this day.
+                        </p>
                       )}
                       <div className="flex flex-wrap gap-2">
                         {slotsForPickedDay.map((s) => {
@@ -400,11 +652,7 @@ function BookPage() {
                             <button
                               key={s.toISOString()}
                               onClick={() => setSlot(s)}
-                              className="pw-pill text-[12px] px-3 py-1.5"
-                              style={{
-                                background: sel ? "var(--pw-accent)" : "var(--pw-surface-2)",
-                                color: sel ? "white" : "var(--pw-ink)",
-                              }}
+                              className={`pw-pill px-4 py-2 tabular-nums ${sel ? "is-active" : ""}`}
                             >
                               {fmtInTz(s, tz, "h:mm a")}
                             </button>
@@ -412,61 +660,109 @@ function BookPage() {
                         })}
                       </div>
                       {slot && (
-                        <div className="mt-3 space-y-1 text-[12px] text-[var(--pw-ink-2)]">
-                          <p>Your time: <strong>{fmtInTz(slot, tz, "h:mm a")}</strong> {tzAbbreviation(slot, tz)}</p>
+                        <div className="mt-4 space-y-2 text-[0.75rem] text-[var(--pw-ink-2)]">
+                          <p>
+                            Your time: <strong>{fmtInTz(slot, tz, "h:mm a")}</strong>{" "}
+                            {tzAbbreviation(slot, tz)}
+                          </p>
                           {tutorTz !== tz && (
-                            <p>Tutor's time: <strong>{fmtInTz(slot, tutorTz, "h:mm a")}</strong> {tzAbbreviation(slot, tutorTz)}</p>
+                            <p>
+                              Tutor's time: <strong>{fmtInTz(slot, tutorTz, "h:mm a")}</strong>{" "}
+                              {tzAbbreviation(slot, tutorTz)}
+                            </p>
                           )}
                         </div>
                       )}
                     </div>
 
-                    {/* Recurring */}
-                    <div className="pw-card p-4 md:col-span-2">
+                    {/* Recurring — hidden when rescheduling, since we're moving one
+                        existing session, not creating a series. */}
+                    <div className="pw-card p-4 md:col-span-2" hidden={!!rescheduleId}>
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={recurring} onChange={(e) => setRecurring(e.target.checked)} />
+                        <input
+                          type="checkbox"
+                          checked={recurring}
+                          onChange={(e) => setRecurring(e.target.checked)}
+                        />
                         <Repeat className="w-4 h-4" />
-                        <span className="text-[14px] font-medium">Make this recurring</span>
+                        <span className="text-[0.875rem] font-medium">Make this recurring</span>
                       </label>
                       {recurring && (
-                        <div className="mt-3 grid sm:grid-cols-3 gap-3">
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div>
-                            <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">Frequency</label>
-            <select value={frequency} onChange={(e) => setFrequency(e.target.value as Frequency)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]">
+                            <label htmlFor="bk-frequency" className="label-caps text-[var(--pw-ink-2)]">Frequency</label>
+                            <select id="bk-frequency"
+                              value={frequency}
+                              onChange={(e) => setFrequency(e.target.value as Frequency)}
+                              className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                            >
                               <option value="weekly">Weekly</option>
                               <option value="biweekly">Bi-weekly</option>
                               <option value="monthly">Monthly</option>
                             </select>
                           </div>
                           <div>
-                            <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">Ends</label>
-            <select value={endMode} onChange={(e) => setEndMode(e.target.value as any)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]">
+                            <label htmlFor="bk-ends" className="label-caps text-[var(--pw-ink-2)]">Ends</label>
+                            <select id="bk-ends"
+                              value={endMode}
+                              onChange={(e) => setEndMode(e.target.value as any)}
+                              className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                            >
                               <option value="count">After N sessions</option>
                               <option value="date">On a date</option>
-                              <option value="ongoing">Ongoing (cap 26)</option>
+                              <option value="ongoing">Ongoing (up to 26 sessions)</option>
                             </select>
                           </div>
                           <div>
-            {endMode === "count" && (
-              <>
-                <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">Number of sessions</label>
-                <input type="number" min={2} max={26} value={recCount} onChange={(e) => setRecCount(Math.max(2, Math.min(26, Number(e.target.value) || 2)))} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]" />
+                            {endMode === "count" && (
+                              <>
+                                <label htmlFor="bk-count" className="label-caps text-[var(--pw-ink-2)]">
+                                  Number of sessions
+                                </label>
+                                <input id="bk-count"
+                                  type="number"
+                                  min={2}
+                                  max={26}
+                                  value={recCount}
+                                  onChange={(e) =>
+                                    setRecCount(
+                                      Math.max(2, Math.min(26, Number(e.target.value) || 2)),
+                                    )
+                                  }
+                                  className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                                />
                               </>
                             )}
-            {endMode === "date" && (
-              <>
-                <label className="font-mono-pw text-[10px] uppercase text-[var(--pw-ink-2)]">End date</label>
-                <input type="date" value={recEndDate ? recEndDate.toISOString().slice(0, 10) : ""} onChange={(e) => setRecEndDate(e.target.value ? new Date(e.target.value) : undefined)} className="mt-1 w-full pw-border rounded-md px-2 py-2 text-[13px] bg-[var(--pw-surface)]" />
+                            {endMode === "date" && (
+                              <>
+                                <label htmlFor="bk-end-date" className="label-caps text-[var(--pw-ink-2)]">
+                                  End date
+                                </label>
+                                <input id="bk-end-date"
+                                  type="date"
+                                  value={recEndDate ? recEndDate.toISOString().slice(0, 10) : ""}
+                                  onChange={(e) =>
+                                    setRecEndDate(
+                                      e.target.value ? new Date(e.target.value) : undefined,
+                                    )
+                                  }
+                                  className="mt-2 w-full pw-border px-2 py-2 text-[0.8125rem] bg-[var(--pw-surface)]"
+                                />
                               </>
                             )}
                             {endMode === "ongoing" && (
-                              <p className="text-[12px] text-[var(--pw-ink-2)] mt-5">Books up to 26 occurrences from your selected start.</p>
+                              <p className="text-[0.75rem] text-[var(--pw-ink-2)] mt-6">
+                                Books up to 26 sessions from the first date you picked.
+                              </p>
                             )}
                           </div>
                           {dstShifts.length > 0 && (
-                            <div className="sm:col-span-3 flex items-start gap-2 text-[12px] text-amber-700 bg-amber-50 p-2 rounded">
-                              <AlertTriangle className="w-4 h-4 mt-0.5" />
-                              <span>Heads up — daylight-saving change between occurrences. Local clock-time is preserved across all instances.</span>
+                            <div className="sm:col-span-3 flex items-start gap-2 text-[0.75rem] text-[var(--pw-accent-3)] bg-[var(--pw-accent-soft)] border border-[var(--pw-border)] p-2">
+                              <AlertTriangle className="w-4 h-4 mt-0" />
+                              <span>
+                                Clocks change during this series. Each session stays at the same
+                                local time.
+                              </span>
                             </div>
                           )}
                         </div>
@@ -480,25 +776,44 @@ function BookPage() {
 
             {/* Step 3: Timezone */}
             {step === 2 && (
-              <div className="space-y-3">
-                <h1 className="font-display text-2xl">Confirm your timezone</h1>
+              <div className="space-y-4">
+                <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
+                  Confirm your timezone
+                </h1>
                 <div className="pw-card p-4">
-                  <label className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">Your timezone (auto-detected)</label>
+                  <label htmlFor="bk-timezone" className="label-caps text-[var(--pw-ink-2)]">
+                    Your timezone (auto-detected)
+                  </label>
                   <select
-                    className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)]"
+                    id="bk-timezone"
+                    className="mt-2 w-full pw-border px-4 py-2 text-[0.875rem] bg-[var(--pw-surface)]"
                     value={tz}
                     onChange={(e) => setTz(e.target.value)}
                   >
-                    {[tz, ...COMMON_TIMEZONES.filter((t) => t !== tz)].map((z) => <option key={z} value={z}>{z}</option>)}
+                    {[tz, ...COMMON_TIMEZONES.filter((t) => t !== tz)].map((z) => (
+                      <option key={z} value={z}>
+                        {z}
+                      </option>
+                    ))}
                   </select>
                   {slot && (
-                    <div className="text-[13px] text-[var(--pw-ink-2)] mt-3 space-y-1">
-                      <p>Your time: <strong>{fmtInTz(slot, tz, "EEEE, MMM d · h:mm a")}</strong> {tzAbbreviation(slot, tz)}</p>
+                    <div className="text-[0.8125rem] text-[var(--pw-ink-2)] mt-4 space-y-2">
+                      <p>
+                        Your time: <strong>{fmtInTz(slot, tz, "EEEE, MMM d · h:mm a")}</strong>{" "}
+                        {tzAbbreviation(slot, tz)}
+                      </p>
                       {tutorTz !== tz && (
-                        <p>Tutor's time: <strong>{fmtInTz(slot, tutorTz, "EEEE, MMM d · h:mm a")}</strong> {tzAbbreviation(slot, tutorTz)}</p>
+                        <p>
+                          Tutor's time:{" "}
+                          <strong>{fmtInTz(slot, tutorTz, "EEEE, MMM d · h:mm a")}</strong>{" "}
+                          {tzAbbreviation(slot, tutorTz)}
+                        </p>
                       )}
                       {tzMismatch && (
-                        <p className="text-amber-700 flex items-center gap-1.5"><AlertTriangle className="w-3 h-3" /> You and your tutor are in different timezones — double-check the times match.</p>
+                        <p className="text-[var(--pw-accent-3)] flex items-center gap-2">
+                          <AlertTriangle className="w-3 h-3" /> You and your tutor are in different
+                          time zones. Check both times above.
+                        </p>
                       )}
                     </div>
                   )}
@@ -509,26 +824,87 @@ function BookPage() {
 
             {/* Step 4: Summary */}
             {step === 3 && (
-              <div className="space-y-3">
-                <h1 className="font-display text-2xl">Order summary</h1>
-                <div className="pw-card p-5 space-y-2 text-[14px]">
+              <div className="space-y-4">
+                <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
+                  Booking summary
+                </h1>
+                <div className="pw-card p-6 space-y-2 text-[0.875rem]">
                   <Row label="Tutor" value={tutor?.display_name ?? "—"} />
-                  <Row label="Type" value={type === "trial" ? "Trial / discovery" : type === "package" ? `${pkg?.sessions ?? 5} × sessions` : "Standard session"} />
-                  <Row label="Duration" value={`${duration} min${type === "package" ? ` × ${pkg?.sessions ?? 5}` : ""}`} />
-                  <Row label="Date & time" value={slot ? fmtInTz(slot, tz, "EEE, MMM d · h:mm a") : "—"} />
+                  <Row
+                    label="Type"
+                    value={
+                      type === "trial"
+                        ? "Trial / discovery"
+                        : type === "package"
+                          ? `${pkg?.sessions ?? 5} × sessions`
+                          : "Standard session"
+                    }
+                  />
+                  <Row
+                    label="Duration"
+                    value={`${duration} min${type === "package" ? ` × ${pkg?.sessions ?? 5}` : ""}`}
+                  />
+                  <Row
+                    label="Date & time"
+                    value={slot ? fmtInTz(slot, tz, "EEE, MMM d · h:mm a") : "—"}
+                  />
                   <Row label="Timezone" value={tz} />
                   {recurring && recurrenceInstances.length > 1 && (
-                    <Row label="Recurrence" value={`${recurrenceInstances.length} × ${frequency}`} />
+                    <Row
+                      label="Recurrence"
+                      value={`${recurrenceInstances.length} × ${frequency}`}
+                    />
                   )}
-                  <div className="border-t border-[var(--pw-border)] pt-3 mt-2 flex justify-between font-display text-[18px]">
+                  <div className="border-t border-[var(--pw-border)] pt-4 mt-2 flex justify-between font-display text-[1.125rem] tabular-nums">
                     <span>Total</span>
-                    <span>{price === 0 ? "Free" : `$${price * (recurring && recurrenceInstances.length > 1 ? recurrenceInstances.length : 1)}`}</span>
+                    <span>
+                      {price === 0
+                        ? "Free"
+                        : formatPrice(price * (recurring && recurrenceInstances.length > 1 ? recurrenceInstances.length : 1))}
+                    </span>
                   </div>
                 </div>
+                {attempt && (
+                  <div className="pw-card p-4 text-[0.875rem]">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={shareBrief}
+                        onChange={(e) => setShareBrief(e.target.checked)}
+                        className="mt-2"
+                      />
+                      <span>
+                        Share my {attempt.subject} level check with{" "}
+                        {tutor?.display_name ?? "this tutor"}
+                      </span>
+                    </label>
+                    {shareBrief && (
+                      <div className="mt-2 pl-6 text-[var(--pw-ink-2)] space-y-2">
+                        <p>
+                          They will see: <strong className="text-[var(--pw-ink)]">{attempt.level}</strong>
+                          {attempt.strong_topics.length > 0 &&
+                            `; strong in ${attempt.strong_topics.join(", ")}`}
+                          {(attempt.wrong_topics ?? []).length > 0 &&
+                            `; needs work on ${(attempt.wrong_topics ?? []).join(", ")}`}
+                          {" "}(taken{" "}
+                          {new Date(attempt.created_at).toLocaleDateString(undefined, {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                          ), plus the dates and levels of your earlier {attempt.subject} checks.
+                        </p>
+                        <p>
+                          They keep seeing new {attempt.subject} checks while you book with them.
+                          You can stop sharing any time from the session page.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {recurring && recurrenceInstances.length > 1 && (
                   <div className="pw-card p-4">
-                    <div className="font-mono-pw text-[10px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mb-2">All instances</div>
-                    <ul className="text-[13px] space-y-1 max-h-48 overflow-auto">
+                    <div className="label-caps text-[var(--pw-ink-2)] mb-2">All instances</div>
+                    <ul className="text-[0.8125rem] space-y-2 max-h-48 overflow-auto">
                       {recurrenceInstances.map((d, i) => (
                         <li key={d.toISOString()} className="flex justify-between">
                           <span className="text-[var(--pw-ink-2)]">#{i + 1}</span>
@@ -544,31 +920,52 @@ function BookPage() {
 
             {/* Step 5: Pay */}
             {step === 4 && (
-              <div className="space-y-3">
-                <h1 className="font-display text-2xl">{price === 0 ? "Confirm" : "Payment"}</h1>
-                <div className="pw-card p-5">
+              <div className="space-y-4">
+                <h1 className="font-display text-2xl uppercase tracking-[-0.025em]">
+                  {price === 0 ? "Confirm" : "Payment"}
+                </h1>
+                <div className="pw-card p-6">
                   {price === 0 ? (
-                    <p className="text-sm text-[var(--pw-ink-2)]">No payment required for this trial — just confirm below.</p>
+                    <p className="text-sm text-[var(--pw-ink-2)]">
+                      This trial is free. Confirm below.
+                    </p>
                   ) : (
                     <>
                       <p className="text-sm text-[var(--pw-ink-2)]">
-                        Stripe checkout isn't enabled yet — for now we'll mark this as paid so you can test the full flow.
-                        Enable Stripe to charge real cards.
+                        PathWise is free during the beta: you pay your tutor directly, the way you
+                        agree with them (cash or bank transfer). Nothing is charged here.
                       </p>
-                      <div className="mt-3 p-3 rounded-md bg-[var(--pw-surface-2)] text-[13px]">
-                        <strong>${price * (recurring && recurrenceInstances.length > 1 ? recurrenceInstances.length : 1)}</strong> · charged on confirmation{recurring && recurrenceInstances.length > 1 ? ` (${recurrenceInstances.length} sessions)` : ""}
+                      <div className="mt-4 text-[0.8125rem] tabular-nums">
+                        <strong>
+                          {formatPrice(
+                            price *
+                              (recurring && recurrenceInstances.length > 1
+                                ? recurrenceInstances.length
+                                : 1),
+                          )}
+                        </strong>{" "}
+                        · paid to your tutor
+                        {recurring && recurrenceInstances.length > 1
+                          ? ` (${recurrenceInstances.length} sessions)`
+                          : ""}
                       </div>
                     </>
                   )}
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <button onClick={back} className="pw-btn-outline px-4 py-2 text-sm">Back</button>
+                  <button onClick={back} className="pw-btn-outline px-4 py-2">
+                    Back
+                  </button>
                   <button
                     onClick={handleConfirmAndPay}
                     disabled={submitting || !slot}
-                    className="pw-btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-50"
+                    className="pw-btn-primary px-6 py-2 flex-1 disabled:opacity-50"
                   >
-                    {submitting ? "Booking…" : price === 0 ? "Confirm booking" : `Pay $${price} & confirm`}
+                    {submitting
+                      ? "Booking…"
+                      : price === 0
+                        ? "Confirm booking"
+                        : "Book session"}
                   </button>
                 </div>
               </div>
@@ -580,42 +977,67 @@ function BookPage() {
   );
 }
 
-function TypeOption({ active, onClick, emoji, title, subtitle, price }: {
-  active: boolean; onClick: () => void; emoji: string; title: string; subtitle: string; price: string;
+function TypeOption({
+  active,
+  onClick,
+  icon,
+  title,
+  subtitle,
+  price,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: IconName;
+  title: string;
+  subtitle: string;
+  price: string;
 }) {
   return (
     <button
       onClick={onClick}
-      className="pw-card w-full p-4 text-left flex items-center gap-3 transition-colors"
-      style={{
-        borderColor: active ? "var(--pw-accent)" : "var(--pw-border)",
-        background: active ? "var(--pw-accent-soft)" : "var(--pw-surface)",
-      }}
+      className={`pw-card w-full p-4 text-left flex items-center gap-4 transition-colors hover:border-[var(--pw-ink)] ${active ? "border-[var(--pw-ink)] ring-1 ring-[var(--pw-accent)]" : ""}`}
+      style={active ? { background: "var(--pw-accent-soft)" } : undefined}
     >
-      <div className="text-2xl">{emoji}</div>
+      <Icon name={icon} className="h-7 w-7" />
       <div className="flex-1 min-w-0">
-        <div className="font-display text-[16px]">{title}</div>
-        <div className="text-[12px] text-[var(--pw-ink-2)]">{subtitle}</div>
+        <div className="font-display text-[1rem] uppercase tracking-[-0.025em]">{title}</div>
+        <div className="text-[0.75rem] text-[var(--pw-ink-2)]">{subtitle}</div>
       </div>
-      <div className="font-display text-[16px]">{price}</div>
+      <div className="font-display text-[1rem]">{price}</div>
     </button>
   );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between text-[14px]">
+    <div className="flex justify-between text-[0.875rem]">
       <span className="text-[var(--pw-ink-2)]">{label}</span>
       <span>{value}</span>
     </div>
   );
 }
 
-function NavBar({ onBack, onNext, disabled }: { onBack?: () => void; onNext: () => void; disabled?: boolean }) {
+function NavBar({
+  onBack,
+  onNext,
+  disabled,
+}: {
+  onBack?: () => void;
+  onNext: () => void;
+  disabled?: boolean;
+}) {
   return (
     <div className="flex gap-2 pt-2">
-      {onBack && <button onClick={onBack} className="pw-btn-outline px-4 py-2 text-sm">Back</button>}
-      <button onClick={onNext} disabled={disabled} className="pw-btn-primary px-5 py-2.5 text-sm flex-1 disabled:opacity-50">
+      {onBack && (
+        <button onClick={onBack} className="pw-btn-outline px-4 py-2">
+          Back
+        </button>
+      )}
+      <button
+        onClick={onNext}
+        disabled={disabled}
+        className="pw-btn-primary px-6 py-2 flex-1 disabled:opacity-50"
+      >
         Continue →
       </button>
     </div>

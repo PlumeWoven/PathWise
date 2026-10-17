@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from "react";
 
 type Theme = "light" | "dark";
 
@@ -11,45 +11,52 @@ interface DarkModeContextValue {
 
 const DarkModeContext = createContext<DarkModeContextValue | null>(null);
 
-// Read the theme the inline bootstrap script in __root.tsx has already
-// applied to <html>. Falls back to 'light' on the server (where there is no
-// DOM) so SSR output is deterministic — the bootstrap script reconciles
-// before hydration runs.
-function readInitialTheme(): Theme {
-  if (typeof document === "undefined") return "light";
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
-}
-
 export function DarkModeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(readInitialTheme);
+  // Unconditionally "light" so the first render is byte-identical on server and
+  // client. Reading <html class="dark"> here instead — which the bootstrap script
+  // in __root.tsx has already applied — is what caused the hydration mismatch:
+  // the server has no DOM and always produced "light", so the trees diverged on
+  // every load for anyone in dark mode. Page colours are unaffected, because CSS
+  // keys off the <html> class rather than this state.
+  const [theme, setThemeState] = useState<Theme>("light");
 
-  // Keep <html> in sync with state and persist the user's choice. We only
-  // toggle the class — colors come from styles.css so we don't fight CSS
-  // with inline element styles.
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+  // Writes the DOM and persists, then updates state.
+  //
+  // Deliberately not a `useEffect(..., [theme])`: such an effect also runs on
+  // mount, where `theme` is still the SSR placeholder, and would strip the `dark`
+  // class the bootstrap script set and overwrite `pw-theme` with "light" —
+  // destroying the user's saved preference on every page load. Doing the work in
+  // the setter means it only ever runs on a real theme change.
+  //
+  // The synchronous class flip also matters to ThemeToggle, which calls this
+  // inside flushSync() inside document.startViewTransition() to drive the radial
+  // sweep in styles.css.
+  const applyTheme = useCallback((next: Theme) => {
+    document.documentElement.classList.toggle("dark", next === "dark");
     try {
-      localStorage.setItem("pw-theme", theme);
+      localStorage.setItem("pw-theme", next);
     } catch {
-      // localStorage may be unavailable (private mode, SSR fallback) — ignore.
+      // localStorage may be unavailable (private mode) — ignore.
     }
-  }, [theme]);
+    setThemeState(next);
+  }, []);
 
-  const toggleTheme = () => {
-    setTheme((t) => (t === "light" ? "dark" : "light"));
-  };
+  // Second pass: adopt whatever the bootstrap script already put on <html>.
+  // State-only on purpose — the DOM is already correct, and writing localStorage
+  // here would persist a preference the user never expressed.
+  useEffect(() => {
+    const applied = document.documentElement.classList.contains("dark") ? "dark" : "light";
+    setThemeState((current) => (current === applied ? current : applied));
+  }, []);
 
-  const setThemeValue = (next: Theme) => {
-    setTheme(next);
-  };
+  const toggleTheme = useCallback(() => {
+    applyTheme(document.documentElement.classList.contains("dark") ? "light" : "dark");
+  }, [applyTheme]);
 
   return (
-    <DarkModeContext.Provider value={{ theme, toggleTheme, setTheme: setThemeValue, isDark: theme === "dark" }}>
+    <DarkModeContext.Provider
+      value={{ theme, toggleTheme, setTheme: applyTheme, isDark: theme === "dark" }}
+    >
       {children}
     </DarkModeContext.Provider>
   );

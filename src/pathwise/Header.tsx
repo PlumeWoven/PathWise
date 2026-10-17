@@ -2,27 +2,62 @@ import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth";
 import { isAdmin } from "./roles";
-import { useDarkMode } from "./DarkMode";
 import { VerificationBadge, statusToTier } from "./VerificationBadge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Icon } from "@/components/Icon";
+
+// Class strings per look. Markup is shared; only these swap. PW is theme-aware (--pw-* tokens);
+// QED is the always-dark landing look (fixed qed-* tokens).
+const pwCta =
+  "text-[0.8125rem] font-semibold inline-flex items-center border border-[var(--pw-border)] px-4 sm:px-4 py-2 max-sm:min-h-11 text-[var(--pw-ink)] hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors";
+const PW = {
+  brand:
+    "inline-flex min-h-11 items-center font-syne text-[0.9375rem] font-bold uppercase leading-none text-[var(--pw-ink)] after:content-['.'] after:text-pw-accent",
+  name: "hidden sm:inline text-[0.8125rem] text-[var(--pw-ink-2)]",
+  role: "label-caps inline-flex items-center rounded-full border border-[var(--pw-border)] px-2 py-2 text-[var(--pw-ink-2)]",
+  accent: pwCta,
+  link: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 px-2 py-2 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  signOut: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 text-[var(--pw-ink-2)] hover:text-pw-accent transition-colors",
+  signIn: pwCta,
+  menu: "border border-[var(--pw-border)] bg-[var(--pw-bg)]",
+};
+// Landing ("/") is always dark. `dark` on the header re-scopes --pw-* tokens so ThemeToggle,
+// NotificationBell and VerificationBadge (which read them) stay legible on the dark bar.
+const cta =
+  "text-[0.8125rem] font-semibold inline-flex items-center border border-qed-hairline px-4 sm:px-4 py-2 max-sm:min-h-11 text-qed-ink hover:bg-qed-ink hover:text-qed-ground transition-colors";
+const QED = {
+  header:
+    "dark sticky top-0 z-40 w-full min-h-(--pw-header-h) px-6 sm:px-8 flex flex-wrap items-center justify-between gap-4 border-b border-qed-hairline bg-qed-ground",
+  brand:
+    "inline-flex min-h-11 items-center font-syne text-[0.9375rem] font-bold uppercase leading-none text-qed-ink after:content-['.'] after:text-qed-amber",
+  name: "hidden sm:inline text-[0.8125rem] text-qed-ink-2",
+  role: "label-caps inline-flex items-center rounded-full border border-qed-hairline px-2 py-2 text-qed-ink-2",
+  accent: cta,
+  link: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 px-2 py-2 text-qed-ink-2 hover:text-qed-amber transition-colors",
+  signOut: "text-[0.8125rem] font-semibold inline-flex items-center min-h-11 text-qed-ink-2 hover:text-qed-amber transition-colors",
+  signIn: cta,
+  menu: "border border-qed-hairline bg-qed-ground",
+};
 
 export function PWHeader() {
   const { isLoggedIn, user, profile, openLogin, logout } = useAuth();
-  const { isDark } = useDarkMode();
   const navigate = useNavigate();
   const location = useLocation();
-  // Lazy state init: check scroll position on first render (safe-guarded for SSR)
-  const [scrolled, setScrolled] = useState(() =>
-    typeof window !== "undefined" && window.pageYOffset > 10
-  );
+  const qed = location.pathname === "/";
+  const c = qed ? QED : PW;
+  // Starts false so the first render matches the server. Reading pageYOffset here
+  // instead would mismatch on hydration: browsers restore scroll position before
+  // React runs, so a deep link or mid-page refresh renders `true` on the client
+  // against the server's `false`. The real position is adopted on mount below.
+  const [scrolled, setScrolled] = useState(false);
 
   const [impersonating, setImpersonating] = useState(false);
-  const [impersonatingName, setImpersonatingName] = useState('');
+  const [impersonatingName, setImpersonatingName] = useState("");
 
   const readImpersonationState = () => {
-    const imp = localStorage.getItem('impersonating') === 'true';
-    const name = localStorage.getItem('impersonating_user_name') || 'User';
+    const imp = localStorage.getItem("impersonating") === "true";
+    const name = localStorage.getItem("impersonating_user_name") || "User";
     setImpersonating(imp);
     setImpersonatingName(name);
   };
@@ -33,127 +68,192 @@ export function PWHeader() {
 
   useEffect(() => {
     const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'impersonating' || e.key === 'impersonating_user_name') {
+      if (e.key === "impersonating" || e.key === "impersonating_user_name") {
         readImpersonationState();
       }
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.pageYOffset > 10);
+    onScroll(); // pick up a scroll position the browser restored before hydration
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const handleSignOut = async () => {
     if (impersonating) {
-      localStorage.removeItem('impersonating');
-      localStorage.removeItem('impersonating_user_name');
-      localStorage.removeItem('admin_user_id');
-      localStorage.removeItem('admin_email');
-      localStorage.removeItem('admin_access_token');
+      localStorage.removeItem("impersonating");
+      localStorage.removeItem("impersonating_user_name");
+      localStorage.removeItem("admin_user_id");
+      localStorage.removeItem("admin_email");
+      localStorage.removeItem("admin_access_token");
     }
     await logout();
     navigate({ to: "/" });
   };
 
   const handleExitImpersonation = async () => {
-    localStorage.removeItem('impersonating');
-    localStorage.removeItem('impersonating_user_name');
-    localStorage.removeItem('admin_user_id');
-    localStorage.removeItem('admin_email');
-    localStorage.removeItem('admin_access_token');
+    localStorage.removeItem("impersonating");
+    localStorage.removeItem("impersonating_user_name");
+    localStorage.removeItem("admin_user_id");
+    localStorage.removeItem("admin_email");
+    localStorage.removeItem("admin_access_token");
     await logout();
-    navigate({ to: '/admin' });
+    navigate({ to: "/admin" });
+  };
+
+  // Signed-out visitors get the public sections, so every page answers "where can I go?"
+  // (they used to see only the logo and Sign In). Inline from lg up, in the Menu below.
+  const publicLinks = (stacked: boolean) => {
+    const cls = stacked ? `${c.link} px-2` : c.link;
+    return (
+      <>
+        <Link to="/quiz" className={cls}>
+          Level check
+        </Link>
+        <Link to="/find-tutor" className={cls}>
+          Find a tutor
+        </Link>
+        <Link to="/library" className={cls}>
+          Course library
+        </Link>
+      </>
+    );
+  };
+
+  // Signed-in navigation, rendered inline on desktop and stacked in the phone menu.
+  const navLinks = (stacked: boolean) => {
+    if (!user) return null;
+    const primary = stacked ? `${c.link} px-2` : c.accent;
+    const secondary = stacked ? `${c.link} px-2` : `${c.link} hidden lg:inline-flex`;
+    const tutorSide = user.role === "tutor" || user.role === "both";
+    const studentSide = user.role === "student" || user.role === "both";
+    return (
+      <>
+        {tutorSide && (
+          <Link to="/dashboard" className={primary}>
+            Dashboard
+          </Link>
+        )}
+        {studentSide && (
+          <>
+            <Link to="/roadmap" className={primary}>
+              My roadmap
+            </Link>
+            <Link to="/find-tutor" className={secondary}>
+              Find a tutor
+            </Link>
+            <Link to="/library" className={secondary}>
+              Library
+            </Link>
+            <Link to="/sessions" className={secondary}>
+              My sessions
+            </Link>
+          </>
+        )}
+        {/* Tutors read messages inside the dashboard, same as the sidebar's link. */}
+        <Link
+          to={tutorSide ? "/dashboard/messages" : "/messages"}
+          search={{ thread: undefined }}
+          className={secondary}
+        >
+          Messages
+        </Link>
+        {isAdmin(user.app_metadata) && (
+          <Link to="/admin" className={primary}>
+            Admin
+          </Link>
+        )}
+      </>
+    );
   };
 
   return (
     <>
       {/* Impersonation Banner */}
       {impersonating && (
-        <div className="sticky top-0 z-50 w-full bg-amber-50 border-b border-amber-300 px-5 py-2 flex items-center justify-between text-sm impersonation-banner">
-          <span className="text-amber-800">
-            🔒 You are impersonating <strong>{impersonatingName}</strong>. Actions will affect their account.
+        <div className="sticky top-0 z-50 w-full bg-[var(--pw-accent-soft)] border-b border-[var(--pw-border)] px-6 py-2 flex items-center justify-between text-sm impersonation-banner">
+          <span className="text-pw-accent inline-flex items-center gap-2">
+            <Icon name="lock" className="h-4 w-4" />
+            <span>
+              You are impersonating <strong>{impersonatingName}</strong>. Actions will affect their
+              account.
+            </span>
           </span>
           <button
             onClick={handleExitImpersonation}
-            className="px-3 py-1 rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+            className="text-[0.8125rem] font-semibold px-4 py-2 bg-pw-accent-fill text-pw-on-accent hover:bg-[var(--pw-ink)] hover:text-[var(--pw-bg)] transition-colors"
           >
-            Exit Impersonation
+            Exit impersonation
           </button>
         </div>
       )}
 
       <header
-        className={`sticky top-0 z-40 w-full px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between gap-3 transition-all duration-200 backdrop-blur-md ${
-          scrolled ? "bg-pw-bg/95 border-b border-[var(--pw-border)]" : "bg-pw-bg/70 border-b border-transparent"
-        }`}
+        className={
+          qed
+            ? QED.header
+            : `sticky top-0 z-40 w-full min-h-(--pw-header-h) px-6 sm:px-8 flex flex-wrap items-center justify-between gap-4 border-b border-[var(--pw-border)] ${
+                scrolled ? "bg-[var(--pw-bg)]/95 backdrop-blur-md" : "bg-[var(--pw-bg)]"
+              }`
+        }
       >
-        <div className="flex items-center gap-3">
-          <Link to="/" className="font-display italic text-[24px] leading-none text-[var(--pw-ink)]">
+        <div className="flex items-center gap-4">
+          <Link to="/" className={c.brand}>
             PathWise
           </Link>
           <ThemeToggle />
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {isLoggedIn && user ? (
             <>
-              <span className="hidden sm:inline text-[13px] text-[var(--pw-ink-2)]">{user.name}</span>
+              <span className={c.name}>{user.name}</span>
               <NotificationBell userId={user.id} />
-              {(user.role === "tutor" || user.role === "both") && profile ? (
-                <VerificationBadge tier={statusToTier(profile.verification_status)} size="sm" />
-              ) : (
-                <span className="pw-pill text-[11px] px-2.5 py-1 pw-border text-[var(--pw-ink-2)] uppercase pw-tracking-wide">
-                  {user.role}
-                </span>
-              )}
-              {(user.role === "tutor" || user.role === "both") && (
-                <Link
-                  to="/dashboard"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                  activeProps={{ style: { background: "var(--pw-accent-soft)" } }}
-                >
-                  Dashboard
-                </Link>
-              )}
-              {(user.role === "student" || user.role === "both") && (
-                <>
-                  <Link to="/roadmap" className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors">
-                    My Roadmap
-                  </Link>
-                  <Link to="/find-tutor" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
-                    Find a tutor
-                  </Link>
-                  <Link to="/sessions" className="pw-pill px-3 py-1.5 text-[13px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors hidden sm:inline-flex">
-                    My sessions
-                  </Link>
-                </>
-              )}
-              {isAdmin(user.app_metadata) && (
-                <Link
-                  to="/admin"
-                  className="pw-pill px-3 py-1.5 text-[13px] pw-border-accent text-[var(--pw-accent)] hover:bg-[var(--pw-accent-soft)] transition-colors"
-                >
-                  Admin
-                </Link>
-              )}
-              <button
-                onClick={handleSignOut}
-                className="text-[13px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] underline-offset-4 hover:underline"
-              >
-                Sign Out
-              </button>
+              <span className="hidden sm:inline-flex">
+                {(user.role === "tutor" || user.role === "both") && profile ? (
+                  <VerificationBadge tier={statusToTier(profile.verification_status)} size="sm" />
+                ) : (
+                  <span className={c.role}>{user.role}</span>
+                )}
+              </span>
+              {/* From lg: links inline. Below it the row (up to 7 links + Sign out) is wider
+                  than the screen, so it collapses into the Menu. */}
+              <nav className="hidden lg:flex items-center gap-4">
+                {navLinks(false)}
+                <button onClick={handleSignOut} className={c.signOut}>
+                  Sign out
+                </button>
+              </nav>
+              {/* Below lg: one Menu button. Keyed by path so it closes after navigating. */}
+              <details key={location.pathname} className="lg:hidden relative">
+                <summary className={`${c.link} list-none cursor-pointer select-none`}>Menu</summary>
+                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-2 ${c.menu}`}>
+                  {navLinks(true)}
+                  <button onClick={handleSignOut} className={`${c.signOut} text-left px-2 py-2`}>
+                    Sign out
+                  </button>
+                </div>
+              </details>
             </>
           ) : (
-            <button
-              onClick={openLogin}
-              className="pw-pill px-4 py-1.5 text-[14px] pw-border text-[var(--pw-ink)] hover:bg-[var(--pw-surface-2)] transition-colors"
-            >
-              Sign In
-            </button>
+            <>
+              <nav aria-label="Site" className="hidden lg:flex items-center gap-4">
+                {publicLinks(false)}
+              </nav>
+              <details key={location.pathname} className="lg:hidden relative">
+                <summary className={`${c.link} list-none cursor-pointer select-none`}>Menu</summary>
+                <div className={`absolute right-0 top-full mt-2 z-50 min-w-[12rem] p-2 flex flex-col gap-2 ${c.menu}`}>
+                  {publicLinks(true)}
+                </div>
+              </details>
+              <button onClick={() => openLogin()} className={c.signIn}>
+                Sign in
+              </button>
+            </>
           )}
         </div>
       </header>

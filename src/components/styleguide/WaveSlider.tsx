@@ -1,4 +1,4 @@
-/** Evenly-spaced tick positions (0%–100%) for the neomorphic slider channel. */
+/** Evenly-spaced tick positions (0%–100%) for the slider track. */
 const TICKS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
 interface WaveSliderProps {
@@ -12,9 +12,8 @@ interface WaveSliderProps {
 }
 
 /**
- * Neomorphic range slider: a glossy 3D ball thumb riding in a deep carved
- * channel with tick marks. Tick marks AFTER the thumb are accent-colored;
- * ticks before the thumb stay uncolored.
+ * QED range slider: a flat amber dot riding a hairline track with tick marks.
+ * Tick marks AT OR BEFORE the thumb are accent-colored; ticks ahead stay muted.
  *
  * Interaction + keyboard are handled by a transparent native <input
  * type="range"> layered on top, so it stays fully accessible.
@@ -32,14 +31,10 @@ export function WaveSlider({
   const ticks = TICKS;
   return (
     <div className="relative h-12 w-full select-none">
-      {/* Deep indented channel */}
+      {/* Hairline track */}
       <div
-        className="absolute left-0 top-1/2 h-4 w-full -translate-y-1/2 rounded-full"
-        style={{
-          backgroundColor: "var(--pw-bg)",
-          boxShadow:
-            "inset 5px 5px 10px var(--pw-shadow-dark), inset -5px -5px 10px var(--pw-shadow-light)",
-        }}
+        className="absolute left-0 top-1/2 h-[2px] w-full -translate-y-1/2"
+        style={{ backgroundColor: "var(--pw-border)" }}
       />
 
       {/* Tick marks: accent once the thumb has passed them, uncolored ahead */}
@@ -52,7 +47,7 @@ export function WaveSlider({
           return (
             <span
               key={t}
-              className="absolute top-1/2 h-2 w-px -translate-y-1/2 rounded-full transition-colors duration-200"
+              className="absolute top-1/2 h-2 w-px -translate-y-1/2 transition-colors duration-200"
               style={{
                 left: `${t}%`,
                 backgroundColor: passed ? "var(--pw-accent)" : "var(--pw-muted)",
@@ -63,14 +58,13 @@ export function WaveSlider({
         })}
       </div>
 
-      {/* 3D ball thumb sitting in the groove */}
+      {/* Flat amber dot thumb */}
       <div
-        className="pointer-events-none absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        className="pointer-events-none absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
           left: `${pct}%`,
-          backgroundImage: "radial-gradient(circle at 32% 28%, #f6ad84, var(--pw-accent) 68%)",
-          boxShadow:
-            "4px 4px 8px var(--pw-shadow-dark), -2px -2px 6px rgba(255,255,255,0.4), inset 1px 1px 2px rgba(255,255,255,0.55), 0 0 8px rgba(224, 122, 74, 0.55)",
+          backgroundColor: "var(--pw-accent-fill)",
+          boxShadow: "0 0 0 1px var(--pw-border)",
         }}
         aria-hidden="true"
       />

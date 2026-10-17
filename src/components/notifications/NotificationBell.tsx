@@ -111,10 +111,15 @@ export function NotificationBell({ userId }: NotificationBellProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={unreadCount ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        >
           <Bell className="h-5 w-5 text-[var(--pw-ink)] hover:text-[var(--pw-accent)] transition-colors" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--pw-danger)] text-[10px] font-medium text-white">
+            <span aria-hidden="true" className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-pw-accent-fill text-[0.625rem] font-semibold text-pw-on-accent">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -122,21 +127,21 @@ export function NotificationBell({ userId }: NotificationBellProps) {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-80 bg-[var(--pw-surface)] border-[var(--pw-border)] text-[var(--pw-ink)]"
+        className="w-80 bg-[var(--pw-surface)] border-[var(--pw-border)] text-[var(--pw-ink)] shadow-pw-float"
       >
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
+          <span className="label-caps">Notifications</span>
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="text-xs text-[var(--pw-accent)] hover:underline"
+              className="text-[0.8125rem] font-semibold text-pw-accent hover:underline"
             >
               Mark all as read
             </button>
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[18.75rem]">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-sm text-[var(--pw-ink-2)]">
               No notifications yet
@@ -145,7 +150,7 @@ export function NotificationBell({ userId }: NotificationBellProps) {
             notifications.map((notif) => (
               <DropdownMenuItem
                 key={notif.id}
-                className={`flex flex-col items-start p-3 cursor-pointer ${
+                className={`flex flex-col items-start p-4 cursor-pointer ${
                   !notif.read ? "bg-[var(--pw-accent-soft)]" : ""
                 }`}
                 onClick={() => {
@@ -158,9 +163,9 @@ export function NotificationBell({ userId }: NotificationBellProps) {
               >
                 <div className="font-medium text-sm">{notif.title}</div>
                 {notif.message && (
-                  <div className="text-xs text-[var(--pw-ink-2)] mt-0.5">{notif.message}</div>
+                  <div className="text-xs text-[var(--pw-ink-2)] mt-0">{notif.message}</div>
                 )}
-                <div className="text-[10px] text-[var(--pw-ink-3)] mt-1">
+                <div className="text-xs text-[var(--pw-ink-3)] mt-2">
                   {formatDistanceToNow(new Date(notif.created_at), {
                     addSuffix: true,
                   })}

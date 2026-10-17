@@ -1,33 +1,40 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { StarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../pathwise/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { MatchCard } from "../pathwise/MatchCard";
-import { computeMatch, VIBE_TAGS, type MatchPrefs, type TutorRow } from "../pathwise/matching";
+import { Icon } from "@/components/Icon";
+import { computeMatch, teachesSubject, VIBE_TAGS, type MatchPrefs, type TutorRow } from "../pathwise/matching";
+import { canonicalSubjectFromTutorQuiz } from "../pathwise/levels";
 // ─── api.ts for lead event inserts ───────────────────────────────────────────
 import { recordProfileView } from "../pathwise/api";
+import { formatPrice } from "../pathwise/sessions";
+import { useStartConversation } from "../pathwise/Inbox";
 
 const SORTS = [
-  { id: "best", label: "Best Match" },
-  { id: "rating", label: "Highest Rated" },
-  { id: "reviews", label: "Most Reviews" },
-  { id: "price_asc", label: "Price: Low to High" },
-  { id: "price_desc", label: "Price: High to Low" },
+  { id: "best", label: "Best match" },
+  { id: "rating", label: "Highest rated" },
+  { id: "reviews", label: "Most reviews" },
+  { id: "price_asc", label: "Price: low to high" },
+  { id: "price_desc", label: "Price: high to low" },
 ] as const;
-type SortId = typeof SORTS[number]["id"];
+type SortId = (typeof SORTS)[number]["id"];
 
 const searchSchema = z.object({
   subject: fallback(z.string().optional(), undefined),
   budget: fallback(z.coerce.number().optional(), undefined),
   level: fallback(z.string().optional(), undefined),
   style: fallback(z.string().optional(), undefined),
-  sort: fallback(z.enum(["best", "rating", "reviews", "price_asc", "price_desc"]), "best").default("best"),
+  sort: fallback(z.enum(["best", "rating", "reviews", "price_asc", "price_desc"]), "best").default(
+    "best",
+  ),
   minRating: fallback(z.coerce.number().min(0).max(5), 0).default(0),
   priceMin: fallback(z.coerce.number().min(0), 0).default(0),
-  priceMax: fallback(z.coerce.number().min(0), 200).default(200),
+  priceMax: fallback(z.coerce.number().min(0), 1000).default(1000),
   vibes: fallback(z.string().array(), []).default([]),
   availableThisWeek: fallback(z.coerce.boolean(), false).default(false),
 });
@@ -36,10 +43,16 @@ export const Route = createFileRoute("/_app/matches")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Your Matches — PathWise" },
-      { name: "description", content: "Tutors ranked for your learning style, subject, schedule and budget." },
-      { property: "og:title", content: "Your Matches — PathWise" },
-      { property: "og:description", content: "Personalized tutor matches with a transparent score breakdown." },
+      { title: "Your matches · PathWise" },
+      {
+        name: "description",
+        content: "Tutors ranked for your learning style, subject, schedule and budget.",
+      },
+      { property: "og:title", content: "Your matches · PathWise" },
+      {
+        property: "og:description",
+        content: "Verified tutors ranked by subject, learning style, schedule, budget and rating.",
+      },
     ],
   }),
   component: MatchesPage,
@@ -59,12 +72,20 @@ function MatchesPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const startConversation = useStartConversation();
 
   const [tutors, setTutors] = useState<TutorRow[]>([]);
-  const [reviewsByTutor, setReviewsByTutor] = useState<Map<string, { avg: number; count: number }>>(new Map());
+  // Set when no tutor teaches the chosen subject and we show every verified tutor instead,
+  // so the heading can say so rather than claim they matched the learning profile.
+  const [fallbackSubject, setFallbackSubject] = useState<string | null>(null);
+  const [reviewsByTutor, setReviewsByTutor] = useState<Map<string, { avg: number; count: number }>>(
+    new Map(),
+  );
   const [availabilityByTutor, setAvailabilityByTutor] = useState<Set<string>>(new Set());
   const [packagesByTutor, setPackagesByTutor] = useState<Map<string, number>>(new Map());
-  const [coursesByTutor, setCoursesByTutor] = useState<Map<string, { title: string; thumbnail_url: string | null }>>(new Map());
+  const [coursesByTutor, setCoursesByTutor] = useState<
+    Map<string, { title: string; thumbnail_url: string | null }>
+  >(new Map());
   const [loading, setLoading] = useState(true);
   const [visible, setVisible] = useState(PAGE_SIZE);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -85,74 +106,54 @@ function MatchesPage() {
           if (data && !cancelled) setSavedPrefs(data as MatchPrefs);
         } else {
           try {
-            const cached = localStorage.getItem("pathwise_find_tutor_answers");
+            const cached = localStorage.getItem("pw_find_tutor_answers"); // written by /find-tutor
             if (cached) setSavedPrefs(JSON.parse(cached));
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
 
-        // ── CHANGED: subject-scoped tutor query ──────────────────────────────
-        // Previously fetched all 200 tutors regardless of subject.
-        // Now filters by subject_specialties if a subject is in the URL or saved
-        // profile, which is faster and more relevant. Falls back to all tutors
-        // if no subject is known (same behaviour as before for that case).
+        // Subject filter runs client-side through the same aliases the score
+        // uses, so "math" finds tutors who list Algebra or Mathematics.
         const effectiveSubject = search.subject ?? savedPrefs.subject;
 
-        // Get session for auth guard
-        const { data: { session } } = await supabase.auth.getSession();
-        const isAuthenticated = !!session;
-
-        let tutorQuery = supabase
+        const tutorQuery = supabase
           .from("profiles")
           .select(
             "id, display_name, avatar_url, headline, bio, hourly_rate, " +
-            "subject_specialties, specializations, superpowers, video_intro_url, " +
-            "verification_status, free_discovery_call, first_session_free"
+              "subject_specialties, specializations, superpowers, video_intro_url, " +
+              "verification_status, free_discovery_call, first_session_free",
           )
-          .eq("role", "tutor")
+          .in("role", ["tutor", "both"])
+          .eq("verification_status", "verified")
           .limit(200);
 
-        // Apply subject filter when we know the subject
-        if (effectiveSubject) {
-          tutorQuery = tutorQuery.contains("subject_specialties", [effectiveSubject]);
-        }
-
-        // Only fetch tutor data if authenticated (for privacy)
-        let tutorsRes, reviewsRes, availRes, packagesRes, coursesRes;
-        if (isAuthenticated) {
-          [tutorsRes, reviewsRes, availRes, packagesRes, coursesRes] = await Promise.all([
-            tutorQuery,
-            supabase.from("reviews").select("tutor_id, rating"),
-            supabase.from("tutor_availability").select("user_id"),
-            supabase.from("tutor_packages").select("user_id, discount_percent, enabled"),
-            supabase.from("courses").select("tutor_id, title, thumbnail_url, status").eq("status", "published"),
-          ]);
-        } else {
-          // Return empty data for anonymous users
-          tutorsRes = { data: [], error: null };
-          reviewsRes = { data: [], error: null };
-          availRes = { data: [], error: null };
-          packagesRes = { data: [], error: null };
-          coursesRes = { data: [], error: null };
-        }
+        // Tutor listings are public (verified tutors, published courses, reviews,
+        // availability are all readable anonymously), so visitors can browse.
+        const [tutorsRes, reviewsRes, availRes, packagesRes, coursesRes] = await Promise.all([
+          tutorQuery,
+          supabase.from("reviews").select("tutor_id, rating"),
+          supabase.from("tutor_availability").select("user_id"),
+          supabase.from("tutor_packages").select("tutor_id, discount_percent, is_active"),
+          supabase
+            .from("courses")
+            .select("tutor_id, title, thumbnail_url, status")
+            .eq("status", "published"),
+        ]);
 
         if (cancelled) return;
 
-        // ── CHANGED: fallback when subject filter returns 0 results ──────────
-        // If the subject filter returns nothing (no tutors have that specialty yet),
-        // re-fetch without the filter so the page is never empty during early growth.
-        let tutorRows = (tutorsRes.data ?? []) as unknown as TutorRow[];
-        if (tutorRows.length === 0 && effectiveSubject) {
-          const { data: fallback } = await supabase
-            .from("profiles")
-            .select(
-              "id, display_name, avatar_url, headline, bio, hourly_rate, " +
-              "subject_specialties, specializations, superpowers, video_intro_url, " +
-              "verification_status, free_discovery_call, first_session_free"
-            )
-            .eq("role", "tutor")
-            .limit(200);
-          tutorRows = (fallback ?? []) as unknown as TutorRow[];
-        }
+        // No tutor teaches the subject yet: show everyone, and say so.
+        const allTutors = (tutorsRes.data ?? []) as unknown as TutorRow[];
+        const subjectTutors = effectiveSubject
+          ? allTutors.filter((t) => teachesSubject(t, effectiveSubject))
+          : allTutors;
+        const tutorRows = subjectTutors.length > 0 ? subjectTutors : allTutors;
+        setFallbackSubject(
+          effectiveSubject && subjectTutors.length === 0
+            ? (canonicalSubjectFromTutorQuiz(effectiveSubject) ?? effectiveSubject)
+            : null,
+        );
         setTutors(tutorRows);
 
         // Reviews → per-tutor avg
@@ -161,7 +162,8 @@ function MatchesPage() {
         (reviewsRes.data ?? []).forEach((r) => {
           if (!r.tutor_id || r.rating == null) return;
           const cur = tmp.get(r.tutor_id) ?? { sum: 0, n: 0 };
-          cur.sum += Number(r.rating); cur.n += 1;
+          cur.sum += Number(r.rating);
+          cur.n += 1;
           tmp.set(r.tutor_id, cur);
         });
         tmp.forEach((v, k) => rmap.set(k, { avg: v.sum / v.n, count: v.n }));
@@ -173,16 +175,19 @@ function MatchesPage() {
 
         const pkg = new Map<string, number>();
         (packagesRes.data ?? []).forEach((p) => {
-          if (!p.enabled) return;
-          const cur = pkg.get(p.user_id) ?? 0;
-          pkg.set(p.user_id, Math.max(cur, Number(p.discount_percent ?? 0)));
+          // tutor_id is nullable on this table, so a row without one can't be
+          // attributed to a tutor and is skipped rather than keyed under "null".
+          if (!p.is_active || !p.tutor_id) return;
+          const cur = pkg.get(p.tutor_id) ?? 0;
+          pkg.set(p.tutor_id, Math.max(cur, Number(p.discount_percent ?? 0)));
         });
         setPackagesByTutor(pkg);
 
         const cmap = new Map<string, { title: string; thumbnail_url: string | null }>();
         (coursesRes.data ?? []).forEach((c) => {
           if (!c.tutor_id) return;
-          if (!cmap.has(c.tutor_id)) cmap.set(c.tutor_id, { title: c.title, thumbnail_url: c.thumbnail_url });
+          if (!cmap.has(c.tutor_id))
+            cmap.set(c.tutor_id, { title: c.title, thumbnail_url: c.thumbnail_url });
         });
         setCoursesByTutor(cmap);
       } catch (err) {
@@ -192,20 +197,25 @@ function MatchesPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // Re-run when the subject in the URL changes so the query scope updates
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, search.subject]);
 
   // Effective preferences (URL > saved > defaults)
-  const prefs: MatchPrefs = useMemo(() => ({
-    subject: search.subject ?? savedPrefs.subject,
-    budget_max: search.budget ?? savedPrefs.budget_max,
-    learning_style: search.style ?? savedPrefs.learning_style,
-    experience_level: search.level ?? savedPrefs.experience_level,
-    vibes: search.vibes,
-    availableThisWeek: search.availableThisWeek,
-  }), [search, savedPrefs]);
+  const prefs: MatchPrefs = useMemo(
+    () => ({
+      subject: search.subject ?? savedPrefs.subject,
+      budget_max: search.budget ?? savedPrefs.budget_max,
+      learning_style: search.style ?? savedPrefs.learning_style,
+      experience_level: search.level ?? savedPrefs.experience_level,
+      vibes: search.vibes,
+      availableThisWeek: search.availableThisWeek,
+    }),
+    [search, savedPrefs],
+  );
 
   // Score & filter
   const scored: ScoredTutor[] = useMemo(() => {
@@ -234,11 +244,22 @@ function MatchesPage() {
   const sorted = useMemo(() => {
     const copy = [...scored];
     switch (search.sort) {
-      case "rating": copy.sort((a, b) => b.rating.avg - a.rating.avg); break;
-      case "reviews": copy.sort((a, b) => b.rating.count - a.rating.count); break;
-      case "price_asc": copy.sort((a, b) => Number(a.tutor.hourly_rate ?? 9999) - Number(b.tutor.hourly_rate ?? 9999)); break;
-      case "price_desc": copy.sort((a, b) => Number(b.tutor.hourly_rate ?? 0) - Number(a.tutor.hourly_rate ?? 0)); break;
-      default: copy.sort((a, b) => b.score.total - a.score.total);
+      case "rating":
+        copy.sort((a, b) => b.rating.avg - a.rating.avg);
+        break;
+      case "reviews":
+        copy.sort((a, b) => b.rating.count - a.rating.count);
+        break;
+      case "price_asc":
+        copy.sort(
+          (a, b) => Number(a.tutor.hourly_rate ?? 9999) - Number(b.tutor.hourly_rate ?? 9999),
+        );
+        break;
+      case "price_desc":
+        copy.sort((a, b) => Number(b.tutor.hourly_rate ?? 0) - Number(a.tutor.hourly_rate ?? 0));
+        break;
+      default:
+        copy.sort((a, b) => b.score.total - a.score.total);
     }
     return copy.slice(0, 20);
   }, [scored, search.sort]);
@@ -262,75 +283,140 @@ function MatchesPage() {
     navigate({ to: "/book/$tutorId", params: { tutorId } });
   };
 
-  // ── CHANGED: handleMessage records lead event consistently ─────────────────
-  const handleMessage = (tutorId: string) => {
-    if (!user) { toast.info("Sign in to message tutors."); return; }
-    toast.success("Message thread opened.");
-    void supabase
-      .from("lead_events")
-      .insert({ tutor_id: tutorId, student_id: user.id, stage: "message" });
-  };
-
   // Active filter chips
-  const chips: { key: string; label: string; clear: () => void }[] = [];
-  if (prefs.subject) chips.push({ key: "subject", label: `Subject: ${prefs.subject}`, clear: () => updateSearch({ subject: undefined }) });
-  if (prefs.budget_max) chips.push({ key: "budget", label: `Budget ≤ $${prefs.budget_max}/hr`, clear: () => updateSearch({ budget: undefined, priceMax: 200 }) });
-  if (prefs.experience_level) chips.push({ key: "level", label: `Level: ${prefs.experience_level}`, clear: () => updateSearch({ level: undefined }) });
-  if (prefs.learning_style) chips.push({ key: "style", label: `Style: ${prefs.learning_style}`, clear: () => updateSearch({ style: undefined }) });
-  if (search.minRating > 0) chips.push({ key: "rating", label: `Min ${search.minRating}★`, clear: () => updateSearch({ minRating: 0 }) });
-  if (search.availableThisWeek) chips.push({ key: "avail", label: "Available this week", clear: () => updateSearch({ availableThisWeek: false }) });
-  (search.vibes as string[]).forEach((v) => chips.push({
-    key: `vibe-${v}`,
-    label: v,
-    clear: () => updateSearch({ vibes: (search.vibes as string[]).filter((x) => x !== v) }),
-  }));
+  const chips: { key: string; label: ReactNode; clear: () => void }[] = [];
+  if (prefs.subject)
+    chips.push({
+      key: "subject",
+      label: `Subject: ${prefs.subject}`,
+      clear: () => updateSearch({ subject: undefined }),
+    });
+  if (prefs.budget_max)
+    chips.push({
+      key: "budget",
+      label: `Budget ≤ ${formatPrice(prefs.budget_max)}/hr`,
+      clear: () => updateSearch({ budget: undefined, priceMax: 1000 }),
+    });
+  if (prefs.experience_level)
+    chips.push({
+      key: "level",
+      label: `Level: ${prefs.experience_level}`,
+      clear: () => updateSearch({ level: undefined }),
+    });
+  if (prefs.learning_style)
+    chips.push({
+      key: "style",
+      label: `Style: ${prefs.learning_style}`,
+      clear: () => updateSearch({ style: undefined }),
+    });
+  if (search.minRating > 0)
+    chips.push({
+      key: "rating",
+      label: (
+        <span className="inline-flex items-center gap-2">
+          Min {search.minRating}
+          <StarIcon className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
+          <span className="sr-only">stars</span>
+        </span>
+      ),
+      clear: () => updateSearch({ minRating: 0 }),
+    });
+  if (search.availableThisWeek)
+    chips.push({
+      key: "avail",
+      label: "Available this week",
+      clear: () => updateSearch({ availableThisWeek: false }),
+    });
+  (search.vibes as string[]).forEach((v) =>
+    chips.push({
+      key: `vibe-${v}`,
+      label: v,
+      clear: () => updateSearch({ vibes: (search.vibes as string[]).filter((x) => x !== v) }),
+    }),
+  );
 
-  const clearAll = () => navigate({
-    to: "/matches",
-    search: { sort: search.sort, minRating: 0, priceMin: 0, priceMax: 200, vibes: [], availableThisWeek: false },
-  });
+  const clearAll = () =>
+    navigate({
+      to: "/matches",
+      search: {
+        sort: search.sort,
+        minRating: 0,
+        priceMin: 0,
+        priceMax: 1000,
+        vibes: [],
+        availableThisWeek: false,
+      },
+    });
 
   return (
     <div className="bg-[var(--pw-bg)] text-[var(--pw-ink)]">
-      <main className="px-5 sm:px-8 pb-24 max-w-6xl mx-auto">
+      <main className="px-6 sm:px-8 pb-24 max-w-6xl mx-auto">
         <div className="mt-2">
-          <div className="text-[12px] text-[var(--pw-ink-2)]">
-            <Link to="/find-tutor" className="underline-offset-2 hover:underline">Find a tutor</Link>
+          <div className="label-caps text-[var(--pw-ink-2)]">
+            <Link to="/find-tutor" className="inline-block py-4 -my-4 underline-offset-2 hover:underline">
+              Find a tutor
+            </Link>
             <span className="mx-2">→</span>
             Your matches
           </div>
-          <h1 className="font-display text-[28px] sm:text-[34px] leading-tight mt-2">
-            We found <span style={{ color: "var(--pw-accent)" }}>{loading ? "…" : sorted.length}</span> tutors based on your learning profile
+          <h1 className="font-display text-[1.75rem] sm:text-[2.125rem] leading-tight mt-2">
+            {fallbackSubject && !loading ? (
+              <>
+                No {fallbackSubject} tutors yet. Here are all{" "}
+                <span style={{ color: "var(--pw-accent)" }}>{sorted.length}</span> verified{" "}
+                {sorted.length === 1 ? "tutor" : "tutors"}
+              </>
+            ) : (
+              <>
+                We found{" "}
+                <span style={{ color: "var(--pw-accent)" }}>{loading ? "…" : sorted.length}</span>{" "}
+                {Object.keys(savedPrefs).length > 0
+                  ? `${sorted.length === 1 ? "tutor" : "tutors"} based on your learning profile`
+                  : prefs.subject
+                    ? `${sorted.length === 1 ? "tutor" : "tutors"} teaching ${prefs.subject}`
+                    : `verified ${sorted.length === 1 ? "tutor" : "tutors"}`}
+              </>
+            )}
           </h1>
-          <p className="mt-2 text-[14px] text-[var(--pw-ink-2)] max-w-2xl">
-            Each card shows a match score (Learning Style 30%, Subject 25%, Availability 20%, Budget 15%, Rating 10%).
+          <p className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)] max-w-2xl">
+            Each card shows a match score (Learning Style 30%, Subject 25%, Availability 20%, Budget
+            15%, Rating 10%).
           </p>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-3">
-          <Link to="/find-tutor" className="pw-btn-primary inline-flex items-center px-5 py-2.5 text-[14px] font-medium">
-            Find my tutor →
+        <div className="mt-6 flex flex-wrap gap-4">
+          {/* A text link, not a filled button: the top match's "Book a session" is this view's one
+              prominent action, and this sends people back to a quiz. */}
+          <Link
+            to="/find-tutor"
+            className="inline-flex min-h-11 items-center text-[0.8125rem] font-semibold text-pw-accent underline-offset-4 hover:underline"
+          >
+            Refine matches →
           </Link>
-          <span className="text-[12px] text-[var(--pw-ink-2)] self-center">
-            Take a 60-second quiz to refine your matches
+          <span className="text-[0.75rem] text-[var(--pw-ink-2)] self-center">
+            Answer 8 questions to change your matches
           </span>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center gap-4">
           <button
             onClick={() => setFilterOpen((v) => !v)}
-            className="lg:hidden pw-btn-outline px-4 py-2 text-[13px]"
+            className="lg:hidden pw-btn-outline px-4 py-2"
           >
             {filterOpen ? "Hide" : "Show"} filters
           </button>
-          <label className="flex items-center gap-2 text-[13px] ml-auto">
+          <label className="flex items-center gap-2 text-[0.8125rem] ml-auto">
             <span className="text-[var(--pw-ink-2)]">Sort by</span>
             <select
               value={search.sort}
               onChange={(e) => updateSearch({ sort: e.target.value as SortId })}
-              className="pw-border rounded-md px-3 py-1.5 text-[13px] bg-[var(--pw-surface)]"
+              className="pw-border px-4 py-2 max-sm:min-h-11 text-[0.8125rem] bg-[var(--pw-surface)]"
             >
-              {SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
+              {SORTS.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
@@ -341,18 +427,18 @@ function MatchesPage() {
               <button
                 key={c.key}
                 onClick={c.clear}
-                className="pw-pill text-[12px] px-3 py-1 inline-flex items-center gap-1.5 hover:bg-[var(--pw-surface-2)]"
+                className="pw-pill px-4 py-2 inline-flex items-center gap-2"
               >
                 {c.label} <span className="text-[var(--pw-ink-2)]">×</span>
               </button>
             ))}
-            <button onClick={clearAll} className="text-[12px] text-[var(--pw-accent)] hover:underline ml-1">
+            <button onClick={clearAll} className="text-[0.8125rem] font-semibold text-pw-accent hover:underline ml-2">
               Clear all
             </button>
           </div>
         )}
 
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+        <div className="mt-6 grid grid-cols-1 lg:grid-cols-[16.25rem_1fr] gap-6">
           <aside className={`${filterOpen ? "block" : "hidden"} lg:block`}>
             <FilterSidebar search={search} update={updateSearch} onClear={clearAll} />
           </aside>
@@ -369,8 +455,9 @@ function MatchesPage() {
             ) : (
               <>
                 <div className="space-y-4">
-                  {visibleList.map((s) => (
+                  {visibleList.map((s, i) => (
                     <MatchCard
+                      primary={i === 0}
                       key={s.tutor.id}
                       data={{
                         tutor: s.tutor,
@@ -380,7 +467,7 @@ function MatchesPage() {
                         course: s.course,
                       }}
                       onBook={handleBook}
-                      onMessage={handleMessage}
+                      onMessage={startConversation}
                       onView={(id) => navigate({ to: "/tutor/$tutorId", params: { tutorId: id } })}
                     />
                   ))}
@@ -389,7 +476,7 @@ function MatchesPage() {
                   <div className="mt-6 text-center">
                     <button
                       onClick={() => setVisible((v) => v + PAGE_SIZE)}
-                      className="pw-btn-outline px-6 py-2.5 text-[14px]"
+                      className="pw-btn-outline px-6 py-2"
                     >
                       Load more ({sorted.length - visible} remaining)
                     </button>
@@ -405,31 +492,38 @@ function MatchesPage() {
 }
 
 function FilterSidebar({
-  search, update, onClear,
+  search,
+  update,
+  onClear,
 }: {
   search: ReturnType<typeof Route.useSearch>;
   update: (p: Partial<ReturnType<typeof Route.useSearch>>) => void;
   onClear: () => void;
 }) {
   return (
-    <div className="pw-card p-5 space-y-5 sticky top-4">
-      <div className="font-display text-[18px]">Filters</div>
+    <div className="pw-card p-6 space-y-6 sticky top-[calc(var(--pw-header-h)+1rem)]">
+      <div className="font-display text-[1.125rem] uppercase tracking-[-0.025em]">Filters</div>
 
       <Section title="Price range">
-        <div className="text-[12px] text-[var(--pw-ink-2)]">
-          ${search.priceMin} – ${search.priceMax}/hr
+        <div className="text-[0.75rem] text-[var(--pw-ink-2)] tabular-nums">
+          {search.priceMin} – {formatPrice(search.priceMax)}/hr
         </div>
         <input
-          type="range" min={0} max={300} step={5} value={search.priceMax}
+          type="range"
+          min={0}
+          max={1000}
+          step={50}
+          value={search.priceMax}
           onChange={(e) => update({ priceMax: Number(e.target.value) })}
           className="w-full mt-2"
         />
       </Section>
 
       <Section title="Availability">
-        <label className="flex items-center gap-2 text-[13px]">
+        <label className="flex items-center gap-2 text-[0.8125rem]">
           <input
-            type="checkbox" checked={search.availableThisWeek}
+            type="checkbox"
+            checked={search.availableThisWeek}
             onChange={(e) => update({ availableThisWeek: e.target.checked })}
           />
           Available this week
@@ -437,39 +531,39 @@ function FilterSidebar({
       </Section>
 
       <Section title="Minimum rating">
-        <div className="flex gap-1.5 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
           {[0, 3, 4, 4.5].map((r) => (
             <button
               key={r}
               onClick={() => update({ minRating: r })}
-              className="pw-pill text-[12px] px-3 py-1"
-              style={{
-                background: search.minRating === r ? "var(--pw-accent)" : "var(--pw-surface)",
-                color: search.minRating === r ? "white" : "inherit",
-                borderColor: search.minRating === r ? "var(--pw-accent)" : "var(--pw-border)",
-              }}
+              className={`pw-pill px-4 py-2 ${search.minRating === r ? "is-active" : ""}`}
             >
-              {r === 0 ? "Any" : `${r}★+`}
+              {r === 0 ? (
+                "Any"
+              ) : (
+                <span className="inline-flex items-center gap-0">
+                  {r}
+                  <StarIcon className="h-3.5 w-3.5 fill-current" aria-hidden="true" />+
+                  <span className="sr-only"> stars</span>
+                </span>
+              )}
             </button>
           ))}
         </div>
       </Section>
 
-      <Section title="Vibe">
-        <div className="flex flex-wrap gap-1.5">
+      <Section title="Teaching style">
+        <div className="flex flex-wrap gap-2">
           {VIBE_TAGS.map((v) => {
             const vibes = search.vibes as string[];
             const active = vibes.includes(v);
             return (
               <button
                 key={v}
-                onClick={() => update({ vibes: active ? vibes.filter((x) => x !== v) : [...vibes, v] })}
-                className="pw-pill text-[12px] px-3 py-1"
-                style={{
-                  background: active ? "var(--pw-accent)" : "var(--pw-surface)",
-                  color: active ? "white" : "inherit",
-                  borderColor: active ? "var(--pw-accent)" : "var(--pw-border)",
-                }}
+                onClick={() =>
+                  update({ vibes: active ? vibes.filter((x) => x !== v) : [...vibes, v] })
+                }
+                className={`pw-pill px-4 py-2 ${active ? "is-active" : ""}`}
               >
                 {v}
               </button>
@@ -478,7 +572,7 @@ function FilterSidebar({
         </div>
       </Section>
 
-      <button onClick={onClear} className="pw-btn-outline w-full text-[13px] px-4 py-2">
+      <button onClick={onClear} className="pw-btn-outline w-full px-4 py-2">
         Clear all filters
       </button>
     </div>
@@ -488,7 +582,7 @@ function FilterSidebar({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] mb-2">{title}</div>
+      <div className="label-caps text-[var(--pw-ink-2)] mb-2">{title}</div>
       {children}
     </div>
   );
@@ -497,27 +591,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function NoResults({ onClear }: { onClear: () => void }) {
   return (
     <div className="pw-card p-8 text-center">
-      <div className="text-5xl">🔍</div>
-      <h2 className="font-display text-[22px] mt-3">No exact matches found</h2>
-      <p className="text-[14px] text-[var(--pw-ink-2)] mt-2 max-w-md mx-auto">
-        But here's what we can do to widen your search:
-      </p>
-      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md mx-auto">
-        <button onClick={onClear} className="pw-btn-outline px-4 py-2 text-[13px]">Clear all filters</button>
-        <Link to="/find-tutor" className="pw-btn-outline px-4 py-2 text-[13px] text-center">Try related subjects</Link>
-        <button onClick={() => toast.success("Alert created — we'll email you when matches join.")} className="pw-btn-outline px-4 py-2 text-[13px]">
-          Create alert
-        </button>
-        <button onClick={() => toast.success("Added to waitlist.")} className="pw-btn-outline px-4 py-2 text-[13px]">
-          Join waitlist
-        </button>
+      <div className="flex justify-center">
+        <Icon name="search" className="h-12 w-12" />
       </div>
-      <button
-        onClick={() => toast.success("Alert created — we'll notify you when matching tutors join.")}
-        className="pw-btn-primary mt-5 px-6 py-2.5 text-[13px]"
-      >
-        Notify me when matching tutors join
-      </button>
+      <h2 className="font-display text-[1.375rem] uppercase tracking-[-0.025em] mt-4">
+        No exact matches found
+      </h2>
+      <p className="text-[0.875rem] text-[var(--pw-ink-2)] mt-2 max-w-md mx-auto">
+        Widen your search:
+      </p>
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-md mx-auto">
+        <button onClick={onClear} className="pw-btn-outline px-4 py-2">
+          Clear all filters
+        </button>
+        <Link to="/find-tutor" className="pw-btn-outline px-4 py-2 text-center">
+          Retake the tutor quiz
+        </Link>
+      </div>
     </div>
   );
 }

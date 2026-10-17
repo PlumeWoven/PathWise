@@ -1,7 +1,11 @@
 # Dependencies
 node_modules/
+# package-lock.json is committed on purpose: without a lockfile Vercel resolves
+# dependency versions afresh on every build, so a deploy can pick up different
+# (and broken) transitive versions than the ones that work locally. npm is the
+# project's package manager — bun's lockfile stays ignored so Vercel only ever
+# sees one, and can't pick the other.
 bun.lockb
-package-lock.json
 
 # Environment — ignore every real env file, but keep the committed template
 .env*
@@ -23,3 +27,8 @@ graphify-out/
 # Obsidian workspace config (repo opened as a vault)
 .obsidian/
 *.base
+
+# Local agent-tooling state (ruflo / claude-flow), not project source
+.claude-flow/
+.swarm/
+ruvector.db

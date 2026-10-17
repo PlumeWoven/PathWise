@@ -1,22 +1,31 @@
-import { useEffect, useState, FormEvent } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useEffect, useId, useState, FormEvent } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth, type Role } from "./auth";
-import { normalizeRole, postAuthDestination } from "./roles";
+import { normalizeRole, pendingBookingTutorId, postAuthDestination } from "./roles";
 import { supabase } from "@/integrations/supabase/client";
 import { signInWithGoogle } from "./oauth";
+import { claimGuestResults } from "./api";
+import { getGuestToken } from "@/lib/guestToken";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+
+// Google sign-in is disabled in Supabase Auth and the set_profile_role RPC it
+// needs doesn't exist yet, so the button could only fail. Flip once both exist.
+const GOOGLE_ENABLED = false;
+import { Icon, type IconName } from "@/components/Icon";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export function LoginModal() {
-  const { loginOpen, closeLogin, emailConfirmed, resendConfirmation } = useAuth();
+  const { loginOpen, loginMode, closeLogin, emailConfirmed, resendConfirmation } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>("signin");
   const [role, setRole] = useState<Role | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -27,7 +36,7 @@ export function LoginModal() {
   // Reset state whenever the modal opens.
   useEffect(() => {
     if (loginOpen) {
-      setMode("signin");
+      setMode(loginMode);
       setRole(null);
       setName("");
       setEmail("");
@@ -38,9 +47,7 @@ export function LoginModal() {
       setShowConfirmation(false);
       setSignupEmail("");
     }
-  }, [loginOpen]);
-
-  if (!loginOpen) return null;
+  }, [loginOpen, loginMode]);
 
   const handleClose = () => closeLogin();
 
@@ -54,31 +61,12 @@ export function LoginModal() {
     // unknown roles to "/" instead of mislabeling the user.
     const r = normalizeRole(profile?.role);
     const onboarded = !!profile?.onboarding_completed;
-    // Claim any anonymous diagnostic + roadmap rows created before signup.
-    try {
-      const diagId = localStorage.getItem("pathwise_diagnostic_id");
-      const roadmapId = localStorage.getItem("pathwise_roadmap_id");
-      if (diagId) {
-        await supabase
-          .from("diagnostic_results")
-          .update({ user_id: userId })
-          .eq("id", diagId)
-          .is("user_id", null);
-      }
-      if (roadmapId) {
-        await supabase
-          .from("roadmaps")
-          .update({ user_id: userId })
-          .eq("id", roadmapId)
-          .is("user_id", null);
-      }
-      localStorage.removeItem("pathwise_diagnostic_id");
-      localStorage.removeItem("pathwise_roadmap_id");
-    } catch (err) {
-      console.error("[auth] claim anonymous error", err);
-    }
+    // Attach any guest level check + roadmap made in this browser.
+    await claimGuestResults();
     closeLogin();
-    navigate({ to: postAuthDestination(r, onboarded) });
+    const pendingTutor = onboarded ? pendingBookingTutorId() : null;
+    if (pendingTutor) navigate({ to: "/book/$tutorId", params: { tutorId: pendingTutor } });
+    else navigate({ to: postAuthDestination(r, onboarded) });
   }
 
   /**
@@ -144,6 +132,10 @@ export function LoginModal() {
       setError("Please enter your name.");
       return;
     }
+    if (!consent) {
+      setError("Please confirm you're 18+ (or a parent/guardian) and accept the terms.");
+      return;
+    }
     setSubmitting(true);
     const redirectTo = `${window.location.origin}/confirm-email`; // explicit route
     const { data, error: err } = await supabase.auth.signUp({
@@ -151,7 +143,17 @@ export function LoginModal() {
       password,
       options: {
         emailRedirectTo: redirectTo,
-        data: { role, display_name: name.trim(), full_name: name.trim() },
+        data: {
+          role,
+          display_name: name.trim(),
+          full_name: name.trim(),
+          // Record of what the user agreed to and when.
+          terms_accepted_at: new Date().toISOString(),
+          age_confirmed: true,
+          // Lets the account claim this browser's guest results even if the
+          // confirmation link is opened on another device.
+          guest_token: getGuestToken(),
+        },
       },
     });
     setSubmitting(false);
@@ -164,6 +166,14 @@ export function LoginModal() {
         return;
       }
       setError(err.message);
+      return;
+    }
+    // Supabase hides whether an email is taken: for an existing account it returns no error and a
+    // user with zero identities — and sends no email. Say so instead of "check your inbox".
+    if (data.user && data.user.identities?.length === 0) {
+      const friendly = "An account with this email already exists. Please sign in instead.";
+      setError(friendly);
+      toast.error(friendly);
       return;
     }
     if (data.user) {
@@ -220,30 +230,20 @@ export function LoginModal() {
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center px-4"
-        style={{ background: "rgba(26,26,26,0.45)", backdropFilter: "blur(6px)" }}
-        onClick={handleClose}
-      >
-        <div
-          className="pw-card w-full max-w-[520px] p-7 relative"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button
-            onClick={handleClose}
-            aria-label="Close"
-            className="absolute right-4 top-4 text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] text-xl leading-none"
-          >
-            ×
-          </button>
-
-          <h2 className="font-display text-[28px] leading-tight">{title}</h2>
-          <p className="mt-1 text-[14px] text-[var(--pw-ink-2)]">{subtitle}</p>
+      {/* Radix Dialog: role + label, focus moved in and trapped, Esc, page behind made inert. */}
+      <Dialog open={loginOpen} onOpenChange={(open) => !open && handleClose()}>
+        <DialogContent className="pw-card block w-[calc(100%-2rem)] max-w-[32.5rem] max-h-[calc(100dvh-2rem)] overflow-y-auto p-8 border-[var(--pw-border)] shadow-pw-float">
+          <DialogTitle className="font-display font-bold uppercase tracking-[-0.025em] text-[1.75rem] leading-none">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="mt-2 text-[0.875rem] text-[var(--pw-ink-2)]">
+            {subtitle}
+          </DialogDescription>
 
           {mode === "signup" && (
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-3 gap-4">
               <RoleCard
-                emoji="🎓"
+                icon="student"
                 label="Student"
                 sub="Get a roadmap & tutor"
                 selected={role === "student"}
@@ -253,7 +253,7 @@ export function LoginModal() {
                 }}
               />
               <RoleCard
-                emoji="👨‍🏫"
+                icon="tutor"
                 label="Tutor"
                 sub="Teach & earn"
                 selected={role === "tutor"}
@@ -263,7 +263,7 @@ export function LoginModal() {
                 }}
               />
               <RoleCard
-                emoji="🔁"
+                icon="switchRole"
                 label="Both"
                 sub="Learn and teach"
                 selected={role === "both"}
@@ -276,14 +276,24 @@ export function LoginModal() {
           )}
 
           {mode === "signin" && (
-            <form onSubmit={handleSignIn} className="mt-6 space-y-3">
-              <Field label="Email" type="email" value={email} onChange={setEmail} />
-              <Field label="Password" type="password" value={password} onChange={setPassword} />
+            <form onSubmit={handleSignIn} className="mt-6 space-y-4">
+              <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
+              <Field
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={setPassword}
+              />
               {error && <ErrorLine msg={error} />}
-              <SubmitButton submitting={submitting} label="Sign In →" />
-              <OrDivider />
-              <GoogleButton onClick={handleGoogle} submitting={submitting} />
-              <div className="flex items-center justify-between text-[12px] text-[var(--pw-ink-2)]">
+              <SubmitButton submitting={submitting} label="Sign in →" />
+              {GOOGLE_ENABLED && (
+                <>
+                  <OrDivider />
+                  <GoogleButton onClick={handleGoogle} submitting={submitting} />
+                </>
+              )}
+              <div className="flex items-center justify-between text-[0.8125rem] text-[var(--pw-ink-2)]">
                 <button
                   type="button"
                   onClick={() => {
@@ -291,7 +301,7 @@ export function LoginModal() {
                     setError("");
                     setInfo("");
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Forgot password?
                 </button>
@@ -302,7 +312,7 @@ export function LoginModal() {
                     setError("");
                     setInfo("");
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Create account
                 </button>
@@ -311,24 +321,53 @@ export function LoginModal() {
           )}
 
           {mode === "signup" && (
-            <form onSubmit={handleSignUp} className="mt-6 space-y-3">
-              <Field label="Full name" type="text" value={name} onChange={setName} />
-              <Field label="Email" type="email" value={email} onChange={setEmail} />
-              <Field label="Password" type="password" value={password} onChange={setPassword} />
+            <form onSubmit={handleSignUp} className="mt-6 space-y-4">
+              <Field label="Full name" type="text" autoComplete="name" value={name} onChange={setName} />
+              <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
+              <Field
+                label="Password"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={setPassword}
+              />
               {error && <ErrorLine msg={error} />}
+              <label className="flex items-start gap-2 text-[0.75rem] text-[var(--pw-ink-2)]">
+                <input
+                  type="checkbox"
+                  checked={consent}
+                  onChange={(e) => setConsent(e.target.checked)}
+                  className="mt-0"
+                />
+                <span>
+                  I'm 18 or older (or a parent/guardian signing up for my child) and I accept the{" "}
+                  <Link to="/terms" target="_blank" className="underline">
+                    Terms
+                  </Link>{" "}
+                  and{" "}
+                  <Link to="/privacy" target="_blank" className="underline">
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
               <SubmitButton
                 submitting={submitting}
-                label="Create Free Account →"
-                disabled={!role}
+                label="Create free account →"
+                disabled={!role || !consent}
               />
-              <OrDivider />
-              <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
-              {!role && (
-                <p className="text-[11px] text-[var(--pw-ink-2)] text-center">
-                  Pick a role above to enable Google sign-up.
-                </p>
+              {GOOGLE_ENABLED && (
+                <>
+                  <OrDivider />
+                  <GoogleButton onClick={handleGoogle} submitting={submitting} disabled={!role} />
+                  {!role && (
+                    <p className="text-[0.6875rem] text-[var(--pw-ink-2)] text-center">
+                      Pick a role above to enable Google sign-up.
+                    </p>
+                  )}
+                </>
               )}
-              <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)] text-center">
                 Already have an account?{" "}
                 <button
                   type="button"
@@ -338,7 +377,7 @@ export function LoginModal() {
                     setInfo("");
                     setShowConfirmation(false);
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Sign in
                 </button>
@@ -347,16 +386,16 @@ export function LoginModal() {
           )}
 
           {mode === "forgot" && (
-            <form onSubmit={handleForgot} className="mt-6 space-y-3">
-              <Field label="Email" type="email" value={email} onChange={setEmail} />
+            <form onSubmit={handleForgot} className="mt-6 space-y-4">
+              <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} />
               {error && <ErrorLine msg={error} />}
               {info && (
-                <div className="text-[12px]" style={{ color: "var(--pw-accent-2)" }}>
+                <div role="status" className="text-[0.75rem]" style={{ color: "var(--pw-accent-2)" }}>
                   {info}
                 </div>
               )}
               <SubmitButton submitting={submitting} label="Send reset link →" />
-              <div className="text-[12px] text-[var(--pw-ink-2)] text-center">
+              <div className="text-[0.8125rem] text-[var(--pw-ink-2)] text-center">
                 <button
                   type="button"
                   onClick={() => {
@@ -364,15 +403,15 @@ export function LoginModal() {
                     setError("");
                     setInfo("");
                   }}
-                  className="underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center underline-offset-4 hover:underline"
                 >
                   Back to sign in
                 </button>
               </div>
             </form>
           )}
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Confirmation Modal */}
       <ConfirmationModal
@@ -389,13 +428,13 @@ export function LoginModal() {
 // ---------- Helper Components ----------
 
 function RoleCard({
-  emoji,
+  icon,
   label,
   sub,
   selected,
   onClick,
 }: {
-  emoji: string;
+  icon: IconName;
   label: string;
   sub: string;
   selected: boolean;
@@ -405,15 +444,18 @@ function RoleCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className="pw-card text-left p-4 transition-colors"
       style={{
         borderColor: selected ? "var(--pw-accent)" : "var(--pw-border)",
         background: selected ? "var(--pw-accent-soft)" : "var(--pw-surface)",
       }}
     >
-      <div className="text-2xl">{emoji}</div>
-      <div className="font-display text-[16px] mt-1.5">{label}</div>
-      <div className="text-[12px] text-[var(--pw-ink-2)] mt-0.5">{sub}</div>
+      <Icon name={icon} className="h-6 w-6" />
+      <div className="font-display font-bold uppercase tracking-[-0.025em] text-[1rem] mt-2">
+        {label}
+      </div>
+      <div className="text-[0.75rem] text-[var(--pw-ink-2)] mt-0">{sub}</div>
     </button>
   );
 }
@@ -421,25 +463,30 @@ function RoleCard({
 function Field({
   label,
   type,
+  autoComplete,
   value,
   onChange,
 }: {
   label: string;
   type: string;
+  autoComplete: string;
   value: string;
   onChange: (v: string) => void;
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="font-mono-pw text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)]">
+      <label htmlFor={id} className="label-caps text-[var(--pw-ink-2)]">
         {label}
       </label>
       <input
+        id={id}
         type={type}
+        autoComplete={autoComplete}
         required
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full pw-border rounded-md px-3 py-2.5 text-[14px] bg-[var(--pw-surface)] outline-none focus:border-[var(--pw-accent)]"
+        className="pw-input mt-2 text-[0.875rem]"
       />
     </div>
   );
@@ -447,7 +494,7 @@ function Field({
 
 function ErrorLine({ msg }: { msg: string }) {
   return (
-    <div className="text-[12px]" style={{ color: "var(--pw-danger)" }}>
+    <div role="alert" className="text-[0.75rem]" style={{ color: "var(--pw-danger)" }}>
       {msg}
     </div>
   );
@@ -466,7 +513,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={submitting || disabled}
-      className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-3 text-[15px] font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+      className="pw-btn-primary w-full inline-flex justify-center items-center px-6 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {submitting ? "Please wait..." : label}
     </button>
@@ -475,11 +522,9 @@ function SubmitButton({
 
 function OrDivider() {
   return (
-    <div className="flex items-center gap-3 py-1">
+    <div className="flex items-center gap-4 py-2">
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
-      <span className="text-[11px] uppercase pw-tracking-wide text-[var(--pw-ink-2)] font-mono-pw">
-        or
-      </span>
+      <span className="label-caps text-[var(--pw-ink-2)]">or</span>
       <div className="flex-1 h-px bg-[var(--pw-border)]" />
     </div>
   );
@@ -499,7 +544,7 @@ function GoogleButton({
       type="button"
       onClick={onClick}
       disabled={submitting || disabled}
-      className="w-full inline-flex justify-center items-center gap-2 pw-border rounded-md px-6 py-3 text-[14px] font-medium bg-[var(--pw-surface)] hover:bg-[var(--pw-surface-2)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="pw-btn-secondary w-full px-6 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden>
         <path

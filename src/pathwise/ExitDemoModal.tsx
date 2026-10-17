@@ -1,64 +1,38 @@
-import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useDemo } from "./DemoContext";
-import { toast } from "sonner";
+import { useAuth } from "./auth";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
+// Opens the real sign-up. It used to save the email to localStorage and toast
+// "Setting up your account…" without creating one.
 export function ExitDemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { capturedEmail, captureEmail } = useDemo();
-  const [email, setEmail] = useState(capturedEmail ?? "");
-  const navigate = useNavigate();
+  const { openLogin } = useAuth();
 
-  if (!open) return null;
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.includes("@")) {
-      toast.error("Please enter a valid email");
-      return;
-    }
-    captureEmail(email);
-    toast.success("Welcome to Pathwise!", { description: "Setting up your account…" });
+  const signUp = () => {
     onClose();
-    navigate({ to: "/dashboard" });
+    openLogin("signup");
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div
-        className="pw-card max-w-md w-full p-7 relative"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="exit-demo-title"
-      >
-        <button
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute top-3 right-3 w-8 h-8 rounded-full hover:bg-[var(--pw-surface-2)] text-[var(--pw-ink-2)]"
-        >×</button>
-        <div className="font-mono-pw text-[10px] uppercase tracking-wider text-[var(--pw-accent)]">Ready for the real thing?</div>
-        <h2 id="exit-demo-title" className="mt-1 font-display text-[26px] leading-tight">Start your own journey</h2>
-        <p className="mt-2 text-[13px] text-[var(--pw-ink-2)]">
-          Create your free account to keep your courses, students and earnings — for real this time.
-        </p>
-        <form onSubmit={submit} className="mt-5 space-y-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            autoFocus
-            className="w-full px-4 py-3 rounded-lg border border-[var(--pw-border)] bg-[var(--pw-surface)] text-[14px] focus:outline-none focus:border-[var(--pw-accent)]"
-          />
-          <button type="submit" className="pw-btn-primary w-full px-5 py-3 text-[14px] font-medium">
-            Create my free account →
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="pw-card block w-[calc(100%-2rem)] max-w-md p-8 border-[var(--pw-border)] shadow-pw-float">
+        <DialogTitle className="font-display font-bold uppercase tracking-[-0.025em] text-[1.625rem] leading-none">
+          Create your account
+        </DialogTitle>
+        <DialogDescription className="mt-2 text-[0.8125rem] text-[var(--pw-ink-2)]">
+          Demo data isn't kept. Your account starts empty.
+        </DialogDescription>
+        <div className="mt-6 space-y-4">
+          <button type="button" onClick={signUp} className="pw-btn-primary w-full px-6 py-4">
+            Sign up free
           </button>
-          <button type="button" onClick={onClose} className="block w-full text-center text-[12px] text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] py-1">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[0.8125rem] font-semibold block w-full text-center text-[var(--pw-ink-2)] hover:text-[var(--pw-ink)] transition-colors py-2"
+          >
             Keep exploring the demo
           </button>
-        </form>
-        <p className="mt-3 text-[11px] text-[var(--pw-ink-2)] text-center">No credit card · Cancel anytime</p>
-      </div>
-    </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

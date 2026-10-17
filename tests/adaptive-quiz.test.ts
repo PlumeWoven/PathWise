@@ -12,6 +12,7 @@ import {
   finalBand,
   nextQuestion,
   recordAnswer,
+  strongTopics,
   topicBands,
   weakTopics,
   type AdaptiveState,
@@ -187,4 +188,31 @@ test("recordAnswer does not mutate the state it is given", () => {
   const next = recordAnswer(state, q, q.correctIndex);
   assert.equal(state.answers.length, 0, "original state was mutated");
   assert.equal(next.answers.length, 1);
+});
+
+test("strongTopics never overlaps weakTopics and only names topics seen", () => {
+  for (const subject of SUBJECTS) {
+    for (const cap of [1, 3, 5]) {
+      const run = runQuiz(subject, (tier) => tier <= cap);
+      const strong = strongTopics(run);
+      const weak = new Set(weakTopics(run));
+      const seen = new Set(run.answers.map((a) => a.topic));
+      for (const t of strong) {
+        assert.ok(!weak.has(t), `${subject}: ${t} is both strong and weak`);
+        assert.ok(seen.has(t), `${subject}: ${t} was never asked`);
+      }
+    }
+  }
+});
+
+test("a perfect run is strong where it was tested at its top band", () => {
+  const run = runQuiz("Mathematics", () => true);
+  assert.deepEqual(weakTopics(run), []);
+  const top = run.answers.filter((a) => a.difficulty === 5).map((a) => a.topic);
+  assert.ok(top.length > 0);
+  for (const t of top) assert.ok(strongTopics(run).includes(t), `${t} answered at tier 5`);
+});
+
+test("an all-wrong run has no strong topics", () => {
+  assert.deepEqual(strongTopics(runQuiz("Mathematics", () => false)), []);
 });
